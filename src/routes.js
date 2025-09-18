@@ -4,6 +4,11 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
 const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
 
+// Main
+const Transactions = React.lazy(() => import('./views/pages/transactions/Transactions'))
+const FuelReceive = React.lazy(() => import('./views/pages/fuel-receive/FuelReceive'))
+const FuelStock = React.lazy(() => import('./views/pages/fuel-stock/FuelStock'))
+
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -54,6 +59,9 @@ const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/transactions', name: 'Transactions', element: Transactions },
+  { path: '/fuel-receive', name: 'Fuel Receive', element: FuelReceive },
+  { path: '/fuel-stock', name: 'Fuel Stock', element: FuelStock },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },

@@ -25,11 +25,12 @@ body {
 }
 
 .sidebar-header {
+  background-color: rgb(48 60 84 / var(--tw-bg-opacity, 1));
   .nav-underline-border {
     --cui-nav-underline-border-link-padding-x: 1rem;
     --cui-nav-underline-border-gap: 0;
   }
-
+  
   .nav-link {
     display: flex;
     align-items: center;
