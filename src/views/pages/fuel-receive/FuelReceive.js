@@ -3,7 +3,7 @@ import React from 'react'
 
 const FuelReceive = () => {
   return (
-    <>TEST</>
+    <>TEST FuelReceive</>
   )
 }
 

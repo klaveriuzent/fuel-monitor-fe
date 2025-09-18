@@ -3,7 +3,7 @@ import React from 'react'
 
 const Transactions = () => {
   return (
-    <>TEST</>
+    <>TEST Transactions</>
   )
 }
 
