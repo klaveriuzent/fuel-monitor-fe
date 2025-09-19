@@ -9,6 +9,10 @@ const Transactions = React.lazy(() => import('./views/pages/transactions/Transac
 const FuelReceive = React.lazy(() => import('./views/pages/fuel-receive/FuelReceive'))
 const FuelStock = React.lazy(() => import('./views/pages/fuel-stock/FuelStock'))
 
+// Master Data
+const MasterSites = React.lazy(() => import('./views/pages/master-data/MasterSites'))
+const MasterTanks = React.lazy(() => import('./views/pages/master-data/MasterTanks'))
+
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
 const Breadcrumbs = React.lazy(() => import('./views/base/breadcrumbs/Breadcrumbs'))
@@ -62,6 +66,8 @@ const routes = [
   { path: '/transactions', name: 'Transactions', element: Transactions },
   { path: '/fuel-receive', name: 'Fuel Receive', element: FuelReceive },
   { path: '/fuel-stock', name: 'Fuel Stock', element: FuelStock },
+  { path: '/master-sites', name: 'Master Sites', element: MasterSites },
+  { path: '/master-tanks', name: 'Master Tanks', element: MasterTanks },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
   { path: '/theme/typography', name: 'Typography', element: Typography },
