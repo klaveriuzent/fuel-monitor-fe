@@ -122,7 +122,7 @@ export const tankColumns = [
           <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.bacode || '-'}</div>
         </div>
 
-        {/* Card Container: Status + ID + Tank ID + Grade & Type */}
+        {/* Card Container */}
         <div
           style={{
             background: 'linear-gradient(135deg, #fafafa, #f0f0f0)',
@@ -156,7 +156,7 @@ export const tankColumns = [
               padding: '3px 8px',
               fontSize: '11px',
               fontWeight: 'bold',
-              marginBottom: 4,
+              marginBottom: 8,
             }}
           >
             Status: {record.active ? 'Active' : 'Offline'}
@@ -165,63 +165,69 @@ export const tankColumns = [
           {/* Grade & Type */}
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
+              fontSize: '13px',
+              fontWeight: '600',
+              marginBottom: 10,
+              color: '#333',
             }}
           >
-            <div style={{ fontSize: '13px', fontWeight: '600' }}>
-              {record.grade} | {record.type}
-            </div>
+            {record.grade} | {record.type}
           </div>
 
-          {/* ID */}
+          {/* Grid ID & Tank ID */}
           <div
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginBottom: 6,
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '8px',
             }}
           >
+            {/* ID */}
             <div
               style={{
-                display: 'inline-block',
-                backgroundColor: '#d1d1d1',
-                borderRadius: 4,
-                padding: '2px 6px',
-                fontSize: '10px',
-                fontWeight: 'bold',
+                backgroundColor: '#fff',
+                border: '1px solid #ddd',
+                borderRadius: 6,
+                padding: '6px',
               }}
             >
-              ID
+              <div
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#666',
+                  marginBottom: 2,
+                }}
+              >
+                ID
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: '#333' }}>
+                {record.id}
+              </div>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: '#333' }}>{record.id}</div>
-          </div>
 
-          {/* Tank ID */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginBottom: 6,
-            }}
-          >
+            {/* Tank ID */}
             <div
               style={{
-                display: 'inline-block',
-                backgroundColor: '#d1d1d1',
-                borderRadius: 4,
-                padding: '2px 6px',
-                fontSize: '10px',
-                fontWeight: 'bold',
+                backgroundColor: '#fff',
+                border: '1px solid #ddd',
+                borderRadius: 6,
+                padding: '6px',
               }}
             >
-              Tank ID
-            </div>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: '#111' }}>
-              {record.idTank}
+              <div
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#666',
+                  marginBottom: 2,
+                }}
+              >
+                Tank ID
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: '700', color: '#111' }}>
+                {record.idTank}
+              </div>
             </div>
           </div>
         </div>
