@@ -16,6 +16,7 @@ import {
   CRow,
   CCol,
   CFormCheck,
+  CFormSelect,
 } from '@coreui/react'
 import { siteColumns } from './interface'
 
@@ -23,6 +24,8 @@ const MasterSites = () => {
   const [visible, setVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [formData, setFormData] = useState({})
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const dataSource = [
     {
@@ -45,6 +48,20 @@ const MasterSites = () => {
     },
   ]
 
+  // filter data
+  const filteredData = dataSource.filter((item) => {
+    const matchesText =
+      item.idSite.toLowerCase().includes(search.toLowerCase()) ||
+      item.bacode.toLowerCase().includes(search.toLowerCase())
+    const matchesStatus =
+      statusFilter === 'all'
+        ? true
+        : statusFilter === 'active'
+        ? item.active
+        : !item.active
+    return matchesText && matchesStatus
+  })
+
   const handleEdit = (record) => {
     setSelectedRecord(record)
     setFormData({
@@ -56,7 +73,6 @@ const MasterSites = () => {
     setVisible(true)
   }
 
-  // override kolom action → inject button
   const columns = siteColumns.map((col) =>
     col.key === 'action'
       ? {
@@ -80,10 +96,54 @@ const MasterSites = () => {
 
   return (
     <>
+      {/* Filter Section */}
+      <CCard className="mb-3 p-3">
+        <CRow className="align-items-center g-2">
+          {/* Search */}
+          <CCol xs={12} sm={5} md={4}>
+            <CFormInput
+              type="text"
+              placeholder="Search by ID Site / BACode..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              size="sm"
+            />
+          </CCol>
+
+          {/* Status Filter */}
+          <CCol xs={12} sm={4} md={3}>
+            <CFormSelect
+              size="sm"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="offline">Offline</option>
+            </CFormSelect>
+          </CCol>
+
+          {/* Clear Button */}
+          <CCol xs="auto">
+            <CButton
+              color="secondary"
+              size="sm"
+              onClick={() => {
+                setSearch('')
+                setStatusFilter('all')
+              }}
+            >
+              Clear
+            </CButton>
+          </CCol>
+        </CRow>
+      </CCard>
+
+      {/* Table Section */}
       <CCard className="mb-4">
         <CCardBody>
           <Table
-            dataSource={dataSource}
+            dataSource={filteredData}
             columns={columns}
             pagination={true}
             scroll={{ x: 'max-content' }}
@@ -101,7 +161,9 @@ const MasterSites = () => {
           <CForm>
             {/* BACode */}
             <CRow className="mb-3">
-              <CFormLabel htmlFor="bacode" className="col-sm-3 col-form-label">BACode</CFormLabel>
+              <CFormLabel htmlFor="bacode" className="col-sm-3 col-form-label">
+                BACode
+              </CFormLabel>
               <CCol sm={9}>
                 <CFormInput
                   type="text"
@@ -115,7 +177,9 @@ const MasterSites = () => {
 
             {/* Area */}
             <CRow className="mb-3">
-              <CFormLabel htmlFor="area" className="col-sm-3 col-form-label">Area</CFormLabel>
+              <CFormLabel htmlFor="area" className="col-sm-3 col-form-label">
+                Area
+              </CFormLabel>
               <CCol sm={9}>
                 <CFormInput
                   type="text"
@@ -129,7 +193,9 @@ const MasterSites = () => {
 
             {/* Coordinates */}
             <CRow className="mb-3">
-              <CFormLabel htmlFor="coordinates" className="col-sm-3 col-form-label">Coordinates</CFormLabel>
+              <CFormLabel htmlFor="coordinates" className="col-sm-3 col-form-label">
+                Coordinates
+              </CFormLabel>
               <CCol sm={9}>
                 <CFormInput
                   type="text"
@@ -149,7 +215,7 @@ const MasterSites = () => {
                   type="radio"
                   name="active"
                   id="statusActive"
-                  value={true}
+                  value="true"
                   label="Active"
                   checked={formData.active === true || formData.active === 'true'}
                   onChange={() => setFormData((prev) => ({ ...prev, active: true }))}
@@ -158,7 +224,7 @@ const MasterSites = () => {
                   type="radio"
                   name="active"
                   id="statusOffline"
-                  value={false}
+                  value="false"
                   label="Offline"
                   checked={formData.active === false || formData.active === 'false'}
                   onChange={() => setFormData((prev) => ({ ...prev, active: false }))}
@@ -168,7 +234,9 @@ const MasterSites = () => {
           </CForm>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setVisible(false)}>Close</CButton>
+          <CButton color="secondary" onClick={() => setVisible(false)}>
+            Close
+          </CButton>
           <CButton color="primary">Save changes</CButton>
         </CModalFooter>
       </CModal>

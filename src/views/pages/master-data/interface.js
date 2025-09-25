@@ -71,3 +71,122 @@ export const siteColumns = [
     ),
   },
 ]
+
+/* eslint-disable prettier/prettier */
+
+export const tankColumns = [
+  {
+    title: 'Action',
+    key: 'action',
+    width: 80,
+    // render override nanti di MasterTanks
+  },
+  {
+    title: 'Tank Info',
+    dataIndex: 'idTank',
+    key: 'tankInfo',
+    render: (_, record) => (
+      <div style={{ lineHeight: 1.4 }}>
+        {/* Status */}
+        <div
+          style={{
+            display: 'inline-block',
+            backgroundColor: record.active ? '#9eff91' : '#ff9e9e',
+            borderRadius: 4,
+            padding: '2px 6px',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            marginBottom: 8,
+          }}
+        >
+          Status: {record.active ? 'Active' : 'Offline'}
+        </div>
+
+        {/* ID */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            ID
+          </div>
+          <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{record.id}</div>
+        </div>
+
+        {/* Tank ID */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            Tank ID
+          </div>
+          <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.idTank}</div>
+        </div>
+
+        {/* Site */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            Site
+          </div>
+          <div style={{ fontSize: '12px' }}>{record.site}</div>
+        </div>
+
+        {/* Type */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            Type
+          </div>
+          <div style={{ fontSize: '12px' }}>{record.type}</div>
+        </div>
+
+        {/* Grade */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            Grade
+          </div>
+          <div style={{ fontSize: '12px', fontStyle: 'italic' }}>{record.grade}</div>
+        </div>
+      </div>
+    ),
+  },
+]
