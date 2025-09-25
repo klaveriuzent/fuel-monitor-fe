@@ -74,7 +74,6 @@ export const siteColumns = [
   },
 ]
 
-/* eslint-disable prettier/prettier */
 export const tankColumns = [
   {
     title: 'Action',
