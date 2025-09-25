@@ -66,7 +66,9 @@ export const siteColumns = [
         <div style={{ fontSize: '12px', marginTop: 8 }}>{record.area}</div>
 
         {/* Coordinates */}
-        <div style={{ fontSize: '11px', fontStyle: 'italic', marginTop: 2 }}>{record.coordinates}</div>
+        <div style={{ fontSize: '11px', fontStyle: 'italic', marginTop: 2 }}>
+          {record.coordinates}
+        </div>
       </div>
     ),
   },
@@ -135,43 +137,78 @@ export const tankColumns = [
           <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.bacode || '-'}</div>
         </div>
 
-        {/* ID */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+        {/* Card Container: ID + Tank ID */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #fafafa, #f0f0f0)',
+            border: '1px solid #e0e0e0',
+            borderRadius: 8,
+            padding: '10px 12px',
+            marginBottom: 8,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          }}
+        >
+          {/* Header Card */}
           <div
             style={{
-              display: 'inline-block',
-              backgroundColor: '#bbbbbbff',
-              borderRadius: 4,
-              padding: '2px 6px',
-              fontSize: '10px',
+              fontSize: '11px',
               fontWeight: 'bold',
+              color: '#666',
+              marginBottom: 6,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
             }}
           >
-            ID
+            Tank Information
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{record.id}</div>
-        </div>
 
-        {/* Tank ID */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+          {/* ID */}
           <div
             style={{
-              display: 'inline-block',
-              backgroundColor: '#bbbbbbff',
-              borderRadius: 4,
-              padding: '2px 6px',
-              fontSize: '10px',
-              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              marginBottom: 6,
             }}
           >
-            Tank ID
+            <div
+              style={{
+                display: 'inline-block',
+                backgroundColor: '#d1d1d1',
+                borderRadius: 4,
+                padding: '2px 6px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+              }}
+            >
+              ID
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: '600', color: '#333' }}>{record.id}</div>
           </div>
-          <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.idTank}</div>
+
+          {/* Tank ID */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div
+              style={{
+                display: 'inline-block',
+                backgroundColor: '#d1d1d1',
+                borderRadius: 4,
+                padding: '2px 6px',
+                fontSize: '10px',
+                fontWeight: 'bold',
+              }}
+            >
+              Tank ID
+            </div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#111' }}>
+              {record.idTank}
+            </div>
+          </div>
         </div>
 
-        {/* Type */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
-          <div style={{ fontSize: '12px' }}>{record.grade} | {record.type}</div>
+        {/* Grade & Type */}
+        <div style={{ fontSize: '12px', marginTop: 4 }}>
+          {record.grade} | {record.type}
         </div>
       </div>
     ),
