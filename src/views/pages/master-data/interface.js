@@ -1,18 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { Button } from 'antd'
 
 export const siteColumns = [
   {
-    title: 'Group',
-    dataIndex: 'group',
-    key: 'group',
+    title: 'Action',
+    key: 'action',
     width: 80,
-  },
-  {
-    title: 'BACode',
-    dataIndex: 'bacode',
-    key: 'bacode',
-    width: 80,
+    // render override nanti di MasterSites
   },
   {
     title: 'Site Info',
@@ -20,7 +13,7 @@ export const siteColumns = [
     key: 'siteInfo',
     render: (_, record) => (
       <div style={{ lineHeight: 1.4 }}>
-        {/* Status tag di atas */}
+        {/* Status */}
         <div
           style={{
             display: 'inline-block',
@@ -29,18 +22,18 @@ export const siteColumns = [
             padding: '2px 6px',
             fontSize: '10px',
             fontWeight: 'bold',
-            marginBottom: 6,
+            marginBottom: 8,
           }}
         >
           Status: {record.active ? 'Active' : 'Offline'}
         </div>
 
-        {/* ID SITE dan value sejajar */}
+        {/* ID SITE */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
           <div
             style={{
               display: 'inline-block',
-              backgroundColor: '#f0f0f0',
+              backgroundColor: '#bbbbbbff',
               borderRadius: 4,
               padding: '2px 6px',
               fontSize: '10px',
@@ -49,47 +42,32 @@ export const siteColumns = [
           >
             ID SITE
           </div>
+          <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.idSite}</div>
+        </div>
+
+        {/* BACode */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
           <div
             style={{
-              fontSize: '14px',
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
               fontWeight: 'bold',
             }}
           >
-            {record.idSite}
+            BACode
           </div>
+          <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{record.bacode}</div>
         </div>
 
         {/* Area */}
-        <div
-          style={{
-            fontSize: '12px',
-            marginTop: 2,
-          }}
-        >
-          {record.area}
-        </div>
+        <div style={{ fontSize: '12px', marginTop: 8 }}>{record.area}</div>
 
         {/* Coordinates */}
-        <div
-          style={{
-            fontSize: '11px',
-            fontStyle: 'italic',
-            marginTop: 2,
-          }}
-        >
-          {record.coordinates}
-        </div>
+        <div style={{ fontSize: '11px', fontStyle: 'italic', marginTop: 2 }}>{record.coordinates}</div>
       </div>
     ),
   },
-  // {
-  //   title: 'Action',
-  //   key: 'action',
-  //   width: 120,
-  //   render: (_, record) => (
-  //     <Button type={record.active ? 'primary' : 'default'}>
-  //       {record.active ? 'Aktif' : 'Non Aktif'}
-  //     </Button>
-  //   ),
-  // },
 ]
