@@ -73,7 +73,6 @@ export const siteColumns = [
 ]
 
 /* eslint-disable prettier/prettier */
-
 export const tankColumns = [
   {
     title: 'Action',
@@ -100,6 +99,40 @@ export const tankColumns = [
           }}
         >
           Status: {record.active ? 'Active' : 'Offline'}
+        </div>
+
+        {/* idSite */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            idSite
+          </div>
+          <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.idSite}</div>
+        </div>
+
+        {/* BACode */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
+          <div
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#bbbbbbff',
+              borderRadius: 4,
+              padding: '2px 6px',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            BACode
+          </div>
+          <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.bacode || '-'}</div>
         </div>
 
         {/* ID */}
@@ -136,55 +169,9 @@ export const tankColumns = [
           <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{record.idTank}</div>
         </div>
 
-        {/* Site */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              backgroundColor: '#bbbbbbff',
-              borderRadius: 4,
-              padding: '2px 6px',
-              fontSize: '10px',
-              fontWeight: 'bold',
-            }}
-          >
-            Site
-          </div>
-          <div style={{ fontSize: '12px' }}>{record.site}</div>
-        </div>
-
         {/* Type */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 4 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              backgroundColor: '#bbbbbbff',
-              borderRadius: 4,
-              padding: '2px 6px',
-              fontSize: '10px',
-              fontWeight: 'bold',
-            }}
-          >
-            Type
-          </div>
-          <div style={{ fontSize: '12px' }}>{record.type}</div>
-        </div>
-
-        {/* Grade */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div
-            style={{
-              display: 'inline-block',
-              backgroundColor: '#bbbbbbff',
-              borderRadius: 4,
-              padding: '2px 6px',
-              fontSize: '10px',
-              fontWeight: 'bold',
-            }}
-          >
-            Grade
-          </div>
-          <div style={{ fontSize: '12px', fontStyle: 'italic' }}>{record.grade}</div>
+          <div style={{ fontSize: '12px' }}>{record.grade} | {record.type}</div>
         </div>
       </div>
     ),

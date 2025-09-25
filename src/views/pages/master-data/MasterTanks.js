@@ -27,33 +27,36 @@ const MasterTanks = () => {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
 
-  // Dummy data
+  // Dummy data (tambahkan bacode)
   const dataSource = [
     {
       key: '1',
-      id: 'T001',
-      idTank: 'Tank_A1',
-      site: 'Jakarta',
-      type: 'CPO',
-      grade: 'Premium',
+      id: 'S001',
+      idTank: '1',
+      idSite: 'LSIP_LSIP_Rambong_Sialang_Estate',
+      bacode: 'BAC123',
+      type: 'Vertical Tank',
+      grade: 'Solar',
       active: true,
     },
     {
       key: '2',
-      id: 'T002',
-      idTank: 'Tank_B7',
-      site: 'Bandung',
-      type: 'Kernel',
-      grade: 'Standard',
+      id: 'S002',
+      idTank: '2',
+      idSite: 'LSIP_LSIP_Rambong_Sialang_Estate',
+      bacode: 'BAC124',
+      type: 'Vertical Tank',
+      grade: 'Solar',
       active: false,
     },
     {
       key: '3',
-      id: 'T003',
-      idTank: 'Tank_C3',
-      site: 'Surabaya',
-      type: 'CPO',
-      grade: 'Export',
+      id: 'P003',
+      idTank: '1',
+      idSite: 'LSIP_LSIP_Pulo_Rambong_Estate',
+      bacode: 'BAC125',
+      type: 'Vertical Tank',
+      grade: 'Solar',
       active: true,
     },
   ]
@@ -63,7 +66,8 @@ const MasterTanks = () => {
     const matchesText =
       item.id.toLowerCase().includes(search.toLowerCase()) ||
       item.idTank.toLowerCase().includes(search.toLowerCase()) ||
-      item.site.toLowerCase().includes(search.toLowerCase())
+      item.idSite.toLowerCase().includes(search.toLowerCase()) ||
+      item.bacode.toLowerCase().includes(search.toLowerCase())
     const matchesStatus =
       statusFilter === 'all'
         ? true
@@ -76,7 +80,8 @@ const MasterTanks = () => {
   const handleEdit = (record) => {
     setSelectedRecord(record)
     setFormData({
-      site: record.site,
+      idSite: record.idSite,
+      bacode: record.bacode,
       type: record.type,
       grade: record.grade,
       active: record.active,
@@ -113,7 +118,7 @@ const MasterTanks = () => {
           <CCol xs={12} sm={5} md={4}>
             <CFormInput
               type="text"
-              placeholder="Search by ID / Tank ID / Site..."
+              placeholder="Search by ID / Tank ID / ID Site / BACode..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               size="sm"
@@ -169,17 +174,33 @@ const MasterTanks = () => {
         </CModalHeader>
         <CModalBody>
           <CForm>
-            {/* Site */}
+            {/* ID Site */}
             <CRow className="mb-3">
-              <CFormLabel htmlFor="site" className="col-sm-3 col-form-label">
-                Site
+              <CFormLabel htmlFor="idSite" className="col-sm-3 col-form-label">
+                ID Site
               </CFormLabel>
               <CCol sm={9}>
                 <CFormInput
                   type="text"
-                  id="site"
-                  name="site"
-                  value={formData.site || ''}
+                  id="idSite"
+                  name="idSite"
+                  value={formData.idSite || ''}
+                  onChange={handleChange}
+                />
+              </CCol>
+            </CRow>
+
+            {/* Bacode */}
+            <CRow className="mb-3">
+              <CFormLabel htmlFor="bacode" className="col-sm-3 col-form-label">
+                Bacode
+              </CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
+                  type="text"
+                  id="bacode"
+                  name="bacode"
+                  value={formData.bacode || ''}
                   onChange={handleChange}
                 />
               </CCol>
