@@ -86,31 +86,41 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
   )
 }
 
-// Wrapper untuk tank + skala di luar
+// Wrapper untuk tank + skala di luar kanan
 const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
-  const scaleNumbers = [75, 50, 25]
+  const scaleNumbers = [25, 50, 75]
 
   return (
-    <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
-      {/* Skala di luar kiri */}
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+      {/* Tank Visual dengan lebar tetap */}
+      <div style={{ width: '85%' }}>
+        <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
+      </div>
+
+      {/* Skala di sebelah kanan */}
       <div
         style={{
+          position: 'relative',
+          height: '160px',
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: 'column-reverse',
           justifyContent: 'space-between',
           fontSize: '0.7rem',
           color: '#333',
         }}
       >
         {scaleNumbers.map((s) => (
-          <span key={s}>{s}%</span>
+          <div
+            key={s}
+            style={{
+              position: 'absolute',
+              bottom: `${s}%`,
+              transform: 'translateY(50%)',
+            }}
+          >
+            {s}%
+          </div>
         ))}
-        <span style={{ visibility: 'hidden' }}>0%</span>
-      </div>
-
-      {/* Tank Visual */}
-      <div style={{ flex: 1 }}>
-        <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
       </div>
     </div>
   )
