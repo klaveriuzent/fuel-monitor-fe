@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react'
-import { Row, Col, Pagination, Tag, Progress } from 'antd'
+import { Row, Col, Pagination, Tag } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -12,21 +12,109 @@ import {
   CButton,
 } from '@coreui/react'
 
+// Generator data dummy
 const generateData = () =>
-  Array.from({ length: 100 }, (_, i) => ({
-    id: `Tank ${String(i + 1).padStart(3, '0')}`,
-    type: ['Diesel', 'Pertalite', 'Pertamax'][i % 3],
-    site: `Site ${String.fromCharCode(65 + (i % 5))}`,
-    status: ['Normal', 'Warning', 'Critical'][i % 3],
-    fuelLevel: Math.floor(Math.random() * 8000),
-    waterLevel: Math.floor(Math.random() * 1000),
-    capacity: 8000,
-    fuelPercentage: Math.floor(Math.random() * 100),
-    waterPercentage: Math.floor(Math.random() * 10),
-    totalPercentage: Math.floor(Math.random() * 100),
-    lastUpdated: '2025-09-0' + ((i % 3) + 1),
-    usageRate: ['Low', 'Medium', 'High'][i % 3],
-  }))
+  Array.from({ length: 100 }, (_, i) => {
+    const tankVolume = 8000 // kapasitas total liter
+    const tankHeight = 300 // tinggi cm
+    return {
+      id: `Tank ${String(i + 1).padStart(3, '0')}`,
+      type: ['Diesel', 'Pertalite', 'Pertamax'][i % 3],
+      site: `Site ${String.fromCharCode(65 + (i % 5))}`,
+      status: ['Normal', 'Warning', 'Critical'][i % 3],
+      fuelLevel: Math.floor(Math.random() * tankVolume),
+      waterLevel: Math.floor(Math.random() * 1000),
+      capacity: tankVolume,
+      tankHeight,
+      tankVolume,
+      lastUpdated: '2025-09-0' + ((i % 3) + 1),
+    }
+  })
+
+// Komponen visual tank
+const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
+  const fuelPercent = Math.min((fuelLevel / capacity) * 100, 100)
+  const waterPercent = Math.min((waterLevel / capacity) * 100, 100)
+
+  const barStyle = {
+    container: {
+      position: 'relative',
+      width: '100%',
+      height: '160px',
+      border: '2px solid #ccc',
+      borderRadius: '8px',
+      overflow: 'hidden',
+      background: '#f9f9f9',
+      display: 'flex',
+      flexDirection: 'column-reverse',
+    },
+    fuel: {
+      width: '100%',
+      height: `${fuelPercent}%`,
+      background: '#F59E0B', // fuel = orange
+      transition: 'height 0.5s',
+    },
+    water: {
+      width: '100%',
+      height: `${waterPercent}%`,
+      background: '#3B82F6', // water = biru
+      transition: 'height 0.5s',
+      opacity: 0.9,
+    },
+    marker: (percent) => ({
+      position: 'absolute',
+      bottom: `${percent}%`,
+      left: 0,
+      width: '100%',
+      height: '1px',
+      background: '#555',
+      opacity: 0.4,
+    }),
+  }
+
+  return (
+    <div style={barStyle.container}>
+      {/* Garis marker */}
+      <div style={barStyle.marker(25)}></div>
+      <div style={barStyle.marker(50)}></div>
+      <div style={barStyle.marker(75)}></div>
+
+      {/* Isi tank */}
+      <div style={barStyle.water}></div>
+      <div style={barStyle.fuel}></div>
+    </div>
+  )
+}
+
+// Wrapper untuk tank + skala di luar
+const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
+  const scaleNumbers = [75, 50, 25]
+
+  return (
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
+      {/* Skala di luar kiri */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          fontSize: '0.7rem',
+          color: '#333',
+        }}
+      >
+        {scaleNumbers.map((s) => (
+          <span key={s}>{s}%</span>
+        ))}
+        <span style={{ visibility: 'hidden' }}>0%</span>
+      </div>
+
+      {/* Tank Visual */}
+      <div style={{ flex: 1 }}>
+        <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
+      </div>
+    </div>
+  )
+}
 
 const FuelStock = () => {
   const data = generateData()
@@ -37,7 +125,7 @@ const FuelStock = () => {
 
   const pageSize = 12
 
-  // Filter logic
+  // Filter data
   const filteredData = data.filter((item) => {
     const matchSearch = item.id.toLowerCase().includes(search.toLowerCase())
     const matchSite =
@@ -53,7 +141,6 @@ const FuelStock = () => {
       {/* Filter Section */}
       <CCard className="mb-3 p-3">
         <CRow className="align-items-center g-2">
-          {/* Search Tank ID */}
           <CCol xs={12} sm={5} md={4}>
             <CFormInput
               type="text"
@@ -67,7 +154,6 @@ const FuelStock = () => {
             />
           </CCol>
 
-          {/* Filter by Site */}
           <CCol xs={12} sm={4} md={3}>
             <CFormInput
               type="text"
@@ -81,7 +167,6 @@ const FuelStock = () => {
             />
           </CCol>
 
-          {/* Clear Button */}
           <CCol xs="auto">
             <CButton
               color="secondary"
@@ -136,24 +221,21 @@ const FuelStock = () => {
                     {item.status}
                   </Tag>
                   <br />
-                  <b>Fuel Level:</b> {item.fuelLevel} L / {item.capacity} L
-                  <Progress
-                    percent={item.fuelPercentage}
-                    strokeColor={{
-                      '0%': '#DC2626', // merah
-                      '100%': '#F59E0B', // kuning
-                    }}
-                    size="small"
-                  />
-                  <b>Water Level:</b> {item.waterLevel} L
-                  <Progress
-                    percent={item.waterPercentage}
-                    strokeColor="#3B82F6"
-                    size="small"
-                  />
-                  <b>Total:</b> {item.totalPercentage}% <br />
-                  <b>Usage:</b> {item.usageRate} <br />
-                  <small>{item.lastUpdated}</small>
+                  <b>Tank Height:</b> {item.tankHeight} cm <br />
+                  <b>Tank Volume:</b> {item.tankVolume} L
+                </CCardText>
+
+                {/* Visual Tank dengan skala di luar */}
+                <TankWithScale
+                  fuelLevel={item.fuelLevel}
+                  waterLevel={item.waterLevel}
+                  capacity={item.capacity}
+                />
+
+                <CCardText style={{ fontSize: '0.75rem', marginTop: '8px' }}>
+                  <b>Fuel:</b> {item.fuelLevel} L<br />
+                  <b>Water:</b> {item.waterLevel} L<br />
+                  <small>Last Updated: {item.lastUpdated}</small>
                 </CCardText>
               </CCardBody>
             </CCard>
