@@ -8,7 +8,6 @@ import {
   CCardText,
 } from "@coreui/react";
 
-// generate dummy 100 tank
 const generateData = () =>
   Array.from({ length: 100 }, (_, i) => ({
     id: `Tank ${String(i + 1).padStart(3, "0")}`,
@@ -41,8 +40,8 @@ const FuelStock = () => {
         {paginatedData.map((item) => (
           <Col
             key={item.id}
-            flex="0 0 300px"
-            style={{ maxWidth: "300px" }}
+            flex="1 1 300px"
+            style={{ minWidth: "252px", maxWidth: "336px" }}
           >
             <CCard className="shadow-sm h-full" style={{ height: "100%" }}>
               <CCardBody>

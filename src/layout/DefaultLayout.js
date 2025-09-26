@@ -3,11 +3,14 @@ import { AppContent, AppSidebar, AppFooter, AppHeader } from '../components/inde
 
 const DefaultLayout = () => {
   return (
-    <div>
+    <div className="d-flex">
+      {/* Sidebar */}
       <AppSidebar />
-      <div className="wrapper d-flex flex-column min-vh-100">
+
+      {/* Main wrapper */}
+      <div className="wrapper d-flex flex-column min-vh-100 flex-grow-1">
         <AppHeader />
-        <div className="body flex-grow-1">
+        <div className="body flex-grow-1 px-3">
           <AppContent />
         </div>
         {/* <AppFooter /> */}
