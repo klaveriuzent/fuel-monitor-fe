@@ -33,55 +33,55 @@ const generateData = () =>
 
 // Komponen visual tank
 const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
-  const fuelPercent = Math.min((fuelLevel / capacity) * 100, 100)
-  const waterPercent = Math.min((waterLevel / capacity) * 100, 100)
+  // Hitung persentase
+  const fuelPercent = (fuelLevel / capacity) * 100
+  const waterPercent = (waterLevel / capacity) * 100
 
-  const barStyle = {
-    container: {
-      position: 'relative',
-      width: '100%',
-      height: '160px',
-      border: '2px solid #ccc',
-      borderRadius: '8px',
-      overflow: 'hidden',
-      background: '#f9f9f9',
-      display: 'flex',
-      flexDirection: 'column-reverse',
-    },
-    fuel: {
-      width: '100%',
-      height: `${fuelPercent}%`,
-      background: '#F59E0B', // fuel = orange
-      transition: 'height 0.5s',
-    },
-    water: {
-      width: '100%',
-      height: `${waterPercent}%`,
-      background: '#3B82F6', // water = biru
-      transition: 'height 0.5s',
-      opacity: 0.9,
-    },
-    marker: (percent) => ({
-      position: 'absolute',
-      bottom: `${percent}%`,
-      left: 0,
-      width: '100%',
-      height: '1px',
-      background: '#555',
-      opacity: 0.4,
-    }),
+  // Tentukan urutan layer
+  const topHeight = Math.max(fuelPercent, waterPercent)
+  const bottomHeight = Math.min(fuelPercent, waterPercent)
+  const topColor = fuelPercent >= waterPercent ? '#F59E0B' : '#3B82F6' // fuel = orange, water = blue
+  const bottomColor = fuelPercent >= waterPercent ? '#3B82F6' : '#F59E0B'
+
+  const containerStyle = {
+    position: 'relative',
+    width: '100%',
+    height: '160px',
+    border: '2px solid #ccc',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    background: '#f9f9f9',
+    display: 'flex',
+    flexDirection: 'column-reverse',
   }
 
-  return (
-    <div style={barStyle.container}>
-      {/* Garis marker */}
-      <div style={barStyle.marker(25)}></div>
-      <div style={barStyle.marker(50)}></div>
-      <div style={barStyle.marker(75)}></div>
+  const layerStyle = (height, color) => ({
+    width: '100%',
+    height: `${height}%`,
+    background: color,
+    transition: 'height 0.5s',
+  })
 
-      {/* Isi tank */}
-      <div style={barStyle.water}></div>
-      <div style={barStyle.fuel}></div>
+  const markerStyle = (percent) => ({
+    position: 'absolute',
+    bottom: `${percent}%`,
+    left: 0,
+    width: '100%',
+    height: '1px',
+    background: '#555',
+    opacity: 0.4,
+  })
+
+  return (
+    <div style={containerStyle}>
+      {/* Garis marker */}
+      <div style={markerStyle(25)}></div>
+      <div style={markerStyle(50)}></div>
+      <div style={markerStyle(75)}></div>
+
+      {/* Layer tank */}
+      <div style={layerStyle(bottomHeight, bottomColor)}></div>
+      <div style={layerStyle(topHeight - bottomHeight, topColor)}></div>
     </div>
   )
 }
