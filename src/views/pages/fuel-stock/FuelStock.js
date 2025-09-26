@@ -1,22 +1,22 @@
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react'
-import { Row, Col, Pagination, Tag } from 'antd'
+import { Row, Col, Pagination, Badge } from 'antd'
 import {
+  CFormInput,
+  CButton,
   CCard,
   CCardBody,
   CCardTitle,
   CCardText,
   CRow,
   CCol,
-  CFormInput,
-  CButton,
 } from '@coreui/react'
 
 // Generator data dummy
 const generateData = () =>
   Array.from({ length: 100 }, (_, i) => {
-    const tankVolume = 8000 // kapasitas total liter
-    const tankHeight = 300 // tinggi cm
+    const tankVolume = 8000
+    const tankHeight = 300
     return {
       id: `Tank ${String(i + 1).padStart(3, '0')}`,
       type: ['Diesel', 'Pertalite', 'Pertamax'][i % 3],
@@ -31,11 +31,10 @@ const generateData = () =>
     }
   })
 
-// Komponen visual tank
+// Tank visual (sama seperti sebelumnya)
 const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
   const fuelPercent = (fuelLevel / capacity) * 100
   const waterPercent = (waterLevel / capacity) * 100
-
   const topHeight = Math.max(fuelPercent, waterPercent)
   const bottomHeight = Math.min(fuelPercent, waterPercent)
   const topColor = fuelPercent >= waterPercent ? '#F59E0B' : '#3B82F6'
@@ -52,14 +51,12 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
     display: 'flex',
     flexDirection: 'column-reverse',
   }
-
   const layerStyle = (height, color) => ({
     width: '100%',
     height: `${height}%`,
     background: color,
     transition: 'height 0.5s',
   })
-
   const markerStyle = (percent) => ({
     position: 'absolute',
     bottom: `${percent}%`,
@@ -75,29 +72,26 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
       <div style={markerStyle(25)}></div>
       <div style={markerStyle(50)}></div>
       <div style={markerStyle(75)}></div>
-
       <div style={layerStyle(bottomHeight, bottomColor)}></div>
       <div style={layerStyle(topHeight - bottomHeight, topColor)}></div>
     </div>
   )
 }
 
-// Wrapper untuk tank + skala di luar kanan
 const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
   const scaleNumbers = [25, 50, 75]
-
   return (
     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
       <div style={{ width: '85%' }}>
         <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
       </div>
-
       <div
         style={{
           position: 'relative',
           height: '160px',
           display: 'flex',
           flexDirection: 'column-reverse',
+          justifyContent: 'space-between',
           fontSize: '0.7rem',
           color: '#333',
         }}
@@ -121,11 +115,9 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
 
 const FuelStock = () => {
   const data = generateData()
-
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [filterSite, setFilterSite] = useState('')
-
   const pageSize = 12
 
   const filteredData = data.filter((item) => {
@@ -199,36 +191,36 @@ const FuelStock = () => {
       <Row gutter={[16, 16]}>
         {paginatedData.map((item) => (
           <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
-            <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
-              <CCardBody style={{ padding: '12px' }}>
-                <CCardTitle style={{ fontSize: '1rem', marginBottom: '8px' }}>
-                  {item.id}
-                </CCardTitle>
-                <CCardText style={{ fontSize: '0.85rem' }}>
-                  <b>Type:</b> {item.type} <br />
-                  <b>Site:</b> {item.site} <br />
-                  <b>Status:</b>{' '}
-                  <Tag color={item.status === 'Online' ? 'green' : 'gray'}>
-                    {item.status}
-                  </Tag>
-                  <br />
-                  <b>Tank Height:</b> {item.tankHeight} cm <br />
-                  <b>Tank Volume:</b> {item.tankVolume} L
-                </CCardText>
+            <Badge.Ribbon
+              text={item.status}
+              color={item.status === 'Online' ? 'green' : 'red'}
+            >
+              <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
+                <CCardBody style={{ padding: '12px' }}>
+                  <CCardTitle style={{ fontSize: '1rem', marginBottom: '8px' }}>
+                    {item.id}
+                  </CCardTitle>
+                  <CCardText style={{ fontSize: '0.85rem' }}>
+                    <b>Type:</b> {item.type} <br />
+                    <b>Site:</b> {item.site} <br />
+                    <b>Tank Height:</b> {item.tankHeight} cm <br />
+                    <b>Tank Volume:</b> {item.tankVolume} L
+                  </CCardText>
 
-                <TankWithScale
-                  fuelLevel={item.fuelLevel}
-                  waterLevel={item.waterLevel}
-                  capacity={item.capacity}
-                />
+                  <TankWithScale
+                    fuelLevel={item.fuelLevel}
+                    waterLevel={item.waterLevel}
+                    capacity={item.capacity}
+                  />
 
-                <CCardText style={{ fontSize: '0.75rem', marginTop: '8px' }}>
-                  <b>Fuel:</b> {item.fuelLevel} L<br />
-                  <b>Water:</b> {item.waterLevel} L<br />
-                  <small>Last Updated: {item.lastUpdated}</small>
-                </CCardText>
-              </CCardBody>
-            </CCard>
+                  <CCardText style={{ fontSize: '0.75rem', marginTop: '8px' }}>
+                    <b>Fuel:</b> {item.fuelLevel} L<br />
+                    <b>Water:</b> {item.waterLevel} L<br />
+                    <small>Last Updated: {item.lastUpdated}</small>
+                  </CCardText>
+                </CCardBody>
+              </CCard>
+            </Badge.Ribbon>
           </Col>
         ))}
       </Row>
