@@ -21,7 +21,7 @@ const generateData = () =>
       id: `Tank ${String(i + 1).padStart(3, '0')}`,
       type: ['Diesel', 'Pertalite', 'Pertamax'][i % 3],
       site: `Site ${String.fromCharCode(65 + (i % 5))}`,
-      status: ['Normal', 'Warning', 'Critical'][i % 3],
+      status: ['Online', 'Offline'][i % 2],
       fuelLevel: Math.floor(Math.random() * tankVolume),
       waterLevel: Math.floor(Math.random() * 1000),
       capacity: tankVolume,
@@ -33,14 +33,12 @@ const generateData = () =>
 
 // Komponen visual tank
 const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
-  // Hitung persentase
   const fuelPercent = (fuelLevel / capacity) * 100
   const waterPercent = (waterLevel / capacity) * 100
 
-  // Tentukan urutan layer
   const topHeight = Math.max(fuelPercent, waterPercent)
   const bottomHeight = Math.min(fuelPercent, waterPercent)
-  const topColor = fuelPercent >= waterPercent ? '#F59E0B' : '#3B82F6' // fuel = orange, water = blue
+  const topColor = fuelPercent >= waterPercent ? '#F59E0B' : '#3B82F6'
   const bottomColor = fuelPercent >= waterPercent ? '#3B82F6' : '#F59E0B'
 
   const containerStyle = {
@@ -74,12 +72,10 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
 
   return (
     <div style={containerStyle}>
-      {/* Garis marker */}
       <div style={markerStyle(25)}></div>
       <div style={markerStyle(50)}></div>
       <div style={markerStyle(75)}></div>
 
-      {/* Layer tank */}
       <div style={layerStyle(bottomHeight, bottomColor)}></div>
       <div style={layerStyle(topHeight - bottomHeight, topColor)}></div>
     </div>
@@ -92,19 +88,16 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
 
   return (
     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-      {/* Tank Visual dengan lebar tetap */}
       <div style={{ width: '85%' }}>
         <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
       </div>
 
-      {/* Skala di sebelah kanan */}
       <div
         style={{
           position: 'relative',
           height: '160px',
           display: 'flex',
           flexDirection: 'column-reverse',
-          justifyContent: 'space-between',
           fontSize: '0.7rem',
           color: '#333',
         }}
@@ -135,7 +128,6 @@ const FuelStock = () => {
 
   const pageSize = 12
 
-  // Filter data
   const filteredData = data.filter((item) => {
     const matchSearch = item.id.toLowerCase().includes(search.toLowerCase())
     const matchSite =
@@ -148,7 +140,6 @@ const FuelStock = () => {
 
   return (
     <div>
-      {/* Filter Section */}
       <CCard className="mb-3 p-3">
         <CRow className="align-items-center g-2">
           <CCol xs={12} sm={5} md={4}>
@@ -193,7 +184,6 @@ const FuelStock = () => {
         </CRow>
       </CCard>
 
-      {/* Pagination atas */}
       <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
         <Pagination
           current={currentPage}
@@ -206,7 +196,6 @@ const FuelStock = () => {
         />
       </div>
 
-      {/* Grid Card */}
       <Row gutter={[16, 16]}>
         {paginatedData.map((item) => (
           <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
@@ -219,15 +208,7 @@ const FuelStock = () => {
                   <b>Type:</b> {item.type} <br />
                   <b>Site:</b> {item.site} <br />
                   <b>Status:</b>{' '}
-                  <Tag
-                    color={
-                      item.status === 'Normal'
-                        ? 'green'
-                        : item.status === 'Warning'
-                        ? 'orange'
-                        : 'red'
-                    }
-                  >
+                  <Tag color={item.status === 'Online' ? 'green' : 'gray'}>
                     {item.status}
                   </Tag>
                   <br />
@@ -235,7 +216,6 @@ const FuelStock = () => {
                   <b>Tank Volume:</b> {item.tankVolume} L
                 </CCardText>
 
-                {/* Visual Tank dengan skala di luar */}
                 <TankWithScale
                   fuelLevel={item.fuelLevel}
                   waterLevel={item.waterLevel}
@@ -253,7 +233,6 @@ const FuelStock = () => {
         ))}
       </Row>
 
-      {/* Pagination bawah */}
       <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
         <Pagination
           current={currentPage}
