@@ -35,18 +35,22 @@ const FuelStock = () => {
   const paginatedData = data.slice(startIndex, startIndex + pageSize);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <Row gutter={[16, 16]} justify="start">
+    <div style={{ padding: "16px" }}>
+      <Row gutter={[16, 16]}>
         {paginatedData.map((item) => (
           <Col
             key={item.id}
-            flex="1 1 300px"
-            style={{ minWidth: "252px", maxWidth: "336px" }}
+            xs={24}   // 1 kolom penuh di mobile
+            sm={12}   // 2 kolom di tablet
+            md={8}    // 3 kolom di laptop kecil
+            lg={6}    // 4 kolom di desktop
           >
             <CCard className="shadow-sm h-full" style={{ height: "100%" }}>
-              <CCardBody>
-                <CCardTitle>{item.id}</CCardTitle>
-                <CCardText>
+              <CCardBody style={{ padding: "12px" }}>
+                <CCardTitle style={{ fontSize: "1rem", marginBottom: "8px" }}>
+                  {item.id}
+                </CCardTitle>
+                <CCardText style={{ fontSize: "0.85rem" }}>
                   <b>Type:</b> {item.type} <br />
                   <b>Site:</b> {item.site} <br />
                   <b>Status:</b>{" "}
@@ -74,10 +78,8 @@ const FuelStock = () => {
                     strokeColor="#3B82F6"
                     size="small"
                   />
-                  <b>Total:</b> {item.totalPercentage}%
-                  <br />
-                  <b>Usage:</b> {item.usageRate}
-                  <br />
+                  <b>Total:</b> {item.totalPercentage}% <br />
+                  <b>Usage:</b> {item.usageRate} <br />
                   <small>{item.lastUpdated}</small>
                 </CCardText>
               </CCardBody>
@@ -93,6 +95,8 @@ const FuelStock = () => {
           total={data.length}
           onChange={(page) => setCurrentPage(page)}
           showSizeChanger={false}
+          responsive
+          simple   // lebih kompak untuk mobile
         />
       </div>
     </div>
