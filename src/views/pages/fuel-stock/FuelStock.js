@@ -26,7 +26,6 @@ const generateData = () =>
     totalPercentage: Math.floor(Math.random() * 100),
     lastUpdated: '2025-09-0' + ((i % 3) + 1),
     usageRate: ['Low', 'Medium', 'High'][i % 3],
-    fuelColor: ['#16A34A', '#F59E0B', '#DC2626'][i % 3],
   }))
 
 const FuelStock = () => {
@@ -118,7 +117,9 @@ const FuelStock = () => {
           <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
             <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
               <CCardBody style={{ padding: '12px' }}>
-                <CCardTitle style={{ fontSize: '1rem', marginBottom: '8px' }}>{item.id}</CCardTitle>
+                <CCardTitle style={{ fontSize: '1rem', marginBottom: '8px' }}>
+                  {item.id}
+                </CCardTitle>
                 <CCardText style={{ fontSize: '0.85rem' }}>
                   <b>Type:</b> {item.type} <br />
                   <b>Site:</b> {item.site} <br />
@@ -128,8 +129,8 @@ const FuelStock = () => {
                       item.status === 'Normal'
                         ? 'green'
                         : item.status === 'Warning'
-                          ? 'orange'
-                          : 'red'
+                        ? 'orange'
+                        : 'red'
                     }
                   >
                     {item.status}
@@ -138,11 +139,18 @@ const FuelStock = () => {
                   <b>Fuel Level:</b> {item.fuelLevel} L / {item.capacity} L
                   <Progress
                     percent={item.fuelPercentage}
-                    strokeColor={item.fuelColor}
+                    strokeColor={{
+                      '0%': '#DC2626', // merah
+                      '100%': '#F59E0B', // kuning
+                    }}
                     size="small"
                   />
                   <b>Water Level:</b> {item.waterLevel} L
-                  <Progress percent={item.waterPercentage} strokeColor="#3B82F6" size="small" />
+                  <Progress
+                    percent={item.waterPercentage}
+                    strokeColor="#3B82F6"
+                    size="small"
+                  />
                   <b>Total:</b> {item.totalPercentage}% <br />
                   <b>Usage:</b> {item.usageRate} <br />
                   <small>{item.lastUpdated}</small>
