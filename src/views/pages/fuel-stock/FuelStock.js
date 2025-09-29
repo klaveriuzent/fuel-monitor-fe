@@ -83,9 +83,10 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
     <div
       style={{
         display: 'flex',
-        justifyContent: 'center', // ⬅️ bikin semua konten center
+        justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '8px',
+        marginLeft: '20px',
       }}
     >
       {/* 3 div di kiri */}
@@ -95,7 +96,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
           flexDirection: 'column',
           justifyContent: 'space-between',
           height: '160px',
-          width: '50px',
+          width: '40%',
           marginRight: '12px',
         }}
       >
@@ -130,6 +131,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
           position: 'relative',
           height: '160px',
           width: '40px',
+          marginRight: '12px',
           display: 'flex',
           flexDirection: 'column-reverse',
           justifyContent: 'space-between',
