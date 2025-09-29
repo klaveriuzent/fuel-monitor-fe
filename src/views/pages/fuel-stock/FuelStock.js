@@ -17,25 +17,38 @@ const generateData = () =>
   Array.from({ length: 20 }, (_, i) => {
     const tankVolume = 8000
     const tankHeight = 300
+
+    // Fuel minimal 5% dari kapasitas
+    const fuelLevel = Math.floor(tankVolume * (0.5 + Math.random() * 0.45)) // 50–95%
+
+    // Water tipis, biasanya < 10%
+    const waterLevel = Math.floor(Math.random() * (tankVolume * 0.1)) // 0–800 L
+
+    // Temperature logis
+    const temperature = (10 + Math.random() * 30).toFixed(1) // 10–40°C
+
+    // Status realistis: 80% online, 20% offline
+    const status = Math.random() < 0.8 ? 'Online' : 'Offline'
+
     return {
       id: `Tank ${String(i + 1).padStart(3, '0')}`,
-      type: ['Diesel', 'Pertalite', 'Pertamax'][i % 3],
+      type: ['Shell V-Power', 'Shell V-Power Nitro+', 'Shell Diesel'][i % 3],
       site: `Site ${String.fromCharCode(65 + (i % 5))}`,
-      status: ['Online', 'Offline'][i % 2],
-      fuelLevel: Math.floor(Math.random() * tankVolume),
-      waterLevel: Math.floor(Math.random() * 1000),
+      status,
+      fuelLevel,
+      waterLevel,
       capacity: tankVolume,
       tankHeight,
       tankVolume,
-      temperature: (Math.random() * 40 + 10).toFixed(1),
-      lastUpdated: '2025-09-0' + ((i % 3) + 1),
+      temperature,
+      lastUpdated: `2025-09-0${(i % 3) + 1}`,
     }
   })
 
 // Tank visual
 const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) => {
-  const fuelPercent = showFuel ? (fuelLevel / capacity) * 100 : 0
   const waterPercent = showWater ? (waterLevel / capacity) * 100 : 0
+  const fuelPercent = showFuel ? (fuelLevel / capacity) * 100 : 0
 
   const containerStyle = {
     position: 'relative',
@@ -45,34 +58,69 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
     borderRadius: '8px',
     overflow: 'hidden',
     background: '#f9f9f9',
-    display: 'flex',
-    flexDirection: 'column-reverse',
   }
 
-  const layerStyle = (height, color) => ({
-    width: '100%',
-    height: `${height}%`,
-    background: color,
-    transition: 'height 0.5s',
-  })
-
-  const markerStyle = (percent) => ({
+  // Water: tanpa animasi
+  const waterStyle = {
     position: 'absolute',
-    bottom: `${percent}%`,
-    left: 0,
+    bottom: 0,
     width: '100%',
-    height: '1px',
-    background: '#555',
-    opacity: 0.4,
-  })
+    height: `${waterPercent}%`,
+    background: '#3B82F6',
+  }
+
+  // Fuel: dengan animasi wave tipis
+  const fuelStyle = {
+    position: 'absolute',
+    bottom: `${waterPercent}%`, // start dari atas water
+    width: '200%',
+    height: `${fuelPercent}%`,
+    overflow: 'hidden',
+    animation: 'waveMove 10s linear infinite',
+  }
 
   return (
     <div style={containerStyle}>
-      <div style={markerStyle(25)}></div>
-      <div style={markerStyle(50)}></div>
-      <div style={markerStyle(75)}></div>
-      {showWater && <div style={layerStyle(waterPercent, '#3B82F6')}></div>}
-      {showFuel && <div style={layerStyle(fuelPercent, '#F59E0B')}></div>}
+      <style>
+        {`
+          @keyframes waveMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}
+      </style>
+
+      {/* Markers */}
+      {[25, 50, 75].map((s) => (
+        <div
+          key={s}
+          style={{
+            position: 'absolute',
+            bottom: `${s}%`,
+            left: 0,
+            width: '100%',
+            height: '1px',
+            background: '#555',
+            opacity: 0.3,
+          }}
+        />
+      ))}
+
+      {/* Water */}
+      {showWater && waterPercent > 0 && <div style={waterStyle}></div>}
+
+      {/* Fuel */}
+      {showFuel && fuelPercent > 0 && (
+        <div style={fuelStyle}>
+          <svg
+            viewBox="0 0 1200 120"
+            preserveAspectRatio="none"
+            style={{ width: '100%', height: '100%', fill: '#F59E0B', opacity: 0.7 }}
+          >
+            <path d="M0,30 C300,32 900,28 1200,30 L1200,120 L0,120 Z"></path>
+          </svg>
+        </div>
+      )}
     </div>
   )
 }
