@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Row, Col, Pagination, Badge } from 'antd'
-import { DashboardOutlined, FireOutlined, ExperimentOutlined } from '@ant-design/icons'
+import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import {
   CFormInput,
   CButton,
@@ -14,7 +14,7 @@ import {
 
 // Generator data dummy
 const generateData = () =>
-  Array.from({ length: 100 }, (_, i) => {
+  Array.from({ length: 20 }, (_, i) => {
     const tankVolume = 8000
     const tankHeight = 300
     return {
@@ -32,14 +32,10 @@ const generateData = () =>
     }
   })
 
-// Tank visual (sama seperti sebelumnya)
-const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
-  const fuelPercent = (fuelLevel / capacity) * 100
-  const waterPercent = (waterLevel / capacity) * 100
-  const topHeight = Math.max(fuelPercent, waterPercent)
-  const bottomHeight = Math.min(fuelPercent, waterPercent)
-  const topColor = fuelPercent >= waterPercent ? '#F59E0B' : '#3B82F6'
-  const bottomColor = fuelPercent >= waterPercent ? '#3B82F6' : '#F59E0B'
+// Tank visual
+const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) => {
+  const fuelPercent = showFuel ? (fuelLevel / capacity) * 100 : 0
+  const waterPercent = showWater ? (waterLevel / capacity) * 100 : 0
 
   const containerStyle = {
     position: 'relative',
@@ -52,12 +48,14 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
     display: 'flex',
     flexDirection: 'column-reverse',
   }
+
   const layerStyle = (height, color) => ({
     width: '100%',
     height: `${height}%`,
     background: color,
     transition: 'height 0.5s',
   })
+
   const markerStyle = (percent) => ({
     position: 'absolute',
     bottom: `${percent}%`,
@@ -73,14 +71,18 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
       <div style={markerStyle(25)}></div>
       <div style={markerStyle(50)}></div>
       <div style={markerStyle(75)}></div>
-      <div style={layerStyle(bottomHeight, bottomColor)}></div>
-      <div style={layerStyle(topHeight - bottomHeight, topColor)}></div>
+      {showWater && <div style={layerStyle(waterPercent, '#3B82F6')}></div>}
+      {showFuel && <div style={layerStyle(fuelPercent, '#F59E0B')}></div>}
     </div>
   )
 }
 
+// Komponen Tank dengan toggle Fuel & Water
 const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
+  const [showFuel, setShowFuel] = useState(true)
+  const [showWater, setShowWater] = useState(true)
   const scaleNumbers = [25, 50, 75]
+
   return (
     <div
       style={{
@@ -92,7 +94,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         marginBottom: '12px',
       }}
     >
-      {/* 3 div di kiri */}
+      {/* 3 div kiri */}
       <div
         style={{
           display: 'flex',
@@ -117,73 +119,94 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '4px',
           }}
         >
           {temperature} °C
         </div>
 
-        {/* Fuel */}
+        {/* Fuel toggle */}
         <div
+          onClick={() => setShowFuel((p) => !p)}
           style={{
             flex: 1,
-            background: '#f9f9f9',
+            background: showFuel ? '#fff3e0' : '#f9f9f9',
             border: '2px solid #ccc',
             borderRadius: '4px',
             marginBottom: '6px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            cursor: 'pointer',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-            }}
-          >
-            <FireOutlined style={{ fontSize: '1rem', marginTop: '4px' }} />
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, marginTop: '-4px' }}>Fuel</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <FireOutlined
+              style={{
+                fontSize: '1rem',
+                marginTop: '4px',
+                color: showFuel ? '#F59E0B' : '#aaa',
+              }}
+            />
+            <span
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                marginTop: '-4px',
+              }}
+            >
+              Fuel
+            </span>
           </div>
         </div>
 
-        {/* Water */}
+        {/* Water toggle */}
         <div
+          onClick={() => setShowWater((p) => !p)}
           style={{
             flex: 1,
-            background: '#f9f9f9',
+            background: showWater ? '#e0f2fe' : '#f9f9f9',
             border: '2px solid #ccc',
             borderRadius: '4px',
             marginBottom: '6px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            cursor: 'pointer',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-            }}
-          >
-            <ExperimentOutlined style={{ fontSize: '1rem', marginTop: '4px' }} />
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, marginTop: '-4px' }}>Water</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <ExperimentOutlined
+              style={{
+                fontSize: '1rem',
+                marginTop: '4px',
+                color: showWater ? '#3B82F6' : '#aaa',
+              }}
+            />
+            <span
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                marginTop: '-4px',
+              }}
+            >
+              Water
+            </span>
           </div>
         </div>
       </div>
 
       {/* Tank visual */}
       <div style={{ width: '45%' }}>
-        <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
+        <TankVisual
+          fuelLevel={fuelLevel}
+          waterLevel={waterLevel}
+          capacity={capacity}
+          showFuel={showFuel}
+          showWater={showWater}
+        />
       </div>
 
-      {/* Scale numbers */}
+      {/* Scale kanan */}
       <div
         style={{
           position: 'relative',
@@ -219,7 +242,7 @@ const FuelStock = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [filterSite, setFilterSite] = useState('')
-  const pageSize = 12
+  const pageSize = 8
 
   const filteredData = data.filter((item) => {
     const matchSearch = item.id.toLowerCase().includes(search.toLowerCase())
