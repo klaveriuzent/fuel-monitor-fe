@@ -86,7 +86,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
         justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '8px',
-        marginLeft: '20px',
+        marginLeft: '28px',
       }}
     >
       {/* 3 div di kiri */}
@@ -100,24 +100,53 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
           marginRight: '12px',
         }}
       >
-        {['#FBBF24', '#34D399', '#60A5FA'].map((color, i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              background: color,
-              borderRadius: '4px',
-              marginBottom: i < 2 ? '6px' : 0,
-              textAlign: 'center',
-              fontSize: '0.65rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            Div {i + 1}
-          </div>
-        ))}
+        <div
+          style={{
+            flex: 1,
+            background: '#f9f9f9',
+            border: '2px solid #ccc',
+            borderRadius: '4px',
+            marginBottom: '6px',
+            textAlign: 'center',
+            fontSize: '0.65rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          Div 1
+        </div>
+        <div
+          style={{
+            flex: 1,
+            background: '#f9f9f9',
+            border: '2px solid #ccc',
+            borderRadius: '4px',
+            marginBottom: '6px',
+            textAlign: 'center',
+            fontSize: '0.65rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          Div 2
+        </div>
+        <div
+          style={{
+            flex: 1,
+            background: '#f9f9f9',
+            border: '2px solid #ccc',
+            borderRadius: '4px',
+            textAlign: 'center',
+            fontSize: '0.65rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          Div 3
+        </div>
       </div>
 
       {/* Tank visual */}
