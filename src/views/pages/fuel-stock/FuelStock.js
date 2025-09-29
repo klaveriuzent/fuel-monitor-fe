@@ -81,13 +81,48 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
   const scaleNumbers = [25, 50, 75]
   return (
     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-      <div style={{ width: '85%' }}>
+      {/* 3 div di kiri, tinggi ikut tank, lebar fix */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          height: '160px', // ikut tinggi tank
+          width: '50px', // fix width
+          marginRight: '12px', // jarak ke tank visual (16px - 25%)
+        }}
+      >
+        {['#FBBF24', '#34D399', '#60A5FA'].map((color, i) => (
+          <div
+            key={i}
+            style={{
+              flex: 1, // bagi rata tinggi
+              background: color,
+              borderRadius: '4px',
+              marginBottom: i < 2 ? '6px' : 0, // jarak antar div
+              textAlign: 'center',
+              fontSize: '0.65rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            Div {i + 1}
+          </div>
+        ))}
+      </div>
+
+      {/* Tank visual */}
+      <div style={{ width: '65%' }}>
         <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
       </div>
+
+      {/* Scale numbers */}
       <div
         style={{
           position: 'relative',
           height: '160px',
+          width: '40px',
           display: 'flex',
           flexDirection: 'column-reverse',
           justifyContent: 'space-between',
