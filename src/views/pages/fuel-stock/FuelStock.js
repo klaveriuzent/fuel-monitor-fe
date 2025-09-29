@@ -80,26 +80,33 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
 const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
   const scaleNumbers = [25, 50, 75]
   return (
-    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-      {/* 3 div di kiri, tinggi ikut tank, lebar fix */}
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center', // ⬅️ bikin semua konten center
+        alignItems: 'flex-end',
+        gap: '8px',
+      }}
+    >
+      {/* 3 div di kiri */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          height: '160px', // ikut tinggi tank
-          width: '50px', // fix width
-          marginRight: '12px', // jarak ke tank visual (16px - 25%)
+          height: '160px',
+          width: '50px',
+          marginRight: '12px',
         }}
       >
         {['#FBBF24', '#34D399', '#60A5FA'].map((color, i) => (
           <div
             key={i}
             style={{
-              flex: 1, // bagi rata tinggi
+              flex: 1,
               background: color,
               borderRadius: '4px',
-              marginBottom: i < 2 ? '6px' : 0, // jarak antar div
+              marginBottom: i < 2 ? '6px' : 0,
               textAlign: 'center',
               fontSize: '0.65rem',
               display: 'flex',
@@ -113,7 +120,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
       </div>
 
       {/* Tank visual */}
-      <div style={{ width: '65%' }}>
+      <div style={{ width: '45%' }}>
         <TankVisual fuelLevel={fuelLevel} waterLevel={waterLevel} capacity={capacity} />
       </div>
 
