@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Row, Col, Pagination, Badge } from 'antd'
+import { DashboardOutlined, FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import {
   CFormInput,
   CButton,
@@ -26,6 +27,7 @@ const generateData = () =>
       capacity: tankVolume,
       tankHeight,
       tankVolume,
+      temperature: (Math.random() * 40 + 10).toFixed(1),
       lastUpdated: '2025-09-0' + ((i % 3) + 1),
     }
   })
@@ -77,7 +79,7 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity }) => {
   )
 }
 
-const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
+const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
   const scaleNumbers = [25, 50, 75]
   return (
     <div
@@ -87,6 +89,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
         alignItems: 'flex-end',
         gap: '8px',
         marginLeft: '28px',
+        marginBottom: '12px',
       }}
     >
       {/* 3 div di kiri */}
@@ -100,6 +103,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
           marginRight: '12px',
         }}
       >
+        {/* Temperature */}
         <div
           style={{
             flex: 1,
@@ -108,14 +112,18 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
             borderRadius: '4px',
             marginBottom: '6px',
             textAlign: 'center',
-            fontSize: '0.65rem',
+            fontSize: '0.8rem',
+            fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            gap: '4px',
           }}
         >
-          Div 1
+          {temperature} °C
         </div>
+
+        {/* Fuel */}
         <div
           style={{
             flex: 1,
@@ -123,29 +131,50 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity }) => {
             border: '2px solid #ccc',
             borderRadius: '4px',
             marginBottom: '6px',
-            textAlign: 'center',
-            fontSize: '0.65rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          Div 2
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+            }}
+          >
+            <FireOutlined style={{ fontSize: '1rem', marginTop: '4px' }} />
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, marginTop: '-4px' }}>Fuel</span>
+          </div>
         </div>
+
+        {/* Water */}
         <div
           style={{
             flex: 1,
             background: '#f9f9f9',
             border: '2px solid #ccc',
             borderRadius: '4px',
-            textAlign: 'center',
-            fontSize: '0.65rem',
+            marginBottom: '6px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          Div 3
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+            }}
+          >
+            <ExperimentOutlined style={{ fontSize: '1rem', marginTop: '4px' }} />
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, marginTop: '-4px' }}>Water</span>
+          </div>
         </div>
       </div>
 
@@ -280,6 +309,7 @@ const FuelStock = () => {
                     fuelLevel={item.fuelLevel}
                     waterLevel={item.waterLevel}
                     capacity={item.capacity}
+                    temperature={item.temperature}
                   />
 
                   <CCardText style={{ fontSize: '0.75rem', marginTop: '8px' }}>
