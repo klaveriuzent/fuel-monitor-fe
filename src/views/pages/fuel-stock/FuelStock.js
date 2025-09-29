@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, { useState } from 'react'
 import { Row, Col, Pagination, Badge } from 'antd'
 import {
@@ -191,10 +190,7 @@ const FuelStock = () => {
       <Row gutter={[16, 16]}>
         {paginatedData.map((item) => (
           <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
-            <Badge.Ribbon
-              text={item.status}
-              color={item.status === 'Online' ? 'green' : 'red'}
-            >
+            <Badge.Ribbon text={item.status} color={item.status === 'Online' ? 'green' : 'red'}>
               <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
                 <CCardBody style={{ padding: '12px' }}>
                   <CCardTitle style={{ fontSize: '1rem', marginBottom: '8px' }}>
