@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-import React, { useState } from 'react'
-import { Table } from 'antd'
+import React, { useState, useEffect } from 'react'
+import { Table, message } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -17,8 +17,10 @@ import {
   CCol,
   CFormCheck,
   CFormSelect,
+  CSpinner,
 } from '@coreui/react'
 import { siteColumns } from './interface'
+import axios from 'axios'
 
 const MasterSites = () => {
   const [visible, setVisible] = useState(false)
@@ -26,39 +28,83 @@ const MasterSites = () => {
   const [formData, setFormData] = useState({})
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [dataSource, setDataSource] = useState([])
+  const [loading, setLoading] = useState(false)
 
-  const dataSource = [
-    {
-      key: '1',
-      group: 'LSIP',
-      idSite: 'LSIP_LSIP_Pulo_Rambong_Estate',
-      area: 'Jakarta',
-      bacode: 'ABCD',
-      coordinates: '106.8272, -6.1751',
-      active: true,
-    },
-    {
-      key: '2',
-      group: 'LSIP',
-      idSite: 'LSIP_LSIP_Rambong_Sialang_Estate',
-      area: 'Bandung',
-      bacode: 'QWER',
-      coordinates: '107.6098, -6.9147',
-      active: false,
-    },
-  ]
+  const baseURL = import.meta.env.VITE_API_BASE_URL
 
-  // filter data
+  // Fetch data dari API
+  useEffect(() => {
+    const fetchSites = async () => {
+      setLoading(true)
+      try {
+        const response = await axios.get(`${baseURL}/site`)
+
+        // Transform data dari API ke format yang dibutuhkan tabel
+        const transformedData = response.data.data.map((item) => ({
+          key: item.id,
+          id: item.id,
+          group: item.company_name,
+          idSite: item.id_site,
+          area: item.location_area,
+          bacode: item.id_location, // sesuaikan dengan field yang sesuai
+          coordinates:
+            item.latitute && item.longitute ? `${item.longitute}, ${item.latitute}` : '-',
+          active: item.is_active === '1',
+          locationCity: item.location_city,
+          locationAddress: item.location_address,
+        }))
+
+        setDataSource(transformedData)
+        message.success('Data berhasil dimuat')
+      } catch (error) {
+        console.error('Error fetching sites:', error)
+        message.error('Gagal memuat data sites')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSites()
+  }, [baseURL])
+
+  // Function untuk refresh manual
+  const handleRefresh = async () => {
+    setLoading(true)
+    try {
+      const response = await axios.get(`${baseURL}/site`)
+
+      const transformedData = response.data.data.map((item) => ({
+        key: item.id,
+        id: item.id,
+        group: item.company_name,
+        idSite: item.id_site,
+        area: item.location_area,
+        bacode: item.id_location,
+        coordinates: item.latitute && item.longitute ? `${item.longitute}, ${item.latitute}` : '-',
+        active: item.is_active === '1',
+        locationCity: item.location_city,
+        locationAddress: item.location_address,
+      }))
+
+      setDataSource(transformedData)
+      message.success('Data berhasil di-refresh')
+    } catch (error) {
+      console.error('Error fetching sites:', error)
+      message.error('Gagal memuat data sites')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Filter data
   const filteredData = dataSource.filter((item) => {
     const matchesText =
       item.idSite.toLowerCase().includes(search.toLowerCase()) ||
-      item.bacode.toLowerCase().includes(search.toLowerCase())
+      item.bacode.toLowerCase().includes(search.toLowerCase()) ||
+      item.area.toLowerCase().includes(search.toLowerCase())
     const matchesStatus =
-      statusFilter === 'all'
-        ? true
-        : statusFilter === 'active'
-        ? item.active
-        : !item.active
+      statusFilter === 'all' ? true : statusFilter === 'active' ? item.active : !item.active
     return matchesText && matchesStatus
   })
 
@@ -69,6 +115,8 @@ const MasterSites = () => {
       area: record.area,
       coordinates: record.coordinates,
       active: record.active,
+      locationCity: record.locationCity,
+      locationAddress: record.locationAddress,
     })
     setVisible(true)
   }
@@ -83,7 +131,7 @@ const MasterSites = () => {
             </CButton>
           ),
         }
-      : col
+      : col,
   )
 
   const handleChange = (e) => {
@@ -92,6 +140,20 @@ const MasterSites = () => {
       ...prev,
       [name]: value,
     }))
+  }
+
+  const handleSave = async () => {
+    try {
+      // TODO: Implementasi API update
+      // await axios.put(`${baseURL}/site/${selectedRecord.id}`, formData)
+
+      message.success('Data berhasil diupdate')
+      setVisible(false)
+      handleRefresh() // Refresh data
+    } catch (error) {
+      console.error('Error updating site:', error)
+      message.error('Gagal mengupdate data')
+    }
   }
 
   return (
@@ -103,7 +165,7 @@ const MasterSites = () => {
           <CCol xs={12} sm={5} md={4}>
             <CFormInput
               type="text"
-              placeholder="Search by ID Site / BACode..."
+              placeholder="Search by ID Site / BACode / Area..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               size="sm"
@@ -136,6 +198,13 @@ const MasterSites = () => {
               Clear
             </CButton>
           </CCol>
+
+          {/* Refresh Button */}
+          <CCol xs="auto">
+            <CButton color="info" size="sm" onClick={handleRefresh} disabled={loading}>
+              {loading ? <CSpinner size="sm" /> : 'Refresh'}
+            </CButton>
+          </CCol>
         </CRow>
       </CCard>
 
@@ -145,7 +214,12 @@ const MasterSites = () => {
           <Table
             dataSource={filteredData}
             columns={columns}
-            pagination={true}
+            loading={loading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} sites`,
+            }}
             scroll={{ x: 'max-content' }}
             bordered
           />
@@ -191,6 +265,22 @@ const MasterSites = () => {
               </CCol>
             </CRow>
 
+            {/* Location City */}
+            <CRow className="mb-3">
+              <CFormLabel htmlFor="locationCity" className="col-sm-3 col-form-label">
+                City
+              </CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
+                  type="text"
+                  id="locationCity"
+                  name="locationCity"
+                  value={formData.locationCity || ''}
+                  onChange={handleChange}
+                />
+              </CCol>
+            </CRow>
+
             {/* Coordinates */}
             <CRow className="mb-3">
               <CFormLabel htmlFor="coordinates" className="col-sm-3 col-form-label">
@@ -203,6 +293,7 @@ const MasterSites = () => {
                   name="coordinates"
                   value={formData.coordinates || ''}
                   onChange={handleChange}
+                  placeholder="longitude, latitude"
                 />
               </CCol>
             </CRow>
@@ -237,7 +328,9 @@ const MasterSites = () => {
           <CButton color="secondary" onClick={() => setVisible(false)}>
             Close
           </CButton>
-          <CButton color="primary">Save changes</CButton>
+          <CButton color="primary" onClick={handleSave}>
+            Save changes
+          </CButton>
         </CModalFooter>
       </CModal>
     </>
