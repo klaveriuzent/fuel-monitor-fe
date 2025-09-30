@@ -13,22 +13,29 @@ import {
 } from '@coreui/react'
 
 // Generator data dummy
-// Generator data dummy
 const generateData = () =>
   Array.from({ length: 20 }, (_, i) => {
     const tankVolume = 8000
     const tankHeight = 300
 
-    const fuelLevel = Math.floor(tankVolume * (0.5 + Math.random() * 0.45)) // 50–95%
-    const waterLevel = Math.floor(Math.random() * (tankVolume * 0.1)) // 0–10%
-    const temperature = (10 + Math.random() * 30).toFixed(1)
-    const status = Math.random() < 0.8 ? 'Online' : 'Offline'
+    // Pastikan fuel + water tidak melebihi kapasitas
+    const waterLevel = Math.floor(Math.random() * (tankVolume * 0.05)) // 0-5% untuk water
+    const maxFuel = tankVolume - waterLevel
+    const fuelLevel = Math.floor(maxFuel * (0.3 + Math.random() * 0.65)) // 30-95% dari sisa kapasitas
 
-    // Random jam dan menit
+    const temperature = (15 + Math.random() * 25).toFixed(1) // 15-40°C lebih realistis
+    const status = Math.random() < 0.85 ? 'Online' : 'Offline'
+
+    // Generate tanggal dalam 7 hari terakhir
+    const daysAgo = Math.floor(Math.random() * 7)
+    const date = new Date('2025-09-30')
+    date.setDate(date.getDate() - daysAgo)
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+
     const hour = String(Math.floor(Math.random() * 24)).padStart(2, '0')
     const minute = String(Math.floor(Math.random() * 60)).padStart(2, '0')
-    const day = String((i % 3) + 1).padStart(2, '0')
-    const lastUpdated = `2025-09-${day} ${hour}:${minute}`
+    const lastUpdated = `2025-${month}-${day} ${hour}:${minute}`
 
     return {
       id: `Tank ${String(i + 1).padStart(3, '0')}`,
@@ -39,7 +46,6 @@ const generateData = () =>
       waterLevel,
       capacity: tankVolume,
       tankHeight,
-      tankVolume,
       temperature,
       lastUpdated,
     }
@@ -47,8 +53,16 @@ const generateData = () =>
 
 // Tank visual
 const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) => {
-  const waterPercent = showWater ? (waterLevel / capacity) * 100 : 0
-  const fuelPercent = showFuel ? (fuelLevel / capacity) * 100 : 0
+  // Hitung persentase individual
+  const waterPercent = (waterLevel / capacity) * 100
+  const fuelPercent = (fuelLevel / capacity) * 100
+
+  // Hitung tinggi visual berdasarkan toggle
+  const waterHeight = showWater ? waterPercent : 0
+  const fuelHeight = showFuel ? fuelPercent : 0
+
+  // Total tinggi yang ditampilkan
+  const totalHeight = waterHeight + fuelHeight
 
   const containerStyle = {
     position: 'relative',
@@ -60,23 +74,22 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
     background: '#f9f9f9',
   }
 
-  // Water: tanpa animasi
   const waterStyle = {
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    height: `${waterPercent}%`,
+    height: `${waterHeight}%`,
     background: '#3B82F6',
+    transition: 'height 0.5s ease',
   }
 
-  // Fuel: dengan animasi wave tipis
   const fuelStyle = {
     position: 'absolute',
-    bottom: `${waterPercent}%`, // start dari atas water
-    width: '200%',
-    height: `${fuelPercent}%`,
+    bottom: `${waterHeight}%`,
+    width: '100%',
+    height: `${fuelHeight}%`,
     overflow: 'hidden',
-    animation: 'waveMove 10s linear infinite',
+    transition: 'height 0.5s ease, bottom 0.5s ease',
   }
 
   return (
@@ -90,8 +103,7 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
         `}
       </style>
 
-      {/* Markers */}
-      {[25, 50, 75].map((s) => (
+      {[0, 25, 50, 75, 100].map((s) => (
         <div
           key={s}
           style={{
@@ -101,24 +113,23 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
             width: '100%',
             height: '1px',
             background: '#555',
-            opacity: 0.3,
+            opacity: s === 0 || s === 100 ? 0.5 : 0.3,
           }}
         />
       ))}
 
-      {/* Water */}
-      {showWater && waterPercent > 0 && <div style={waterStyle}></div>}
+      {showWater && waterHeight > 0 && <div style={{ ...waterStyle, zIndex: 1 }}></div>}
 
-      {/* Fuel */}
-      {showFuel && fuelPercent > 0 && (
+      {showFuel && fuelHeight > 0 && (
         <div style={fuelStyle}>
-          <svg
-            viewBox="0 0 1200 120"
-            preserveAspectRatio="none"
-            style={{ width: '100%', height: '100%', fill: '#F59E0B', opacity: 0.7 }}
-          >
-            <path d="M0,30 C300,32 900,28 1200,30 L1200,120 L0,120 Z"></path>
-          </svg>
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: '#F59E0B',
+              opacity: 0.8,
+            }}
+          />
         </div>
       )}
     </div>
@@ -129,7 +140,7 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
 const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
   const [showFuel, setShowFuel] = useState(true)
   const [showWater, setShowWater] = useState(true)
-  const scaleNumbers = [25, 50, 75]
+  const scaleNumbers = [0, 25, 50, 75, 100]
 
   return (
     <div
@@ -137,23 +148,21 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'flex-end',
-        gap: '8px',
-        marginLeft: '32px',
+        gap: '6px',
+        marginLeft: '8px',
       }}
     >
-      {/* 3 div kiri */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           height: '160px',
-          width: '40%',
+          width: '60px',
           paddingTop: '4px',
-          marginRight: '12px',
+          marginRight: '6px',
         }}
       >
-        {/* Temperature */}
         <div
           style={{
             flex: 1,
@@ -162,17 +171,17 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
             borderRadius: '4px',
             marginBottom: '6px',
             textAlign: 'center',
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            padding: '2px',
           }}
         >
           {temperature} °C
         </div>
 
-        {/* Fuel toggle */}
         <div
           onClick={() => setShowFuel((p) => !p)}
           style={{
@@ -191,15 +200,15 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
             <FireOutlined
               style={{
                 fontSize: '1rem',
-                marginTop: '4px',
+                marginTop: '2px',
                 color: showFuel ? '#F59E0B' : '#aaa',
               }}
             />
             <span
               style={{
-                fontSize: '0.8rem',
+                fontSize: '0.7rem',
                 fontWeight: 600,
-                marginTop: '-4px',
+                marginTop: '-2px',
               }}
             >
               Fuel
@@ -207,7 +216,6 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
           </div>
         </div>
 
-        {/* Water toggle */}
         <div
           onClick={() => setShowWater((p) => !p)}
           style={{
@@ -226,15 +234,15 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
             <ExperimentOutlined
               style={{
                 fontSize: '1rem',
-                marginTop: '4px',
+                marginTop: '2px',
                 color: showWater ? '#3B82F6' : '#aaa',
               }}
             />
             <span
               style={{
-                fontSize: '0.8rem',
+                fontSize: '0.7rem',
                 fontWeight: 600,
-                marginTop: '-4px',
+                marginTop: '-2px',
               }}
             >
               Water
@@ -243,8 +251,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         </div>
       </div>
 
-      {/* Tank visual */}
-      <div style={{ width: '45%' }}>
+      <div style={{ width: 'calc(100% - 120px)', minWidth: '100px' }}>
         <TankVisual
           fuelLevel={fuelLevel}
           waterLevel={waterLevel}
@@ -254,27 +261,28 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         />
       </div>
 
-      {/* Scale kanan */}
       <div
         style={{
           position: 'relative',
           height: '160px',
           width: '40px',
-          marginRight: '12px',
+          marginLeft: '4px',
           display: 'flex',
-          flexDirection: 'column-reverse',
+          flexDirection: 'column',
           justifyContent: 'space-between',
-          fontSize: '0.7rem',
+          fontSize: '0.65rem',
           color: '#333',
+          fontWeight: '600',
         }}
       >
-        {scaleNumbers.map((s) => (
+        {scaleNumbers.reverse().map((s) => (
           <div
             key={s}
             style={{
-              position: 'absolute',
-              bottom: `${s}%`,
-              transform: 'translateY(50%)',
+              height: '0px',
+              display: 'flex',
+              alignItems: 'center',
+              lineHeight: '1',
             }}
           >
             {s}%
@@ -373,7 +381,7 @@ const FuelStock = () => {
                     <b>Type:</b> {item.type} <br />
                     <b>Site:</b> {item.site} <br />
                     <b>Tank Height:</b> {item.tankHeight} cm <br />
-                    <b>Tank Volume:</b> {item.tankVolume} L
+                    <b>Capacity:</b> {item.capacity} L
                   </CCardText>
 
                   <TankWithScale
