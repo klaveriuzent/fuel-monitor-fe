@@ -140,7 +140,7 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
 const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
   const [showFuel, setShowFuel] = useState(true)
   const [showWater, setShowWater] = useState(true)
-  const scaleNumbers = [0, 25, 50, 75, 100]
+  const scaleNumbers = [25, 50, 75]
 
   return (
     <div
@@ -149,7 +149,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '6px',
-        marginLeft: '8px',
+        marginLeft: '18px',
       }}
     >
       <div
@@ -269,10 +269,12 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
           marginLeft: '4px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
+          justifyContent: 'space-around',
           fontSize: '0.65rem',
           color: '#333',
           fontWeight: '600',
+          paddingTop: '20px',
+          paddingBottom: '20px',
         }}
       >
         {scaleNumbers.reverse().map((s) => (
