@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Row, Col, Pagination, Badge } from 'antd'
+import { Row, Col, Pagination, Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import {
   CFormInput,
@@ -63,76 +63,91 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
 
   // Total tinggi yang ditampilkan
   const totalHeight = waterHeight + fuelHeight
+  const totalLiters = fuelLevel + waterLevel
 
-  const containerStyle = {
-    position: 'relative',
-    width: '100%',
-    height: '160px',
-    border: '2px solid #ccc',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    background: '#f9f9f9',
-  }
-
-  const waterStyle = {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    height: `${waterHeight}%`,
-    background: '#3B82F6',
-    transition: 'height 0.6s ease-in-out',
-    zIndex: 1,
-  }
-
-  const fuelStyle = {
-    position: 'absolute',
-    bottom: `${waterHeight}%`,
-    width: '100%',
-    height: `${fuelHeight}%`,
-    overflow: 'hidden',
-    transition: 'height 0.6s ease-in-out, bottom 0.6s ease-in-out',
-    zIndex: 2,
-  }
+  const tooltipContent = (
+    <div>
+      <div style={{ fontWeight: 'bold' }}>
+        Total: {totalLiters.toLocaleString()}L / {capacity.toLocaleString()}L (
+        {totalHeight.toFixed(1)}%)
+      </div>
+      {showFuel && (
+        <div style={{ marginTop: '4px' }}>
+          ⛽ Fuel: {fuelLevel.toLocaleString()}L ({fuelPercent.toFixed(1)}%)
+        </div>
+      )}
+      {showWater && (
+        <div>
+          💧 Water: {waterLevel.toLocaleString()}L ({waterPercent.toFixed(1)}%)
+        </div>
+      )}
+    </div>
+  )
 
   return (
-    <div style={containerStyle}>
-      <style>
-        {`
-          @keyframes waveMove {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-        `}
-      </style>
+    <Tooltip title={tooltipContent} placement="top">
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '160px',
+          border: '2px solid #ccc',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          background: '#f9f9f9',
+          cursor: 'pointer',
+        }}
+      >
+        {[0, 25, 50, 75, 100].map((s) => (
+          <div
+            key={s}
+            style={{
+              position: 'absolute',
+              bottom: `${s}%`,
+              left: 0,
+              width: '100%',
+              height: '1px',
+              background: '#555',
+              opacity: s === 0 || s === 100 ? 0.5 : 0.3,
+            }}
+          />
+        ))}
 
-      {[0, 25, 50, 75, 100].map((s) => (
         <div
-          key={s}
           style={{
             position: 'absolute',
-            bottom: `${s}%`,
-            left: 0,
+            bottom: 0,
             width: '100%',
-            height: '1px',
-            background: '#555',
-            opacity: s === 0 || s === 100 ? 0.5 : 0.3,
+            height: `${waterHeight}%`,
+            background: 'linear-gradient(to top, #3B82F6, #60A5FA)',
+            opacity: 0.7,
+            transition: 'height 0.6s ease-in-out',
+            zIndex: 1,
           }}
-        />
-      ))}
+        ></div>
 
-      <div style={waterStyle}></div>
-
-      <div style={fuelStyle}>
         <div
           style={{
+            position: 'absolute',
+            bottom: `${waterHeight}%`,
             width: '100%',
-            height: '100%',
-            background: '#F59E0B',
-            opacity: 0.8,
+            height: `${fuelHeight}%`,
+            overflow: 'hidden',
+            transition: 'height 0.6s ease-in-out, bottom 0.6s ease-in-out',
+            zIndex: 2,
           }}
-        />
+        >
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(to top, #F59E0B, #FBBF24)',
+              opacity: 0.7,
+            }}
+          />
+        </div>
       </div>
-    </div>
+    </Tooltip>
   )
 }
 
@@ -149,7 +164,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '6px',
-        marginLeft: '8px',
+        marginLeft: '18px',
       }}
     >
       <div
