@@ -1,12 +1,5 @@
 /* eslint-disable prettier/prettier */
-
 export const siteColumns = [
-  {
-    title: 'Action',
-    key: 'action',
-    width: 80,
-    // render override nanti di MasterSites
-  },
   {
     title: 'Site Info',
     dataIndex: 'idSite',
@@ -68,6 +61,32 @@ export const siteColumns = [
         {/* Coordinates */}
         <div style={{ fontSize: '11px', fontStyle: 'italic', marginTop: 2 }}>
           {record.coordinates}
+        </div>
+
+        {/* Created & Updated Info */}
+        <div style={{ fontSize: '11px', marginTop: 6, color: '#666' }}>
+          Created: {record.dateCreate || '-'} by {record.userCreate || '-'}
+        </div>
+        <div style={{ fontSize: '11px', color: '#666' }}>
+          Updated: {record.updateDate || '-'} by {record.updateBy || '-'}
+        </div>
+
+        {/* Tombol Edit */}
+        <div style={{ marginTop: 10 }}>
+          <button
+            style={{
+              backgroundColor: '#0d6efd',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 4,
+              padding: '4px 8px',
+              fontSize: '12px',
+              cursor: 'pointer',
+            }}
+            onClick={() => record.onEdit(record)}
+          >
+            Edit
+          </button>
         </div>
       </div>
     ),

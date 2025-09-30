@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-import React, { useState, useEffect } from 'react'
-import { Table, message } from 'antd'
+import React, { useState, useEffect, useCallback } from 'react'
+import { Table } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -22,6 +22,23 @@ import {
 import { siteColumns } from './interface'
 import axios from 'axios'
 
+const mapSiteData = (item) => ({
+  key: item.id,
+  id: item.id,
+  idSite: item.id_site,
+  bacode: item.id_location,
+  area: item.location_area,
+  group: item.company_name,
+  coordinates: item.latitute && item.longitute ? `${item.longitute}, ${item.latitute}` : '-',
+  active: item.is_active === '1',
+  locationCity: item.location_city,
+  locationAddress: item.location_address,
+  userCreate: item.user_create,
+  dateCreate: item.date_create,
+  updateBy: item.update_by,
+  updateDate: item.update_date,
+})
+
 const MasterSites = () => {
   const [visible, setVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
@@ -33,76 +50,29 @@ const MasterSites = () => {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
-  // Fetch data dari API
-  useEffect(() => {
-    const fetchSites = async () => {
-      setLoading(true)
-      try {
-        const response = await axios.get(`${baseURL}/site`)
-
-        // Transform data dari API ke format yang dibutuhkan tabel
-        const transformedData = response.data.data.map((item) => ({
-          key: item.id,
-          id: item.id,
-          group: item.company_name,
-          idSite: item.id_site,
-          area: item.location_area,
-          bacode: item.id_location, // sesuaikan dengan field yang sesuai
-          coordinates:
-            item.latitute && item.longitute ? `${item.longitute}, ${item.latitute}` : '-',
-          active: item.is_active === '1',
-          locationCity: item.location_city,
-          locationAddress: item.location_address,
-        }))
-
-        setDataSource(transformedData)
-        message.success('Data berhasil dimuat')
-      } catch (error) {
-        console.error('Error fetching sites:', error)
-        message.error('Gagal memuat data sites')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchSites()
-  }, [baseURL])
-
-  // Function untuk refresh manual
-  const handleRefresh = async () => {
+  const fetchSites = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await axios.get(`${baseURL}/site`)
-
-      const transformedData = response.data.data.map((item) => ({
-        key: item.id,
-        id: item.id,
-        group: item.company_name,
-        idSite: item.id_site,
-        area: item.location_area,
-        bacode: item.id_location,
-        coordinates: item.latitute && item.longitute ? `${item.longitute}, ${item.latitute}` : '-',
-        active: item.is_active === '1',
-        locationCity: item.location_city,
-        locationAddress: item.location_address,
-      }))
-
+      const { data } = await axios.get(`${baseURL}/site`)
+      const transformedData = data.data.map(mapSiteData)
       setDataSource(transformedData)
-      message.success('Data berhasil di-refresh')
     } catch (error) {
       console.error('Error fetching sites:', error)
-      message.error('Gagal memuat data sites')
     } finally {
       setLoading(false)
     }
-  }
+  }, [baseURL])
 
-  // Filter data
+  useEffect(() => {
+    fetchSites()
+  }, [fetchSites])
+
   const filteredData = dataSource.filter((item) => {
+    const query = search.toLowerCase()
     const matchesText =
-      item.idSite.toLowerCase().includes(search.toLowerCase()) ||
-      item.bacode.toLowerCase().includes(search.toLowerCase()) ||
-      item.area.toLowerCase().includes(search.toLowerCase())
+      item.idSite.toLowerCase().includes(query) ||
+      item.bacode.toLowerCase().includes(query) ||
+      item.area.toLowerCase().includes(query)
     const matchesStatus =
       statusFilter === 'all' ? true : statusFilter === 'active' ? item.active : !item.active
     return matchesText && matchesStatus
@@ -110,49 +80,28 @@ const MasterSites = () => {
 
   const handleEdit = (record) => {
     setSelectedRecord(record)
-    setFormData({
-      bacode: record.bacode,
-      area: record.area,
-      coordinates: record.coordinates,
-      active: record.active,
-      locationCity: record.locationCity,
-      locationAddress: record.locationAddress,
-    })
+    setFormData(record)
     setVisible(true)
   }
 
-  const columns = siteColumns.map((col) =>
-    col.key === 'action'
-      ? {
-          ...col,
-          render: (_, record) => (
-            <CButton color="primary" size="sm" onClick={() => handleEdit(record)}>
-              Edit
-            </CButton>
-          ),
-        }
-      : col,
-  )
+  const columns = siteColumns.map((col) => ({
+    ...col,
+    render: (text, record) =>
+      col.render ? col.render(text, { ...record, onEdit: handleEdit }) : text,
+  }))
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSave = async () => {
     try {
-      // TODO: Implementasi API update
       // await axios.put(`${baseURL}/site/${selectedRecord.id}`, formData)
-
-      message.success('Data berhasil diupdate')
       setVisible(false)
-      handleRefresh() // Refresh data
+      fetchSites()
     } catch (error) {
       console.error('Error updating site:', error)
-      message.error('Gagal mengupdate data')
     }
   }
 
@@ -161,7 +110,6 @@ const MasterSites = () => {
       {/* Filter Section */}
       <CCard className="mb-3 p-3">
         <CRow className="align-items-center g-2">
-          {/* Search */}
           <CCol xs={12} sm={5} md={4}>
             <CFormInput
               type="text"
@@ -172,7 +120,6 @@ const MasterSites = () => {
             />
           </CCol>
 
-          {/* Status Filter */}
           <CCol xs={12} sm={4} md={3}>
             <CFormSelect
               size="sm"
@@ -185,7 +132,6 @@ const MasterSites = () => {
             </CFormSelect>
           </CCol>
 
-          {/* Clear Button */}
           <CCol xs="auto">
             <CButton
               color="secondary"
@@ -199,9 +145,8 @@ const MasterSites = () => {
             </CButton>
           </CCol>
 
-          {/* Refresh Button */}
           <CCol xs="auto">
-            <CButton color="info" size="sm" onClick={handleRefresh} disabled={loading}>
+            <CButton color="info" size="sm" onClick={fetchSites} disabled={loading}>
               {loading ? <CSpinner size="sm" /> : 'Refresh'}
             </CButton>
           </CCol>
@@ -233,70 +178,28 @@ const MasterSites = () => {
         </CModalHeader>
         <CModalBody>
           <CForm>
-            {/* BACode */}
-            <CRow className="mb-3">
-              <CFormLabel htmlFor="bacode" className="col-sm-3 col-form-label">
-                BACode
-              </CFormLabel>
-              <CCol sm={9}>
-                <CFormInput
-                  type="text"
-                  id="bacode"
-                  name="bacode"
-                  value={formData.bacode || ''}
-                  onChange={handleChange}
-                />
-              </CCol>
-            </CRow>
-
-            {/* Area */}
-            <CRow className="mb-3">
-              <CFormLabel htmlFor="area" className="col-sm-3 col-form-label">
-                Area
-              </CFormLabel>
-              <CCol sm={9}>
-                <CFormInput
-                  type="text"
-                  id="area"
-                  name="area"
-                  value={formData.area || ''}
-                  onChange={handleChange}
-                />
-              </CCol>
-            </CRow>
-
-            {/* Location City */}
-            <CRow className="mb-3">
-              <CFormLabel htmlFor="locationCity" className="col-sm-3 col-form-label">
-                City
-              </CFormLabel>
-              <CCol sm={9}>
-                <CFormInput
-                  type="text"
-                  id="locationCity"
-                  name="locationCity"
-                  value={formData.locationCity || ''}
-                  onChange={handleChange}
-                />
-              </CCol>
-            </CRow>
-
-            {/* Coordinates */}
-            <CRow className="mb-3">
-              <CFormLabel htmlFor="coordinates" className="col-sm-3 col-form-label">
-                Coordinates
-              </CFormLabel>
-              <CCol sm={9}>
-                <CFormInput
-                  type="text"
-                  id="coordinates"
-                  name="coordinates"
-                  value={formData.coordinates || ''}
-                  onChange={handleChange}
-                  placeholder="longitude, latitude"
-                />
-              </CCol>
-            </CRow>
+            {[
+              { label: 'BACode', name: 'bacode' },
+              { label: 'Area', name: 'area' },
+              { label: 'City', name: 'locationCity' },
+              { label: 'Coordinates', name: 'coordinates', placeholder: 'longitude, latitude' },
+            ].map((field) => (
+              <CRow className="mb-3" key={field.name}>
+                <CFormLabel htmlFor={field.name} className="col-sm-3 col-form-label">
+                  {field.label}
+                </CFormLabel>
+                <CCol sm={9}>
+                  <CFormInput
+                    type="text"
+                    id={field.name}
+                    name={field.name}
+                    value={formData[field.name] || ''}
+                    placeholder={field.placeholder || ''}
+                    onChange={handleChange}
+                  />
+                </CCol>
+              </CRow>
+            ))}
 
             {/* Status */}
             <CRow className="mb-3">
@@ -306,7 +209,6 @@ const MasterSites = () => {
                   type="radio"
                   name="active"
                   id="statusActive"
-                  value="true"
                   label="Active"
                   checked={formData.active === true || formData.active === 'true'}
                   onChange={() => setFormData((prev) => ({ ...prev, active: true }))}
@@ -315,7 +217,6 @@ const MasterSites = () => {
                   type="radio"
                   name="active"
                   id="statusOffline"
-                  value="false"
                   label="Offline"
                   checked={formData.active === false || formData.active === 'false'}
                   onChange={() => setFormData((prev) => ({ ...prev, active: false }))}
