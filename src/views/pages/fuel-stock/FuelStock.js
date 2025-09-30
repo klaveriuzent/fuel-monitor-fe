@@ -13,22 +13,22 @@ import {
 } from '@coreui/react'
 
 // Generator data dummy
+// Generator data dummy
 const generateData = () =>
   Array.from({ length: 20 }, (_, i) => {
     const tankVolume = 8000
     const tankHeight = 300
 
-    // Fuel minimal 5% dari kapasitas
     const fuelLevel = Math.floor(tankVolume * (0.5 + Math.random() * 0.45)) // 50–95%
-
-    // Water tipis, biasanya < 10%
-    const waterLevel = Math.floor(Math.random() * (tankVolume * 0.1)) // 0–800 L
-
-    // Temperature logis
-    const temperature = (10 + Math.random() * 30).toFixed(1) // 10–40°C
-
-    // Status realistis: 80% online, 20% offline
+    const waterLevel = Math.floor(Math.random() * (tankVolume * 0.1)) // 0–10%
+    const temperature = (10 + Math.random() * 30).toFixed(1)
     const status = Math.random() < 0.8 ? 'Online' : 'Offline'
+
+    // Random jam dan menit
+    const hour = String(Math.floor(Math.random() * 24)).padStart(2, '0')
+    const minute = String(Math.floor(Math.random() * 60)).padStart(2, '0')
+    const day = String((i % 3) + 1).padStart(2, '0')
+    const lastUpdated = `2025-09-${day} ${hour}:${minute}`
 
     return {
       id: `Tank ${String(i + 1).padStart(3, '0')}`,
@@ -41,7 +41,7 @@ const generateData = () =>
       tankHeight,
       tankVolume,
       temperature,
-      lastUpdated: `2025-09-0${(i % 3) + 1}`,
+      lastUpdated,
     }
   })
 
@@ -138,8 +138,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '8px',
-        marginLeft: '28px',
-        marginBottom: '12px',
+        marginLeft: '32px',
       }}
     >
       {/* 3 div kiri */}
@@ -150,6 +149,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
           justifyContent: 'space-between',
           height: '160px',
           width: '40%',
+          paddingTop: '4px',
           marginRight: '12px',
         }}
       >
@@ -383,7 +383,7 @@ const FuelStock = () => {
                     temperature={item.temperature}
                   />
 
-                  <CCardText style={{ fontSize: '0.75rem', marginTop: '8px' }}>
+                  <CCardText style={{ fontSize: '0.75rem', marginTop: '18px' }}>
                     <b>Fuel:</b> {item.fuelLevel} L<br />
                     <b>Water:</b> {item.waterLevel} L<br />
                     <small>Last Updated: {item.lastUpdated}</small>
