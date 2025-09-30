@@ -80,7 +80,8 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
     width: '100%',
     height: `${waterHeight}%`,
     background: '#3B82F6',
-    transition: 'height 0.5s ease',
+    transition: 'height 0.6s ease-in-out',
+    zIndex: 1,
   }
 
   const fuelStyle = {
@@ -89,7 +90,8 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
     width: '100%',
     height: `${fuelHeight}%`,
     overflow: 'hidden',
-    transition: 'height 0.5s ease, bottom 0.5s ease',
+    transition: 'height 0.6s ease-in-out, bottom 0.6s ease-in-out',
+    zIndex: 2,
   }
 
   return (
@@ -118,20 +120,18 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
         />
       ))}
 
-      {showWater && waterHeight > 0 && <div style={{ ...waterStyle, zIndex: 1 }}></div>}
+      <div style={waterStyle}></div>
 
-      {showFuel && fuelHeight > 0 && (
-        <div style={fuelStyle}>
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: '#F59E0B',
-              opacity: 0.8,
-            }}
-          />
-        </div>
-      )}
+      <div style={fuelStyle}>
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            background: '#F59E0B',
+            opacity: 0.8,
+          }}
+        />
+      </div>
     </div>
   )
 }
@@ -149,7 +149,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         justifyContent: 'center',
         alignItems: 'flex-end',
         gap: '6px',
-        marginLeft: '18px',
+        marginLeft: '8px',
       }}
     >
       <div
