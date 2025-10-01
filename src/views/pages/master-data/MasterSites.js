@@ -185,51 +185,57 @@ const MasterSites = () => {
         {paginatedData.map((site) => (
           <Col key={site.key} xs={24} sm={12} md={8} lg={6}>
             <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
-              <CCardBody 
-  style={{ 
-    padding: '16px', 
-    display: 'flex', 
-    flexDirection: 'column', 
-    justifyContent: 'space-between', 
-    height: '100%' 
-  }}
->
-  {/* Status */}
-<div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-  <Tag 
-    color={site.active ? 'green' : 'red'} 
-    style={{ marginBottom: '8px', width: 'auto' }} // width auto biar rapat
-  >
-    {site.active ? 'Active' : 'Offline'}
-  </Tag>
-</div>
+              <CCardBody
+                style={{
+                  padding: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  height: '100%',
+                }}
+              >
+                {/* Status */}
+                <div style={{ marginBottom: '6px' }}>
+                  <Tag
+                    color={site.active ? 'green' : 'red'}
+                    style={{ display: 'inline-block', fontSize: '0.7rem', padding: '0 6px' }}
+                  >
+                    {site.active ? 'Active' : 'Offline'}
+                  </Tag>
+                </div>
 
-  {/* Konten utama */}
-  <div>
-    <CCardTitle style={{ fontSize: '0.8rem', marginBottom: '8px' }}>
-      {site.idSite} - {site.bacode}
-    </CCardTitle>
+                {/* Konten utama */}
+                <div>
+                  <CCardTitle style={{ fontSize: '0.8rem', marginBottom: '6px' }}>
+                    {site.idSite} - {site.bacode}
+                  </CCardTitle>
 
-    <CCardText style={{ fontSize: '0.85rem' }}>
-      <b>Area:</b> {site.area} <br />
-      <b>City:</b> {site.locationCity} <br />
-      <b>Address:</b> {site.locationAddress} <br />
-      <b>Coordinates:</b> {site.coordinates}
-    </CCardText>
+                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
+                    <b>Area:</b> {site.area}
+                  </CCardText>
+                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
+                    <b>City:</b> {site.locationCity}
+                  </CCardText>
+                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
+                    <b>Address:</b> {site.locationAddress}
+                  </CCardText>
+                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
+                    <b>Coordinates:</b> {site.coordinates}
+                  </CCardText>
 
-    <CCardText style={{ fontSize: '0.75rem', marginTop: '12px' }}>
-      <b>Created:</b> {site.userCreate} ({site.dateCreate}) <br />
-      <b>Updated:</b> {site.updateBy} ({site.updateDate})
-    </CCardText>
-  </div>
+                  <CCardText style={{ fontSize: '0.7rem', color: '#666', marginTop: '8px' }}>
+                    <b>Created:</b> {site.userCreate} ({site.dateCreate}) <br />
+                    <b>Updated:</b> {site.updateBy} ({site.updateDate})
+                  </CCardText>
+                </div>
 
-  {/* Tombol selalu di bawah */}
-  <div style={{ marginTop: 'auto', textAlign: 'right' }}>
-    <CButton size="sm" color="primary" onClick={() => handleEdit(site)}>
-      Edit
-    </CButton>
-  </div>
-</CCardBody>
+                {/* Tombol konsisten di bawah */}
+                <div style={{ marginTop: 'auto', textAlign: 'right' }}>
+                  <CButton size="sm" color="primary" onClick={() => handleEdit(site)}>
+                    Edit
+                  </CButton>
+                </div>
+              </CCardBody>
             </CCard>
           </Col>
         ))}
