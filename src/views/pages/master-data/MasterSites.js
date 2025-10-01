@@ -1,26 +1,27 @@
 /* eslint-disable prettier/prettier */
 import React, { useState, useEffect, useCallback } from 'react'
-import { useSelector } from 'react-redux' // ⬅️ EDIT: import redux state
-import { Table } from 'antd'
+import { useSelector } from 'react-redux'
+import { Row, Col, Pagination, Tag } from 'antd'
 import {
   CCard,
   CCardBody,
+  CCardTitle,
+  CCardText,
+  CFormInput,
+  CFormSelect,
+  CButton,
+  CRow,
+  CCol,
+  CSpinner,
   CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CButton,
   CForm,
-  CFormInput,
   CFormLabel,
-  CRow,
-  CCol,
   CFormCheck,
-  CFormSelect,
-  CSpinner,
 } from '@coreui/react'
-import { siteColumns } from './interface'
 import axios from 'axios'
 
 const mapSiteData = (item) => ({
@@ -48,21 +49,20 @@ const MasterSites = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const [dataSource, setDataSource] = useState([])
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
-
-  // ⬅️ EDIT: ambil filterGroup dari redux (diubah dari header)
   const filterGroup = useSelector((state) => state.filterGroup)
+
+  const pageSize = 8
 
   const fetchSites = useCallback(async () => {
     setLoading(true)
     try {
-      // ⬅️ EDIT: bikin URL sesuai filterGroup
       let url = `${baseURL}/site`
       if (filterGroup && filterGroup !== 'all') {
         url += `?id_location=${filterGroup}`
       }
-
       const { data } = await axios.get(url)
       const transformedData = data.data.map(mapSiteData)
       setDataSource(transformedData)
@@ -71,7 +71,7 @@ const MasterSites = () => {
     } finally {
       setLoading(false)
     }
-  }, [baseURL, filterGroup]) // ⬅️ EDIT: tambahin filterGroup ke dependency
+  }, [baseURL, filterGroup])
 
   useEffect(() => {
     fetchSites()
@@ -88,17 +88,14 @@ const MasterSites = () => {
     return matchesText && matchesStatus
   })
 
+  const startIndex = (currentPage - 1) * pageSize
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize)
+
   const handleEdit = (record) => {
     setSelectedRecord(record)
     setFormData(record)
     setVisible(true)
   }
-
-  const columns = siteColumns.map((col) => ({
-    ...col,
-    render: (text, record) =>
-      col.render ? col.render(text, { ...record, onEdit: handleEdit }) : text,
-  }))
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -116,7 +113,7 @@ const MasterSites = () => {
   }
 
   return (
-    <>
+    <div>
       {/* Filter Section */}
       <CCard className="mb-3 p-3">
         <CRow className="align-items-center g-2">
@@ -125,7 +122,10 @@ const MasterSites = () => {
               type="text"
               placeholder="Search by ID Site / BACode / Area..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setCurrentPage(1)
+              }}
               size="sm"
             />
           </CCol>
@@ -134,7 +134,10 @@ const MasterSites = () => {
             <CFormSelect
               size="sm"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value)
+                setCurrentPage(1)
+              }}
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -149,6 +152,7 @@ const MasterSites = () => {
               onClick={() => {
                 setSearch('')
                 setStatusFilter('all')
+                setCurrentPage(1)
               }}
             >
               Clear
@@ -163,23 +167,97 @@ const MasterSites = () => {
         </CRow>
       </CCard>
 
-      {/* Table Section */}
-      <CCard className="mb-4">
-        <CCardBody>
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            loading={loading}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showTotal: (total) => `Total ${total} sites`,
-            }}
-            scroll={{ x: 'max-content' }}
-            bordered
-          />
-        </CCardBody>
-      </CCard>
+      {/* Pagination Top */}
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={filteredData.length}
+          onChange={(page) => setCurrentPage(page)}
+          showSizeChanger={false}
+          responsive
+          simple
+        />
+      </div>
+
+      {/* Cards Section */}
+      <Row gutter={[16, 16]}>
+        {paginatedData.map((site) => (
+          <Col key={site.key} xs={24} sm={12} md={8} lg={6}>
+            <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
+              <CCardBody 
+  style={{ 
+    padding: '16px', 
+    display: 'flex', 
+    flexDirection: 'column', 
+    justifyContent: 'space-between', 
+    height: '100%' 
+  }}
+>
+  {/* Status */}
+<div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+  <Tag 
+    color={site.active ? 'green' : 'red'} 
+    style={{ marginBottom: '8px', width: 'auto' }} // width auto biar rapat
+  >
+    {site.active ? 'Active' : 'Offline'}
+  </Tag>
+</div>
+
+  {/* Konten utama */}
+  <div>
+    <CCardTitle style={{ fontSize: '0.8rem', marginBottom: '8px' }}>
+      {site.idSite} - {site.bacode}
+    </CCardTitle>
+
+    <CCardText style={{ fontSize: '0.85rem' }}>
+      <b>Area:</b> {site.area} <br />
+      <b>City:</b> {site.locationCity} <br />
+      <b>Address:</b> {site.locationAddress} <br />
+      <b>Coordinates:</b> {site.coordinates}
+    </CCardText>
+
+    <CCardText style={{ fontSize: '0.75rem', marginTop: '12px' }}>
+      <b>Created:</b> {site.userCreate} ({site.dateCreate}) <br />
+      <b>Updated:</b> {site.updateBy} ({site.updateDate})
+    </CCardText>
+  </div>
+
+  {/* Tombol selalu di bawah */}
+  <div style={{ marginTop: 'auto', textAlign: 'right' }}>
+    <CButton size="sm" color="primary" onClick={() => handleEdit(site)}>
+      Edit
+    </CButton>
+  </div>
+</CCardBody>
+            </CCard>
+          </Col>
+        ))}
+
+        {loading && (
+          <Col xs={24} className="text-center">
+            <CSpinner />
+          </Col>
+        )}
+        {!loading && filteredData.length === 0 && (
+          <Col xs={24} className="text-center">
+            <p>No sites found</p>
+          </Col>
+        )}
+      </Row>
+
+      {/* Pagination Bottom */}
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={filteredData.length}
+          onChange={(page) => setCurrentPage(page)}
+          showSizeChanger={false}
+          responsive
+          simple
+        />
+      </div>
 
       {/* Modal Edit */}
       <CModal visible={visible} onClose={() => setVisible(false)} alignment="center">
@@ -211,7 +289,6 @@ const MasterSites = () => {
               </CRow>
             ))}
 
-            {/* Status */}
             <CRow className="mb-3">
               <CFormLabel className="col-sm-3 col-form-label">Status</CFormLabel>
               <CCol sm={9}>
@@ -244,7 +321,7 @@ const MasterSites = () => {
           </CButton>
         </CModalFooter>
       </CModal>
-    </>
+    </div>
   )
 }
 
