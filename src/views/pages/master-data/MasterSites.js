@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import React, { useState, useEffect, useCallback } from 'react'
+import { useSelector } from 'react-redux' // ⬅️ EDIT: import redux state
 import { Table } from 'antd'
 import {
   CCard,
@@ -50,10 +51,19 @@ const MasterSites = () => {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
+  // ⬅️ EDIT: ambil filterGroup dari redux (diubah dari header)
+  const filterGroup = useSelector((state) => state.filterGroup)
+
   const fetchSites = useCallback(async () => {
     setLoading(true)
     try {
-      const { data } = await axios.get(`${baseURL}/site`)
+      // ⬅️ EDIT: bikin URL sesuai filterGroup
+      let url = `${baseURL}/site`
+      if (filterGroup && filterGroup !== 'all') {
+        url += `?id_location=${filterGroup}`
+      }
+
+      const { data } = await axios.get(url)
       const transformedData = data.data.map(mapSiteData)
       setDataSource(transformedData)
     } catch (error) {
@@ -61,7 +71,7 @@ const MasterSites = () => {
     } finally {
       setLoading(false)
     }
-  }, [baseURL])
+  }, [baseURL, filterGroup]) // ⬅️ EDIT: tambahin filterGroup ke dependency
 
   useEffect(() => {
     fetchSites()

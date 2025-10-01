@@ -53,11 +53,15 @@ const AppHeader = () => {
       </CContainer>
       <div className="w-100 d-flex justify-content-between align-items-center px-4 py-2 border-top">
         {/* START - Select di kiri */}
-        <CFormSelect size="sm" style={{ maxWidth: '160px' }} aria-label="Select example">
-          <option>Select Group</option>
-          <option value="0">All</option>
-          <option value="1">LSIP</option>
-          <option value="2">SIMP</option>
+        <CFormSelect
+          size="sm"
+          style={{ maxWidth: '160px' }}
+          aria-label="Select Group"
+          onChange={(e) => dispatch({ type: 'set', filterGroup: e.target.value })}
+        >
+          <option value="all">All</option>
+          <option value="1">SIMP</option>
+          <option value="2">LSIP</option>
         </CFormSelect>
 
         {/* END - Date & Time di kanan */}
