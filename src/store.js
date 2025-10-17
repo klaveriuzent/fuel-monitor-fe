@@ -10,6 +10,10 @@ const changeState = (state = initialState, { type, ...rest }) => {
   switch (type) {
     case 'set':
       return { ...state, ...rest }
+
+    case 'force-refresh-filter-group':
+      return { ...state, filterGroup: rest.filterGroup }
+
     default:
       return state
   }

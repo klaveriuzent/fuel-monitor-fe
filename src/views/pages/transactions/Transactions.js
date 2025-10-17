@@ -1,20 +1,13 @@
 /* eslint-disable prettier/prettier */
 import React, { useState } from 'react'
 import { Table } from 'antd'
-import {
-  CCard,
-  CCardBody,
-  CButton,
-  CFormInput,
-  CFormSelect,
-  CRow,
-  CCol,
-} from '@coreui/react'
+import { CCard, CCardBody, CButton } from '@coreui/react'
 import { transactionColumns } from './interface.transactions'
+import AppSubHeader from '../../../components/subheader/AppSubHeader'
 
 const Transactions = () => {
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [siteFilter, setSiteFilter] = useState('all')
 
   const dataSource = [
     {
@@ -52,17 +45,19 @@ const Transactions = () => {
     },
   ]
 
-  // filter data
+  // filter data berdasarkan search dan site
   const filteredData = dataSource.filter((item) => {
     const matchesText =
       item.site.toLowerCase().includes(search.toLowerCase()) ||
       item.product.toLowerCase().includes(search.toLowerCase()) ||
       item.asset.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus =
-      statusFilter === 'all'
+
+    const matchesSite =
+      siteFilter === 'all'
         ? true
-        : item.status.toLowerCase() === statusFilter.toLowerCase()
-    return matchesText && matchesStatus
+        : item.site.toLowerCase() === siteFilter.toLowerCase()
+
+    return matchesText && matchesSite
   })
 
   const columns = transactionColumns.map((col) =>
@@ -81,48 +76,12 @@ const Transactions = () => {
   return (
     <>
       {/* Filter Section */}
-      <CCard className="mb-3 p-3">
-        <CRow className="align-items-center g-2">
-          {/* Search */}
-          <CCol xs={12} sm={5} md={4}>
-            <CFormInput
-              type="text"
-              placeholder="Search by Site / Product / Asset..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              size="sm"
-            />
-          </CCol>
-
-          {/* Status Filter */}
-          <CCol xs={12} sm={4} md={3}>
-            <CFormSelect
-              size="sm"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="Completed">Completed</option>
-              <option value="Pending">Pending</option>
-              <option value="Cancelled">Cancelled</option>
-            </CFormSelect>
-          </CCol>
-
-          {/* Clear Button */}
-          <CCol xs="auto">
-            <CButton
-              color="secondary"
-              size="sm"
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('all')
-              }}
-            >
-              Clear
-            </CButton>
-          </CCol>
-        </CRow>
-      </CCard>
+      <AppSubHeader
+        search={search}
+        setSearch={setSearch}
+        siteFilter={siteFilter}
+        setSiteFilter={setSiteFilter}
+      />
 
       {/* Table Section */}
       <CCard className="mb-4">
