@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
@@ -10,35 +10,39 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter }) => {
 
     const baseURL = import.meta.env.VITE_API_BASE_URL
 
-    useEffect(() => {
-        const fetchSites = async () => {
-            try {
-                // Buat URL dasar
-                let url = `${baseURL}/site`
+    const fetchSites = useCallback(async () => {
+        try {
+            // Buat URL dasar
+            let url = `${baseURL}/site`
 
-                // Tambahkan query hanya kalau filterGroup valid dan bukan 'all'
-                if (filterGroup && filterGroup !== 'all') {
-                    url = `${baseURL}/site?id_location=${filterGroup}`
-                }
+            // Tambahkan query hanya kalau filterGroup valid dan bukan 'all'
+            if (filterGroup && filterGroup !== 'all') {
+                url = `${baseURL}/site?id_location=${filterGroup}`
+            }
 
-                console.log('🔄 Fetching from:', url)
-                const res = await axios.get(url)
+            console.log('🔄 Fetching from:', url)
+            const res = await axios.get(url)
 
-                // Pastikan format respon sesuai
-                if (res.data && Array.isArray(res.data.data)) {
-                    setSiteOptions(res.data.data)
-                } else {
-                    setSiteOptions([])
-                }
-            } catch (error) {
-                console.error('❌ Error fetching site list:', error)
+            // Pastikan format respon sesuai
+            if (res.data && Array.isArray(res.data.data)) {
+                setSiteOptions(res.data.data)
+            } else {
                 setSiteOptions([])
             }
+        } catch (error) {
+            console.error('❌ Error fetching site list:', error)
+            setSiteOptions([])
         }
+    }, [baseURL, filterGroup])
 
+    useEffect(() => {
         // Selalu panggil walau filterGroup = 'all'
         fetchSites()
-    }, [filterGroup, baseURL])
+    }, [fetchSites])
+
+    useEffect(() => {
+        setSiteFilter('all')
+    }, [filterGroup, setSiteFilter])
 
     return (
         <CCard className="mb-3 p-3">
