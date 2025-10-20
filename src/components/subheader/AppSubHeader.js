@@ -1,10 +1,20 @@
 /* eslint-disable prettier/prettier */
 import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { DatePicker } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
 
-const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter }) => {
+const { RangePicker } = DatePicker
+
+const AppSubHeader = ({
+    search,
+    setSearch,
+    siteFilter,
+    setSiteFilter,
+    dateRange,
+    setDateRange,
+}) => {
     const filterGroup = useSelector((state) => state.filterGroup)
     const [siteOptions, setSiteOptions] = useState([])
 
@@ -63,6 +73,17 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter }) => {
                     </CFormSelect>
                 </CCol>
 
+                {/* Date Range Filter */}
+                <CCol xs={12} sm={5} md={4} lg={3}>
+                    <RangePicker
+                        size="small"
+                        value={dateRange}
+                        onChange={(dates) => setDateRange(dates)}
+                        style={{ width: '100%' }}
+                        allowClear
+                    />
+                </CCol>
+
                 {/* Search */}
                 <CCol xs={12} sm={5} md={4}>
                     <CFormInput
@@ -82,6 +103,7 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter }) => {
                         onClick={() => {
                             setSearch('')
                             setSiteFilter('all')
+                            setDateRange(null)
                         }}
                     >
                         Clear
