@@ -8,6 +8,7 @@ import AppSubHeader from '../../../components/subheader/AppSubHeader'
 const Transactions = () => {
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
+  const [dateRange, setDateRange] = useState(null)
 
   const dataSource = [
     {
@@ -45,7 +46,7 @@ const Transactions = () => {
     },
   ]
 
-  // filter data berdasarkan search dan site
+  // filter data berdasarkan search, site, dan rentang tanggal
   const filteredData = dataSource.filter((item) => {
     const matchesText =
       item.site.toLowerCase().includes(search.toLowerCase()) ||
@@ -57,7 +58,17 @@ const Transactions = () => {
         ? true
         : item.site.toLowerCase() === siteFilter.toLowerCase()
 
-    return matchesText && matchesSite
+    const matchesDate = dateRange && dateRange[0] && dateRange[1]
+      ? (() => {
+          const [start, end] = dateRange
+          const itemDate = new Date(item.date)
+          const startDate = start.startOf('day').toDate()
+          const endDate = end.endOf('day').toDate()
+          return itemDate >= startDate && itemDate <= endDate
+        })()
+      : true
+
+    return matchesText && matchesSite && matchesDate
   })
 
   const columns = transactionColumns.map((col) =>
@@ -81,6 +92,8 @@ const Transactions = () => {
         setSearch={setSearch}
         siteFilter={siteFilter}
         setSiteFilter={setSiteFilter}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
       />
 
       {/* Table Section */}
