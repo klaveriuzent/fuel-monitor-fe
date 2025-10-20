@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import React, { useCallback, useEffect, useState } from 'react'
+import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 import { DatePicker } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
@@ -22,18 +23,13 @@ const AppSubHeader = ({
 
     const fetchSites = useCallback(async () => {
         try {
-            // Buat URL dasar
             let url = `${baseURL}/site`
-
-            // Tambahkan query hanya kalau filterGroup valid dan bukan 'all'
             if (filterGroup && filterGroup !== 'all') {
                 url = `${baseURL}/site?id_location=${filterGroup}`
             }
 
             console.log('🔄 Fetching from:', url)
             const res = await axios.get(url)
-
-            // Pastikan format respon sesuai
             if (res.data && Array.isArray(res.data.data)) {
                 setSiteOptions(res.data.data)
             } else {
@@ -46,9 +42,12 @@ const AppSubHeader = ({
     }, [baseURL, filterGroup])
 
     useEffect(() => {
-        // Selalu panggil walau filterGroup = 'all'
         fetchSites()
     }, [fetchSites])
+
+    useEffect(() => {
+        setDateRange([dayjs(), null])
+    }, [setDateRange])
 
     useEffect(() => {
         setSiteFilter('all')
@@ -76,11 +75,12 @@ const AppSubHeader = ({
                 {/* Date Range Filter */}
                 <CCol xs={12} sm={5} md={4} lg={3}>
                     <RangePicker
-                        size="small"
+                        size="medium"
                         value={dateRange}
                         onChange={(dates) => setDateRange(dates)}
                         style={{ width: '100%' }}
                         allowClear
+                        disabledDate={(current) => current && current > dayjs().endOf('day').add(1, 'year')} // optional batas 1 tahun ke depan
                     />
                 </CCol>
 
@@ -103,7 +103,7 @@ const AppSubHeader = ({
                         onClick={() => {
                             setSearch('')
                             setSiteFilter('all')
-                            setDateRange(null)
+                            setDateRange([dayjs(), null])
                         }}
                     >
                         Clear
