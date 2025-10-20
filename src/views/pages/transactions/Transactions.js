@@ -13,60 +13,61 @@ const Transactions = () => {
   const dataSource = [
     {
       key: '1',
-      site: 'Jakarta',
-      product: 'BIO SOLAR',
-      date: '2025-09-01',
-      asset: 'Truck A1',
-      status: 'Completed',
-      volume: 1200,
-      kilometer: 350,
-      stock: 5000,
+      id_site: 'SIMP_SIMP_Balam_Estate',
+      id_product: '1',
+      waktu: '2025-09-30T08:36:48Z',
+      id_nozzle: '1',
+      status: 'online',
+      volume: 19.0,
+      odometer: 342466,
+      volume_minyak_atg: 3474.47,
     },
     {
       key: '2',
-      site: 'Bandung',
-      product: 'BIO SOLAR',
-      date: '2025-09-02',
-      asset: 'Truck B2',
-      status: 'Pending',
-      volume: 800,
-      kilometer: 220,
-      stock: 4200,
+      id_site: 'SIMP_SIMP_Talang_Estate',
+      id_product: '2',
+      waktu: '2025-09-30T09:12:22Z',
+      id_nozzle: '2',
+      status: 'online',
+      volume: 25.5,
+      odometer: 285012,
+      volume_minyak_atg: 4210.3,
     },
     {
       key: '3',
-      site: 'Medan',
-      product: 'BIO SOLAR',
-      date: '2025-09-03',
-      asset: 'Truck C3',
-      status: 'Cancelled',
-      volume: 600,
-      kilometer: 150,
-      stock: 3900,
+      id_site: 'SIMP_SIMP_Sawit_Estate',
+      id_product: '1',
+      waktu: '2025-09-30T10:45:10Z',
+      id_nozzle: '3',
+      status: 'offline',
+      volume: 17.8,
+      odometer: 312879,
+      volume_minyak_atg: 2890.75,
     },
   ]
 
   // filter data berdasarkan search, site, dan rentang tanggal
   const filteredData = dataSource.filter((item) => {
     const matchesText =
-      item.site.toLowerCase().includes(search.toLowerCase()) ||
-      item.product.toLowerCase().includes(search.toLowerCase()) ||
-      item.asset.toLowerCase().includes(search.toLowerCase())
+      item.id_site.toLowerCase().includes(search.toLowerCase()) ||
+      item.id_product.toLowerCase().includes(search.toLowerCase()) ||
+      item.id_nozzle.toLowerCase().includes(search.toLowerCase())
 
     const matchesSite =
       siteFilter === 'all'
         ? true
-        : item.site.toLowerCase() === siteFilter.toLowerCase()
+        : item.id_site.toLowerCase() === siteFilter.toLowerCase()
 
-    const matchesDate = dateRange && dateRange[0] && dateRange[1]
-      ? (() => {
+    const matchesDate =
+      dateRange && dateRange[0] && dateRange[1]
+        ? (() => {
           const [start, end] = dateRange
-          const itemDate = new Date(item.date)
+          const itemDate = new Date(item.waktu)
           const startDate = start.startOf('day').toDate()
           const endDate = end.endOf('day').toDate()
           return itemDate >= startDate && itemDate <= endDate
         })()
-      : true
+        : true
 
     return matchesText && matchesSite && matchesDate
   })
@@ -74,19 +75,18 @@ const Transactions = () => {
   const columns = transactionColumns.map((col) =>
     col.key === 'action'
       ? {
-          ...col,
-          render: (_, record) => (
-            <CButton color="primary" size="sm">
-              View
-            </CButton>
-          ),
-        }
+        ...col,
+        render: (_, record) => (
+          <CButton color="primary" size="sm">
+            View
+          </CButton>
+        ),
+      }
       : col
   )
 
   return (
     <>
-      {/* Filter Section */}
       <AppSubHeader
         search={search}
         setSearch={setSearch}
@@ -96,7 +96,6 @@ const Transactions = () => {
         setDateRange={setDateRange}
       />
 
-      {/* Table Section */}
       <CCard className="mb-4">
         <CCardBody>
           <Table

@@ -80,7 +80,10 @@ const AppSubHeader = ({
                         onChange={(dates) => setDateRange(dates)}
                         style={{ width: '100%' }}
                         allowClear
-                        disabledDate={(current) => current && current > dayjs().endOf('day').add(1, 'year')} // optional batas 1 tahun ke depan
+                        format="DD MMM YYYY"
+                        disabledDate={(current) =>
+                            current && current > dayjs().endOf('day').add(1, 'year')
+                        }
                     />
                 </CCol>
 
