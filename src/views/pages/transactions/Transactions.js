@@ -108,15 +108,23 @@ const Transactions = () => {
 
       <CCard className="mb-4">
         <CCardBody>
+          <div className="d-flex justify-content-end mb-3">
+            <CButton color="success" size="sm" className="text-white">
+              <i className="bi bi-file-earmark-excel me-1"></i>
+              Export to Excel
+            </CButton>
+          </div>
+
           <Table
             dataSource={filteredData}
             columns={columns}
-            pagination={true}
+            pagination
             scroll={{ x: 'max-content' }}
             bordered
           />
         </CCardBody>
       </CCard>
+
     </>
   )
 }

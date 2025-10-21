@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-
 const formatDateTime = (value) =>
   new Date(value).toLocaleString('id-ID', {
     day: '2-digit',

@@ -57,7 +57,7 @@ const AppSubHeader = ({
         <CCard className="mb-3 p-3">
             <CRow className="align-items-center g-2">
                 {/* Site Filter */}
-                <CCol xs={12} sm={5} md={4}>
+                <CCol xs={12} sm={5} md={3}>
                     <CFormSelect
                         size="sm"
                         value={siteFilter}
@@ -73,7 +73,7 @@ const AppSubHeader = ({
                 </CCol>
 
                 {/* Date Range Filter */}
-                <CCol xs={12} sm={5} md={4} lg={3}>
+                <CCol xs={12} sm={5} md={3}>
                     <RangePicker
                         size="medium"
                         value={dateRange}
@@ -88,7 +88,7 @@ const AppSubHeader = ({
                 </CCol>
 
                 {/* Search */}
-                <CCol xs={12} sm={5} md={4}>
+                <CCol xs={12} sm={5} md={5}>
                     <CFormInput
                         type="text"
                         placeholder="Search by Site / Product / Asset..."
