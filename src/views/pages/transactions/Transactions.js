@@ -73,9 +73,7 @@ const Transactions = () => {
         )
 
         const matchesSite =
-          siteFilter === 'all'
-            ? true
-            : item.id_site.toLowerCase() === siteFilter.toLowerCase()
+          siteFilter === 'all' ? true : item.id_site.toLowerCase() === siteFilter.toLowerCase()
 
         const matchesDate =
           dateRange && dateRange[0] && dateRange[1]
