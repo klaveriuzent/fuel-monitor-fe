@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, { useState } from 'react'
 import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
@@ -64,19 +63,17 @@ const Transactions = () => {
     )
 
     const matchesSite =
-      siteFilter === 'all'
-        ? true
-        : item.id_site.toLowerCase() === siteFilter.toLowerCase()
+      siteFilter === 'all' ? true : item.id_site.toLowerCase() === siteFilter.toLowerCase()
 
     const matchesDate =
       dateRange && dateRange[0] && dateRange[1]
         ? (() => {
-          const [start, end] = dateRange
-          const itemDate = new Date(item.waktu)
-          const startDate = start.startOf('day').toDate()
-          const endDate = end.endOf('day').toDate()
-          return itemDate >= startDate && itemDate <= endDate
-        })()
+            const [start, end] = dateRange
+            const itemDate = new Date(item.waktu)
+            const startDate = start.startOf('day').toDate()
+            const endDate = end.endOf('day').toDate()
+            return itemDate >= startDate && itemDate <= endDate
+          })()
         : true
 
     return matchesText && matchesSite && matchesDate
@@ -85,14 +82,14 @@ const Transactions = () => {
   const columns = transactionColumns.map((col) =>
     col.key === 'action'
       ? {
-        ...col,
-        render: (_, record) => (
-          <CButton color="primary" size="sm">
-            View
-          </CButton>
-        ),
-      }
-      : col
+          ...col,
+          render: (_, record) => (
+            <CButton color="primary" size="sm">
+              View
+            </CButton>
+          ),
+        }
+      : col,
   )
 
   return (
@@ -124,7 +121,6 @@ const Transactions = () => {
           />
         </CCardBody>
       </CCard>
-
     </>
   )
 }
