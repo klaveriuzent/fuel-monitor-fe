@@ -22,26 +22,26 @@ export const formatCurrency = (value) =>
   }).format(Number(value))
 
 export const transactionColumns = [
-  { title: 'ID Card', dataIndex: 'id_card', key: 'id_card' },
-  {
-    title: 'Odometer',
-    dataIndex: 'odometer',
-    key: 'odometer',
-    render: (value) => Number(value).toLocaleString('id-ID'),
-  },
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },
+  {
+    title: 'Date',
+    dataIndex: 'waktu',
+    key: 'waktu',
+    render: formatDateTime,
+  },
+  { title: 'ID Card', dataIndex: 'id_card', key: 'id_card' },
+  { title: 'Username', dataIndex: 'username', key: 'username' },
   {
     title: 'License Plate',
     dataIndex: 'plat',
     key: 'plat',
     render: (value) => value || '-',
   },
-  { title: 'Username', dataIndex: 'username', key: 'username' },
   {
-    title: 'Date',
-    dataIndex: 'waktu',
-    key: 'waktu',
-    render: formatDateTime,
+    title: 'Odometer',
+    dataIndex: 'odometer',
+    key: 'odometer',
+    render: (value) => Number(value).toLocaleString('id-ID'),
   },
   {
     title: 'Volume (L)',

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import dayjs from 'dayjs'
 import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
@@ -94,12 +95,12 @@ const Transactions = () => {
 
   const handleExport = () => {
     const exportData = filteredData.map((item) => ({
-      'ID Card': item.id_card,
-      Odometer: Number(item.odometer).toLocaleString('id-ID'),
       Site: item.id_site,
-      'License Plate': item.plat || '-',
-      Username: item.username,
       Date: formatDateTime(item.waktu),
+      'ID Card': item.id_card,
+      Username: item.username,
+      'License Plate': item.plat || '-',
+      Odometer: Number(item.odometer).toLocaleString('id-ID'),
       'Volume (L)': formatDecimal(item.volume),
       'Unit Price (IDR)': formatCurrency(item.unit_price),
     }))
@@ -111,7 +112,15 @@ const Transactions = () => {
     const blob = new Blob([excelBuffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
     })
-    const fileName = `transactions_${new Date().toISOString().split('T')[0]}.xlsx`
+    const [startDate, endDate] = dateRange || []
+    const formattedStart = startDate ? dayjs(startDate).format('YYYYMMDD') : 'all'
+    let formattedEnd = endDate ? dayjs(endDate).format('YYYYMMDD') : 'all'
+
+    if (formattedEnd === 'all' && formattedStart !== 'all') {
+      formattedEnd = formattedStart
+    }
+
+    const fileName = `transactions-${formattedStart}-${formattedEnd}.xlsx`
     saveAs(blob, fileName)
   }
 
