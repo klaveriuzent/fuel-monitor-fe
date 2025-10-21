@@ -13,45 +13,55 @@ const Transactions = () => {
   const dataSource = [
     {
       key: '1',
-      id_site: 'SIMP_SIMP_Balam_Estate',
-      id_product: '1',
-      waktu: '2025-09-30T08:36:48Z',
-      id_nozzle: '1',
-      status: 'online',
-      volume: 19.0,
+      id_card: 'ID-001',
       odometer: 342466,
-      volume_minyak_atg: 3474.47,
+      id_site: 'SIMP_SIMP_Balam_Estate',
+      plat: 'BM 1234 XX',
+      username: 'operator-01',
+      waktu: '2025-09-30T08:36:48Z',
+      volume: 19.0,
+      unit_price: 6800,
     },
     {
       key: '2',
+      id_card: 'ID-002',
+      odometer: 298754,
       id_site: 'SIMP_SIMP_Talang_Estate',
-      id_product: '2',
-      waktu: '2025-09-30T09:12:22Z',
-      id_nozzle: '2',
-      status: 'online',
-      volume: 25.5,
-      odometer: 285012,
-      volume_minyak_atg: 4210.3,
+      plat: 'BM 5678 YY',
+      username: 'operator-02',
+      waktu: '2025-10-02T11:22:15Z',
+      volume: 22.5,
+      unit_price: 6900,
     },
     {
       key: '3',
+      id_card: 'ID-003',
+      odometer: 365102,
       id_site: 'SIMP_SIMP_Sawit_Estate',
-      id_product: '1',
-      waktu: '2025-09-30T10:45:10Z',
-      id_nozzle: '3',
-      status: 'offline',
-      volume: 17.8,
-      odometer: 312879,
-      volume_minyak_atg: 2890.75,
+      plat: '',
+      username: 'operator-03',
+      waktu: '2025-10-05T06:54:03Z',
+      volume: 17.25,
+      unit_price: 7000,
     },
   ]
 
   // filter data berdasarkan search, site, dan rentang tanggal
   const filteredData = dataSource.filter((item) => {
-    const matchesText =
-      item.id_site.toLowerCase().includes(search.toLowerCase()) ||
-      item.id_product.toLowerCase().includes(search.toLowerCase()) ||
-      item.id_nozzle.toLowerCase().includes(search.toLowerCase())
+    const matchesText = [
+      item.id_site,
+      item.id_card,
+      item.plat,
+      item.username,
+      item.odometer,
+      item.volume,
+      item.unit_price,
+    ].some(
+      (field) =>
+        field !== undefined &&
+        field !== null &&
+        field.toString().toLowerCase().includes(search.toLowerCase()),
+    )
 
     const matchesSite =
       siteFilter === 'all'
