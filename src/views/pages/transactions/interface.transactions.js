@@ -1,4 +1,4 @@
-const formatDateTime = (value) =>
+export const formatDateTime = (value) =>
   new Date(value).toLocaleString('id-ID', {
     day: '2-digit',
     month: 'short',
@@ -7,13 +7,13 @@ const formatDateTime = (value) =>
     minute: '2-digit',
   })
 
-const formatDecimal = (value) =>
+export const formatDecimal = (value) =>
   Number(value).toLocaleString('id-ID', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })
 
-const formatCurrency = (value) =>
+export const formatCurrency = (value) =>
   new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -55,5 +55,4 @@ export const transactionColumns = [
     key: 'unit_price',
     render: formatCurrency,
   },
-  { title: 'Action', key: 'action', width: 100 },
 ]
