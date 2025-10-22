@@ -1,3 +1,5 @@
+import { Tag } from 'antd'
+
 export const formatDateTime = (value) =>
   new Date(value).toLocaleString('id-ID', {
     day: '2-digit',
@@ -34,38 +36,68 @@ export const fuelReceiveColumns = [
     title: 'Document',
     key: 'document',
     render: (_, record) => (
-      <div className="d-flex flex-column">
-        <span>No. Invoice: {record?.no_invoice ?? '-'}</span>
-        <span>No. DO: {record?.no_do ?? '-'}</span>
+      <div className="d-flex flex-column gap-2 p-2">
+        <span>
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. Invoice</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>{record?.no_invoice ?? '-'}</span>
+        </span>
+        <span>
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. DO</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>{record?.no_do ?? '-'}</span>
+        </span>
+        <span>
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Volume Permintaan (L)</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>
+            {formatValueOrDash(record?.volume_permintaan, formatDecimal)}
+          </span>
+        </span>
       </div>
     ),
   },
   {
-    title: 'Volume Permintaan (L)',
-    dataIndex: 'volume_permintaan',
-    key: 'volume_permintaan',
-    render: formatDecimal,
+    title: 'Pengiriman',
+    key: 'pengiriman',
+    render: (_, record) => (
+      <div className="d-flex flex-column gap-2 p-2">
+        <span>
+          <strong>{record?.pengirim ?? '-'}</strong>
+        </span>
+        <span>
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>License Plate</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>{record?.no_kendaraan ?? '-'}</span>
+        </span>
+        <span>
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Driver</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>{record?.nama_pengemudi ?? '-'}</span>
+        </span>
+      </div>
+    ),
   },
-  { title: 'License Plate', dataIndex: 'no_kendaraan', key: 'no_kendaraan' },
-  { title: 'Pengirim', dataIndex: 'pengirim', key: 'pengirim' },
-  { title: 'Driver', dataIndex: 'nama_pengemudi', key: 'nama_pengemudi' },
   {
     title: 'Total',
     key: 'total_information',
     render: (_, record) => (
-      <div className="d-flex flex-column">
+      <div className="d-flex flex-column gap-2 p-2">
         <span>
-          Total Delivery (L): {formatValueOrDash(record?.total_deliv, formatDecimal)}
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Delivery (L)</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>
+            {formatValueOrDash(record?.total_deliv, formatDecimal)}
+          </span>
         </span>
         <span>
-          Total Permintaan (L): {formatValueOrDash(record?.total_permintaan, formatDecimal)}
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Permintaan (L)</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>
+            {formatValueOrDash(record?.total_permintaan, formatDecimal)}
+          </span>
         </span>
         <span>
-          Total Selisih (L): {formatValueOrDash(record?.total_selisih, formatDecimal)}
-        </span>
-        <span>
-          Persentase Selisih:{' '}
-          {formatValueOrDash(record?.persentase_selisih, formatPercentage)}
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Selisih (L)</Tag>{' '}
+          <span style={{ fontSize: '12px', color: '#555' }}>
+            {formatValueOrDash(record?.total_selisih, formatDecimal)}{' '}
+            <small style={{ color: '#777' }}>
+              ({formatValueOrDash(record?.persentase_selisih, formatPercentage)})
+            </small>
+          </span>
         </span>
       </div>
     ),
