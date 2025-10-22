@@ -1,127 +1,125 @@
 /* eslint-disable prettier/prettier */
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
+import dayjs from 'dayjs'
+import isBetween from 'dayjs/plugin/isBetween'
 import { Table } from 'antd'
-import {
-  CCard,
-  CCardBody,
-  CButton,
-  CFormInput,
-  CFormSelect,
-  CRow,
-  CCol,
-} from '@coreui/react'
+import { CCard, CCardBody } from '@coreui/react'
+import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import { fuelReceiveColumns } from './interface.fuelreceive'
+
+dayjs.extend(isBetween)
 
 const FuelReceive = () => {
   const [search, setSearch] = useState('')
-  const [filterDate, setFilterDate] = useState('all')
+  const [siteFilter, setSiteFilter] = useState('all')
+  const [dateRange, setDateRange] = useState([null, null])
 
-  const dataSource = [
-    {
-      key: '1',
-      tankId: 'Tank_A1',
-      date: '2025-09-01',
-      initialOil: 5000,
-      totalRequest: 2000,
-      totalDelivery: 1950,
-      losses: 50,
-      finalOil: 6950,
-    },
-    {
-      key: '2',
-      tankId: 'Tank_B2',
-      date: '2025-09-02',
-      initialOil: 6000,
-      totalRequest: 1500,
-      totalDelivery: 1500,
-      losses: 0,
-      finalOil: 7500,
-    },
-    {
-      key: '3',
-      tankId: 'Tank_C3',
-      date: '2025-09-03',
-      initialOil: 7000,
-      totalRequest: 1800,
-      totalDelivery: 1780,
-      losses: 20,
-      finalOil: 8780,
-    },
-  ]
-
-  // filter data
-  const filteredData = dataSource.filter((item) => {
-    const matchesText = item.tankId.toLowerCase().includes(search.toLowerCase())
-    const matchesDate =
-      filterDate === 'all' ? true : item.date === filterDate
-    return matchesText && matchesDate
-  })
-
-  const columns = fuelReceiveColumns.map((col) =>
-    col.key === 'action'
-      ? {
-          ...col,
-          render: (_, record) => (
-            <CButton color="primary" size="sm">
-              View
-            </CButton>
-          ),
-        }
-      : col
+  const dataSource = useMemo(
+    () => [
+      {
+        key: '1',
+        waktu_mulai_delivery: '2021-02-02 23:23:23',
+        volume_permintaan: '2000',
+        no_do: '1234567890',
+        no_invoice: '1234567890',
+        no_kendaraan: 'A1234S',
+        nama_pengemudi: 'Riza',
+        pengirim: 'Patra',
+        id_site: '1234564',
+        total_deliv: '',
+        total_permintaan: '',
+        total_selisih: '',
+        persentase_selisih: '',
+      },
+      {
+        key: '2',
+        waktu_mulai_delivery: '2021-02-03 08:15:00',
+        volume_permintaan: '1800',
+        no_do: '9876543210',
+        no_invoice: '9876543210',
+        no_kendaraan: 'B5678T',
+        nama_pengemudi: 'Dimas',
+        pengirim: 'Patra',
+        id_site: '1234564',
+        total_deliv: '',
+        total_permintaan: '',
+        total_selisih: '',
+        persentase_selisih: '',
+      },
+      {
+        key: '3',
+        waktu_mulai_delivery: '2021-02-05 17:45:10',
+        volume_permintaan: '2200',
+        no_do: '1928374650',
+        no_invoice: '1928374650',
+        no_kendaraan: 'C9101K',
+        nama_pengemudi: 'Riza',
+        pengirim: 'Patra',
+        id_site: '5678901',
+        total_deliv: '',
+        total_permintaan: '',
+        total_selisih: '',
+        persentase_selisih: '',
+      },
+    ],
+    []
   )
+
+  const filteredData = useMemo(() => {
+    return dataSource.filter((item) => {
+      const searchValue = search.trim().toLowerCase()
+      const matchesSearch = searchValue
+        ? [
+            item.no_do,
+            item.no_invoice,
+            item.no_kendaraan,
+            item.nama_pengemudi,
+            item.pengirim,
+            item.id_site,
+          ]
+            .filter(Boolean)
+            .some((field) => field.toLowerCase().includes(searchValue))
+        : true
+
+      const matchesSite =
+        siteFilter === 'all' ? true : item.id_site === siteFilter
+
+      const [startDate, endDate] = dateRange || []
+      const itemDate = dayjs(item.waktu_mulai_delivery)
+      const matchesDate = startDate
+        ? endDate
+          ? itemDate.isBetween(
+              startDate.startOf('day'),
+              endDate.endOf('day'),
+              null,
+              '[]'
+            )
+          :
+              itemDate.isSame(startDate, 'day') ||
+              itemDate.isAfter(startDate.startOf('day'))
+        : true
+
+      return matchesSearch && matchesSite && matchesDate
+    })
+  }, [dataSource, dateRange, search, siteFilter])
 
   return (
     <>
-      {/* Filter Section */}
-      <CCard className="mb-3 p-3">
-        <CRow className="align-items-center g-2">
-          {/* Search Tank ID */}
-          <CCol xs={12} sm={5} md={4}>
-            <CFormInput
-              type="text"
-              placeholder="Search by Tank ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              size="sm"
-            />
-          </CCol>
-
-          {/* Date Filter */}
-          <CCol xs={12} sm={4} md={3}>
-            <CFormSelect
-              size="sm"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-            >
-              <option value="all">All Dates</option>
-              <option value="2025-09-01">2025-09-01</option>
-              <option value="2025-09-02">2025-09-02</option>
-              <option value="2025-09-03">2025-09-03</option>
-            </CFormSelect>
-          </CCol>
-
-          {/* Clear Button */}
-          <CCol xs="auto">
-            <CButton
-              color="secondary"
-              size="sm"
-              onClick={() => {
-                setSearch('')
-                setFilterDate('all')
-              }}
-            >
-              Clear
-            </CButton>
-          </CCol>
-        </CRow>
-      </CCard>
+      <AppSubHeader
+        search={search}
+        setSearch={setSearch}
+        siteFilter={siteFilter}
+        setSiteFilter={setSiteFilter}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+      />
 
       {/* Table Section */}
       <CCard className="mb-4">
         <CCardBody>
           <Table
             dataSource={filteredData}
-            columns={columns}
+            columns={fuelReceiveColumns}
             pagination={true}
             scroll={{ x: 'max-content' }}
             bordered
