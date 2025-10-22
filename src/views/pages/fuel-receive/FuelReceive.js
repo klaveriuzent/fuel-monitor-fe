@@ -18,7 +18,7 @@ const FuelReceive = () => {
     () => [
       {
         key: '1',
-        waktu_mulai_delivery: '2021-02-02 23:23:23',
+        waktu_mulai_delivery: '2025-10-20 23:23:23',
         volume_permintaan: '2000',
         no_do: '1234567890',
         no_invoice: '1234567890',
@@ -33,7 +33,7 @@ const FuelReceive = () => {
       },
       {
         key: '2',
-        waktu_mulai_delivery: '2021-02-03 08:15:00',
+        waktu_mulai_delivery: '2025-10-20 08:15:00',
         volume_permintaan: '1800',
         no_do: '9876543210',
         no_invoice: '9876543210',
@@ -48,7 +48,7 @@ const FuelReceive = () => {
       },
       {
         key: '3',
-        waktu_mulai_delivery: '2021-02-05 17:45:10',
+        waktu_mulai_delivery: '2025-10-20 17:45:10',
         volume_permintaan: '2200',
         no_do: '1928374650',
         no_invoice: '1928374650',
