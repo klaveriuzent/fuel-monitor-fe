@@ -19,6 +19,9 @@ export const formatPercentage = (value) =>
     maximumFractionDigits: 2,
   })}%`
 
+const formatValueOrDash = (value, formatter = (val) => val) =>
+  value || value === 0 ? formatter(value) : '-'
+
 export const fuelReceiveColumns = [
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },
   {
@@ -27,8 +30,16 @@ export const fuelReceiveColumns = [
     key: 'waktu_mulai_delivery',
     render: formatDateTime,
   },
-  { title: 'No. Invoice', dataIndex: 'no_invoice', key: 'no_invoice' },
-  { title: 'No. DO', dataIndex: 'no_do', key: 'no_do' },
+  {
+    title: 'Document',
+    key: 'document',
+    render: (_, record) => (
+      <div className="d-flex flex-column">
+        <span>No. Invoice: {record?.no_invoice ?? '-'}</span>
+        <span>No. DO: {record?.no_do ?? '-'}</span>
+      </div>
+    ),
+  },
   {
     title: 'Volume Permintaan (L)',
     dataIndex: 'volume_permintaan',
@@ -39,27 +50,24 @@ export const fuelReceiveColumns = [
   { title: 'Pengirim', dataIndex: 'pengirim', key: 'pengirim' },
   { title: 'Driver', dataIndex: 'nama_pengemudi', key: 'nama_pengemudi' },
   {
-    title: 'Total Delivery (L)',
-    dataIndex: 'total_deliv',
-    key: 'total_deliv',
-    render: formatDecimal,
-  },
-  {
-    title: 'Total Permintaan (L)',
-    dataIndex: 'total_permintaan',
-    key: 'total_permintaan',
-    render: formatDecimal,
-  },
-  {
-    title: 'Total Selisih (L)',
-    dataIndex: 'total_selisih',
-    key: 'total_selisih',
-    render: formatDecimal,
-  },
-  {
-    title: 'Persentase Selisih',
-    dataIndex: 'persentase_selisih',
-    key: 'persentase_selisih',
-    render: formatPercentage,
+    title: 'Total',
+    key: 'total_information',
+    render: (_, record) => (
+      <div className="d-flex flex-column">
+        <span>
+          Total Delivery (L): {formatValueOrDash(record?.total_deliv, formatDecimal)}
+        </span>
+        <span>
+          Total Permintaan (L): {formatValueOrDash(record?.total_permintaan, formatDecimal)}
+        </span>
+        <span>
+          Total Selisih (L): {formatValueOrDash(record?.total_selisih, formatDecimal)}
+        </span>
+        <span>
+          Persentase Selisih:{' '}
+          {formatValueOrDash(record?.persentase_selisih, formatPercentage)}
+        </span>
+      </div>
+    ),
   },
 ]
