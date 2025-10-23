@@ -2,18 +2,26 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
-import { DatePicker, Collapse, Radio } from 'antd'
+import { DatePicker, Collapse, Tag } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 
+const { CheckableTag } = Tag
+
 const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange, setDateRange }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
-
+  const quickRangeOptions = [
+    { label: 'Today', value: 'today' },
+    { label: 'Last Week', value: 'last7' },
+    { label: 'Last Month', value: 'last30' },
+    { label: 'Last 6 Months', value: 'last180' },
+    { label: 'Last Year', value: 'last365' },
+  ]
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const calculateQuickRange = useCallback((value) => {
@@ -81,6 +89,15 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange,
     setQuickRange(null)
   }
 
+  const handleQuickRangeToggle = (value) => {
+    if (quickRange === value) {
+      setQuickRange(null)
+      setDateRange(null)
+    } else {
+      setQuickRange(value)
+    }
+  }
+
   return (
     <CCard className="mb-3 p-3">
       <CRow className="align-items-center g-2">
@@ -118,18 +135,17 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange,
             <span className="text-nowrap" style={{ fontSize: '0.85rem', fontWeight: 500 }}>
               Select Range Date
             </span>
-            <Radio.Group
-              optionType="button"
-              buttonStyle="solid"
-              value={quickRange || undefined}
-              onChange={(e) => setQuickRange(e.target.value)}
-            >
-              <Radio.Button value="today">Today</Radio.Button>
-              <Radio.Button value="last7">Last Week</Radio.Button>
-              <Radio.Button value="last30">Last Month</Radio.Button>
-              <Radio.Button value="last180">Last 6 Months</Radio.Button>
-              <Radio.Button value="last365">Last Year</Radio.Button>
-            </Radio.Group>
+            <div className="d-flex flex-wrap gap-2">
+              {quickRangeOptions.map((option) => (
+                <CheckableTag
+                  key={option.value}
+                  checked={quickRange === option.value}
+                  onChange={() => handleQuickRangeToggle(option.value)}
+                >
+                  {option.label}
+                </CheckableTag>
+              ))}
+            </div>
           </div>
         </CCol>
       </CRow>
