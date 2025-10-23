@@ -114,12 +114,13 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange,
 
       <CRow className="mt-3">
         <CCol>
-          <div className="d-flex align-items-center gap-3 flex-wrap">
-            <span className="fw-semibold text-nowrap">Select Date</span>
+          <div className="d-flex flex-column gap-2">
+            <span className="text-nowrap" style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+              Select Range Date
+            </span>
             <Radio.Group
               optionType="button"
               buttonStyle="solid"
-              size="small"
               value={quickRange || undefined}
               onChange={(e) => setQuickRange(e.target.value)}
             >
