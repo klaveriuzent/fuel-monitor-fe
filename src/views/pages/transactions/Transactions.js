@@ -11,6 +11,7 @@ import {
   formatDecimal,
 } from './interface.transactions'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
+import { getColumnKey } from '../../../utils/table'
 
 const dataSource = [
   {

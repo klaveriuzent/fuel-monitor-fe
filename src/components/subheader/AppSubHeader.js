@@ -6,12 +6,11 @@ import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/rea
 import axios from 'axios'
 
 import './AppSubHeader.scss'
+import { getColumnKey } from '../../utils/table'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 const { CheckableTag } = Tag
-
-const STORAGE_KEY = 'appSubHeaderFilters'
 
 const AppSubHeader = ({
   search,
