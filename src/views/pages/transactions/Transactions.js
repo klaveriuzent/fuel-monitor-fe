@@ -145,6 +145,7 @@ const Transactions = () => {
         columns={transactionColumns}
         visibleColumnKeys={visibleColumnKeys}
         setVisibleColumnKeys={setVisibleColumnKeys}
+        storageKey="appSubHeaderFilters:transactions"
       />
 
       <CCard className="mb-4">

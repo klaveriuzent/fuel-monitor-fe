@@ -8,7 +8,7 @@ import axios from 'axios'
 import './AppSubHeader.scss'
 import { getColumnKey } from '../../utils/table'
 
-const STORAGE_KEY = 'app-subheader-filters'
+const DEFAULT_STORAGE_KEY = 'app-subheader-filters'
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 const { CheckableTag } = Tag
@@ -23,6 +23,7 @@ const AppSubHeader = ({
   columns = [],
   visibleColumnKeys,
   setVisibleColumnKeys,
+  storageKey = DEFAULT_STORAGE_KEY,
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
@@ -119,7 +120,7 @@ const AppSubHeader = ({
 
   // Load saved filters or set defaults
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
+    const saved = localStorage.getItem(storageKey)
     if (saved) {
       const {
         search,
@@ -164,6 +165,7 @@ const AppSubHeader = ({
     setVisibleColumnKeys,
     availableColumnKeys,
     areArraysEqual,
+    storageKey,
   ])
 
   // Default all columns visible when columns loaded (even if late)
@@ -182,8 +184,8 @@ const AppSubHeader = ({
       dateRange: dateRange?.map((d) => (d ? d.toISOString() : null)),
       visibleColumnKeys: Array.isArray(activeColumnKeys) ? activeColumnKeys : availableColumnKeys,
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters))
-  }, [search, siteFilter, quickRange, dateRange, activeColumnKeys, availableColumnKeys])
+    localStorage.setItem(storageKey, JSON.stringify(filters))
+  }, [search, siteFilter, quickRange, dateRange, activeColumnKeys, availableColumnKeys, storageKey])
 
   useEffect(() => {
     fetchSites()
@@ -201,7 +203,7 @@ const AppSubHeader = ({
       setVisibleColumnKeys(availableColumnKeys)
     }
 
-    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(storageKey)
   }
 
   const handleQuickRangeToggle = (value) => {
