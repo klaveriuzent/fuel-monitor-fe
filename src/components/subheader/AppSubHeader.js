@@ -22,7 +22,9 @@ const AppSubHeader = ({
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
+  const [isInitialized, setIsInitialized] = useState(false)
   const baseURL = import.meta.env.VITE_API_BASE_URL
+  const storageKey = `appSubHeaderFilters:${location.pathname}`
 
   const quickRangeOptions = [
     { label: 'Today', value: 'today' },
@@ -62,24 +64,105 @@ const AppSubHeader = ({
   }, [fetchSites])
 
   useEffect(() => {
+    if (!isInitialized) {
+      return
+    }
+
     if (quickRange) {
       const [start, end] = calculateQuickRange(quickRange)
       setDateRange([start, end])
     }
-  }, [calculateQuickRange, quickRange, setDateRange])
+  }, [calculateQuickRange, isInitialized, quickRange, setDateRange])
 
   useEffect(() => setSiteFilter('all'), [filterGroup, setSiteFilter])
 
   useEffect(() => {
-    setSearch('')
-    setSiteFilter('all')
-    setQuickRange('today')
-  }, [location.pathname, setSearch, setSiteFilter])
+    setIsInitialized(false)
+
+    if (typeof window === 'undefined') {
+      setSearch('')
+      setSiteFilter('all')
+      setQuickRange('today')
+      const [start, end] = calculateQuickRange('today')
+      setDateRange([start, end])
+      setIsInitialized(true)
+      return
+    }
+
+    try {
+      const storedFilters = window.localStorage.getItem(storageKey)
+
+      if (storedFilters) {
+        const parsedFilters = JSON.parse(storedFilters)
+
+        setSearch(parsedFilters?.search ?? '')
+        setSiteFilter(parsedFilters?.siteFilter ?? 'all')
+
+        if (parsedFilters?.quickRange !== undefined && parsedFilters?.quickRange !== null) {
+          setQuickRange(parsedFilters.quickRange)
+          setDateRange(null)
+        } else {
+          setQuickRange(null)
+
+          if (parsedFilters?.dateRange?.length === 2) {
+            const [startDate, endDate] = parsedFilters.dateRange
+            setDateRange([startDate ? dayjs(startDate) : null, endDate ? dayjs(endDate) : null])
+          } else {
+            setDateRange(null)
+          }
+        }
+      } else {
+        setSearch('')
+        setSiteFilter('all')
+        setQuickRange('today')
+        const [start, end] = calculateQuickRange('today')
+        setDateRange([start, end])
+      }
+    } catch {
+      setSearch('')
+      setSiteFilter('all')
+      setQuickRange('today')
+      const [start, end] = calculateQuickRange('today')
+      setDateRange([start, end])
+    }
+
+    setIsInitialized(true)
+  }, [calculateQuickRange, location.pathname, setDateRange, setSearch, setSiteFilter, storageKey])
+
+  useEffect(() => {
+    if (!isInitialized || typeof window === 'undefined') {
+      return
+    }
+
+    const serializedDateRange = Array.isArray(dateRange)
+      ? dateRange.map((date) => (date ? dayjs(date).toISOString() : null))
+      : null
+
+    const payload = {
+      search,
+      siteFilter,
+      quickRange,
+      dateRange: serializedDateRange,
+    }
+
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(payload))
+    } catch {
+      // Ignore storage errors
+    }
+  }, [dateRange, isInitialized, quickRange, search, siteFilter, storageKey])
 
   const handleClearFilters = () => {
     setSearch('')
     setSiteFilter('all')
     setQuickRange('today')
+
+    const [start, end] = calculateQuickRange('today')
+    setDateRange([start, end])
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(storageKey)
+    }
   }
 
   const handleQuickRangeToggle = (value) => {
