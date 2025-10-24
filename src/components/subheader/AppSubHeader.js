@@ -22,7 +22,6 @@ const AppSubHeader = ({
   columns = [],
   visibleColumnKeys,
   setVisibleColumnKeys,
-  storageKey = 'appSubHeaderFilters',
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
@@ -63,6 +62,15 @@ const AppSubHeader = ({
   }, [baseURL, filterGroup])
 
   const columnOptions = useMemo(() => {
+    const normalizeKey = (column) => {
+      if (!column) return null
+      if (column.key) return column.key
+      if (Array.isArray(column.dataIndex)) {
+        return column.dataIndex.filter(Boolean).join('.')
+      }
+      return column.dataIndex || null
+    }
+
     const normalizeLabel = (column, fallback) => {
       const { title } = column || {}
 
@@ -86,7 +94,7 @@ const AppSubHeader = ({
 
     return columns
       .map((column) => {
-        const key = getColumnKey(column)
+        const key = normalizeKey(column)
         if (!key) return null
         const fallbackLabel = key.toString().replace(/_/g, ' ')
         const label = normalizeLabel(column, fallbackLabel)
@@ -112,66 +120,36 @@ const AppSubHeader = ({
     return a.every((value) => b.includes(value))
   }, [])
 
-  const resolvedStorageKey = useMemo(
-    () => storageKey || 'appSubHeaderFilters',
-    [storageKey],
-  )
-
   useEffect(() => {
-    const savedRaw = localStorage.getItem(resolvedStorageKey)
-    if (savedRaw) {
-      let parsed
-      try {
-        parsed = JSON.parse(savedRaw)
-      } catch (error) {
-        parsed = null
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const { search, siteFilter, quickRange, dateRange, visibleColumnKeys: savedVisible } =
+        JSON.parse(saved)
+
+      if (search !== undefined) setSearch(search)
+      if (siteFilter !== undefined) setSiteFilter(siteFilter)
+      if (quickRange) {
+        setQuickRange(quickRange)
+        const [start, end] = calculateQuickRange(quickRange)
+        setDateRange([start, end])
+      } else if (dateRange) {
+        setDateRange(dateRange.map((d) => dayjs(d)))
       }
 
-      if (parsed) {
-        const {
-          search: savedSearch,
-          siteFilter: savedSiteFilter,
-          quickRange: savedQuickRange,
-          dateRange: savedDateRange,
-          visibleColumnKeys: savedVisible,
-          availableColumnKeys: savedAvailable,
-        } = parsed
+      if (Array.isArray(savedVisible) && setVisibleColumnKeys) {
+        const filteredColumns =
+          savedVisible.length === 0
+            ? []
+            : savedVisible.filter((key) => availableColumnKeys.includes(key))
 
-        if (savedSearch !== undefined) setSearch(savedSearch)
-        if (savedSiteFilter !== undefined) setSiteFilter(savedSiteFilter)
-        if (savedQuickRange) {
-          setQuickRange(savedQuickRange)
-          const [start, end] = calculateQuickRange(savedQuickRange)
-          setDateRange([start, end])
-        } else if (Array.isArray(savedDateRange)) {
-          setDateRange(savedDateRange.map((d) => (d ? dayjs(d) : null)))
-        }
-
-        if (Array.isArray(savedVisible) && setVisibleColumnKeys) {
-          const savedAvailableArray = Array.isArray(savedAvailable) ? savedAvailable : null
-          const validSaved = savedVisible.filter((key) => availableColumnKeys.includes(key))
-          const missingColumns = availableColumnKeys.filter(
-            (key) =>
-              !validSaved.includes(key) && !(savedAvailableArray?.includes(key) ?? false),
+        if (filteredColumns.length || savedVisible.length === 0) {
+          setVisibleColumnKeys((prev = []) =>
+            areArraysEqual(prev, filteredColumns) ? prev : filteredColumns,
           )
-
-          let nextColumns
-          if (savedVisible.length === 0) {
-            nextColumns = savedAvailableArray?.length ? [] : availableColumnKeys
-          } else {
-            const nextSet = new Set([...validSaved, ...missingColumns])
-            nextColumns = availableColumnKeys.filter((key) => nextSet.has(key))
-          }
-
-          if (nextColumns.length || savedVisible.length === 0) {
-            setVisibleColumnKeys((prev = []) =>
-              areArraysEqual(prev, nextColumns) ? prev : nextColumns,
-            )
-          } else if (availableColumnKeys.length) {
-            setVisibleColumnKeys((prev = []) =>
-              areArraysEqual(prev, availableColumnKeys) ? prev : availableColumnKeys,
-            )
-          }
+        } else if (availableColumnKeys.length) {
+          setVisibleColumnKeys((prev = []) =>
+            areArraysEqual(prev, availableColumnKeys) ? prev : availableColumnKeys,
+          )
         }
       }
     } else {
@@ -193,7 +171,6 @@ const AppSubHeader = ({
     setVisibleColumnKeys,
     availableColumnKeys,
     areArraysEqual,
-    resolvedStorageKey,
   ])
 
   useEffect(() => {
@@ -205,18 +182,9 @@ const AppSubHeader = ({
       visibleColumnKeys: Array.isArray(activeColumnKeys)
         ? activeColumnKeys
         : availableColumnKeys,
-      availableColumnKeys,
     }
-    localStorage.setItem(resolvedStorageKey, JSON.stringify(filters))
-  }, [
-    search,
-    siteFilter,
-    quickRange,
-    dateRange,
-    activeColumnKeys,
-    availableColumnKeys,
-    resolvedStorageKey,
-  ])
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters))
+  }, [search, siteFilter, quickRange, dateRange, activeColumnKeys, availableColumnKeys])
 
   useEffect(() => {
     fetchSites()
@@ -232,7 +200,7 @@ const AppSubHeader = ({
     if (setVisibleColumnKeys && availableColumnKeys.length) {
       setVisibleColumnKeys(availableColumnKeys)
     }
-    localStorage.removeItem(resolvedStorageKey)
+    localStorage.removeItem(STORAGE_KEY)
   }
 
   const handleQuickRangeToggle = (value) => {
