@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
@@ -90,14 +89,11 @@ const FuelReceive = () => {
         persentase_selisih: 0.44,
       },
     ],
-    []
+    [],
   )
 
   const tableColumns = useMemo(
-    () =>
-      fuelReceiveColumns.filter((column) =>
-        visibleColumnKeys.includes(getColumnKey(column)),
-      ),
+    () => fuelReceiveColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
     [visibleColumnKeys],
   )
 
@@ -131,15 +127,8 @@ const FuelReceive = () => {
       const itemDate = dayjs(item.waktu_mulai_delivery)
       const matchesDate = startDate
         ? endDate
-          ? itemDate.isBetween(
-              startDate.startOf('day'),
-              endDate.endOf('day'),
-              null,
-              '[]'
-            )
-          :
-              itemDate.isSame(startDate, 'day') ||
-              itemDate.isAfter(startDate.startOf('day'))
+          ? itemDate.isBetween(startDate.startOf('day'), endDate.endOf('day'), null, '[]')
+          : itemDate.isSame(startDate, 'day') || itemDate.isAfter(startDate.startOf('day'))
         : true
 
       return matchesSearch && matchesSite && matchesDate

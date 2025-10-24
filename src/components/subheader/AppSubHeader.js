@@ -123,8 +123,13 @@ const AppSubHeader = ({
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
-      const { search, siteFilter, quickRange, dateRange, visibleColumnKeys: savedVisible } =
-        JSON.parse(saved)
+      const {
+        search,
+        siteFilter,
+        quickRange,
+        dateRange,
+        visibleColumnKeys: savedVisible,
+      } = JSON.parse(saved)
 
       if (search !== undefined) setSearch(search)
       if (siteFilter !== undefined) setSiteFilter(siteFilter)
@@ -158,9 +163,7 @@ const AppSubHeader = ({
       setQuickRange('today')
 
       if (setVisibleColumnKeys && availableColumnKeys.length) {
-        setVisibleColumnKeys((prev = []) =>
-          prev.length ? prev : availableColumnKeys,
-        )
+        setVisibleColumnKeys((prev = []) => (prev.length ? prev : availableColumnKeys))
       }
     }
   }, [
@@ -179,9 +182,7 @@ const AppSubHeader = ({
       siteFilter,
       quickRange,
       dateRange: dateRange?.map((d) => (d ? d.toISOString() : null)),
-      visibleColumnKeys: Array.isArray(activeColumnKeys)
-        ? activeColumnKeys
-        : availableColumnKeys,
+      visibleColumnKeys: Array.isArray(activeColumnKeys) ? activeColumnKeys : availableColumnKeys,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filters))
   }, [search, siteFilter, quickRange, dateRange, activeColumnKeys, availableColumnKeys])
@@ -326,9 +327,7 @@ const AppSubHeader = ({
                     key={column.key}
                     checked={isActive}
                     onChange={() => handleColumnToggle(column.key)}
-                    className={`app-subheader__column-tag${
-                      isActive ? ' is-active' : ''
-                    }`}
+                    className={`app-subheader__column-tag${isActive ? ' is-active' : ''}`}
                   >
                     {column.label}
                   </CheckableTag>

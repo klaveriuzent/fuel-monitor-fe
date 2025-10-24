@@ -49,14 +49,6 @@ const dataSource = [
   },
 ]
 
-const getColumnKey = (column) => {
-  if (column.key) return column.key
-  if (Array.isArray(column.dataIndex)) {
-    return column.dataIndex.filter(Boolean).join('.')
-  }
-  return column.dataIndex
-}
-
 const allTransactionColumnKeys = transactionColumns
   .map((column) => getColumnKey(column))
   .filter(Boolean)
@@ -68,10 +60,7 @@ const Transactions = () => {
   const [visibleColumnKeys, setVisibleColumnKeys] = useState(allTransactionColumnKeys)
 
   const tableColumns = useMemo(
-    () =>
-      transactionColumns.filter((column) =>
-        visibleColumnKeys.includes(getColumnKey(column)),
-      ),
+    () => transactionColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
     [visibleColumnKeys],
   )
 
