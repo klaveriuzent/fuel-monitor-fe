@@ -5,6 +5,8 @@ import { DatePicker, Collapse, Tag } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
 
+import './AppSubHeader.scss'
+
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 const { CheckableTag } = Tag
@@ -114,7 +116,7 @@ const AppSubHeader = ({
   }
 
   return (
-    <CCard className="mb-3 p-3">
+    <CCard className="app-subheader mb-3 p-3">
       {/* Filter Row */}
       <CRow className="align-items-center g-2">
         <CCol xs={12} sm={6} md={4}>
@@ -129,14 +131,14 @@ const AppSubHeader = ({
         </CCol>
 
         <CCol xs={12} sm={12} md={8}>
-          <div className="d-flex align-items-center gap-2" style={{ width: '100%' }}>
+          <div className="app-subheader__search d-flex align-items-center gap-2">
             <CFormInput
               type="text"
               placeholder="Search ..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               size="sm"
-              style={{ flexGrow: 1 }}
+              className="app-subheader__search-input"
             />
             <CButton color="secondary" size="sm" onClick={handleClearFilters}>
               Clear
@@ -149,29 +151,19 @@ const AppSubHeader = ({
       <CRow className="mt-3">
         <CCol>
           <div className="d-flex flex-column gap-2">
-            <span
-              className="text-nowrap text-secondary"
-              style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.3px' }}
-            >
+            <span className="app-subheader__quick-label text-nowrap text-secondary">
               Select Range Date
             </span>
 
-            <div className="d-flex flex-wrap">
+            <div className="app-subheader__quick-tags">
               {quickRangeOptions.map((option) => (
                 <CheckableTag
                   key={option.value}
                   checked={quickRange === option.value}
                   onChange={() => handleQuickRangeToggle(option.value)}
-                  style={{
-                    borderRadius: '6px',
-                    padding: '4px 10px',
-                    fontSize: '0.8rem',
-                    transition: 'all 0.2s ease-in-out',
-                    backgroundColor: quickRange === option.value ? '#0d6efd' : '',
-                    color: quickRange === option.value ? '#fff' : '#495057',
-                    border: `1px solid ${quickRange === option.value ? '#0d6efd' : '#dee2e6'}`,
-                    cursor: 'pointer',
-                  }}
+                  className={`app-subheader__quick-tag${
+                    quickRange === option.value ? ' is-active' : ''
+                  }`}
                 >
                   {option.label}
                 </CheckableTag>
@@ -187,22 +179,15 @@ const AppSubHeader = ({
           <Panel
             key="1"
             header={
-              <span
-                className="text-secondary fw-semibold"
-                style={{
-                  fontSize: '0.8rem',
-                  letterSpacing: '0.3px',
-                  marginLeft: '-6px',
-                }}
-              >
+              <span className="app-subheader__advanced-title text-secondary fw-semibold">
                 Advanced Filter
               </span>
             }
           >
-            <div className="mb-2 text-secondary fw-semibold" style={{ fontSize: '0.75rem' }}>
+            <div className="app-subheader__range-label mb-2 text-secondary fw-semibold">
               Range Date
             </div>
-            <div style={{ marginLeft: '-12px' }}>
+            <div className="app-subheader__range-picker">
               <RangePicker
                 size="middle"
                 value={dateRange}
@@ -210,7 +195,6 @@ const AppSubHeader = ({
                   setDateRange(dates)
                   setQuickRange(null)
                 }}
-                style={{ width: '100%' }}
                 allowClear
                 format="DD MMM YYYY"
                 disabledDate={(current) => current && current > dayjs().endOf('day').add(1, 'year')}
