@@ -195,7 +195,6 @@ const AppSubHeader = ({
                   setDateRange(dates)
                   setQuickRange(null)
                 }}
-                style={{ width: '100%' }}
                 allowClear
                 format="DD MMM YYYY"
                 disabledDate={(current) => current && current > dayjs().endOf('day').add(1, 'year')}
