@@ -20,9 +20,9 @@ const AppSubHeader = ({
   setDateRange,
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
+  const { pathname } = location
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
-  const [isHydrated, setIsHydrated] = useState(false)
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const quickRangeOptions = [
@@ -74,62 +74,12 @@ const AppSubHeader = ({
   useEffect(() => setSiteFilter('all'), [filterGroup, setSiteFilter])
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    const stored = window.localStorage.getItem(STORAGE_KEY)
-
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-
-        if (typeof parsed.search === 'string') {
-          setSearch(parsed.search)
-        }
-
-        if (typeof parsed.siteFilter === 'string') {
-          setSiteFilter(parsed.siteFilter)
-        }
-
-        if (parsed.quickRange === null || typeof parsed.quickRange === 'string') {
-          setQuickRange(parsed.quickRange)
-        }
-
-        if (Array.isArray(parsed.dateRange)) {
-          const restoredRange = parsed.dateRange.map((value) => (value ? dayjs(value) : null))
-          setDateRange(restoredRange)
-        }
-      } catch {
-        const [start, end] = calculateQuickRange('today')
-        setDateRange([start, end])
-      }
-    } else {
-      const [start, end] = calculateQuickRange('today')
-      setDateRange([start, end])
-    }
-
-    setIsHydrated(true)
-  }, [calculateQuickRange, setDateRange, setSearch, setSiteFilter])
-
-  useEffect(() => {
-    if (!isHydrated || typeof window === 'undefined') {
-      return
-    }
-
-    const serializedRange = Array.isArray(dateRange)
-      ? dateRange.map((value) => (value ? dayjs(value).toISOString() : null))
-      : null
-
-    const payload = {
-      search,
-      siteFilter,
-      quickRange,
-      dateRange: serializedRange,
-    }
-
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-  }, [dateRange, isHydrated, quickRange, search, siteFilter])
+    setSearch('')
+    setSiteFilter('all')
+    setQuickRange('today')
+    const [start, end] = calculateQuickRange('today')
+    setDateRange([start, end])
+  }, [calculateQuickRange, pathname, setDateRange, setSearch, setSiteFilter])
 
   const handleClearFilters = () => {
     setSearch('')
