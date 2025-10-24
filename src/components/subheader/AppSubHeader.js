@@ -7,7 +7,6 @@ import axios from 'axios'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
-
 const { CheckableTag } = Tag
 
 const AppSubHeader = ({
@@ -21,6 +20,8 @@ const AppSubHeader = ({
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
+  const baseURL = import.meta.env.VITE_API_BASE_URL
+
   const quickRangeOptions = [
     { label: 'Today', value: 'today' },
     { label: 'Last Week', value: 'last7' },
@@ -28,41 +29,28 @@ const AppSubHeader = ({
     { label: 'Last 6 Months', value: 'last180' },
     { label: 'Last Year', value: 'last365' },
   ]
-  const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const calculateQuickRange = useCallback((value) => {
     const today = dayjs()
-
-    switch (value) {
-      case 'today':
-        return [today.startOf('day'), today.endOf('day')]
-      case 'last7':
-        return [today.subtract(6, 'day').startOf('day'), today.endOf('day')]
-      case 'last30':
-        return [today.subtract(29, 'day').startOf('day'), today.endOf('day')]
-      case 'last180':
-        return [today.subtract(179, 'day').startOf('day'), today.endOf('day')]
-      case 'last365':
-        return [today.subtract(364, 'day').startOf('day'), today.endOf('day')]
-      default:
-        return [today.startOf('day'), today.endOf('day')]
+    const ranges = {
+      today: [today.startOf('day'), today.endOf('day')],
+      last7: [today.subtract(6, 'day').startOf('day'), today.endOf('day')],
+      last30: [today.subtract(29, 'day').startOf('day'), today.endOf('day')],
+      last180: [today.subtract(179, 'day').startOf('day'), today.endOf('day')],
+      last365: [today.subtract(364, 'day').startOf('day'), today.endOf('day')],
     }
+    return ranges[value] || ranges.today
   }, [])
 
   const fetchSites = useCallback(async () => {
     try {
-      let url = `${baseURL}/site`
-      if (filterGroup && filterGroup !== 'all') {
-        url = `${baseURL}/site?id_location=${filterGroup}`
-      }
-
-      const res = await axios.get(url)
-      if (res.data && Array.isArray(res.data.data)) {
-        setSiteOptions(res.data.data)
-      } else {
-        setSiteOptions([])
-      }
-    } catch (error) {
+      const url =
+        filterGroup && filterGroup !== 'all'
+          ? `${baseURL}/site?id_location=${filterGroup}`
+          : `${baseURL}/site`
+      const { data } = await axios.get(url)
+      setSiteOptions(Array.isArray(data?.data) ? data.data : [])
+    } catch {
       setSiteOptions([])
     }
   }, [baseURL, filterGroup])
@@ -72,27 +60,18 @@ const AppSubHeader = ({
   }, [fetchSites])
 
   useEffect(() => {
-    if (!quickRange) {
-      return
+    if (quickRange) {
+      const [start, end] = calculateQuickRange(quickRange)
+      setDateRange([start, end])
     }
-
-    const [start, end] = calculateQuickRange(quickRange)
-    setDateRange([start, end])
   }, [calculateQuickRange, quickRange, setDateRange])
 
-  useEffect(() => {
-    setSiteFilter('all')
-  }, [filterGroup, setSiteFilter])
+  useEffect(() => setSiteFilter('all'), [filterGroup, setSiteFilter])
 
   const handleClearFilters = () => {
     setSearch('')
     setSiteFilter('all')
     setQuickRange('today')
-  }
-
-  const handleRangePickerChange = (dates) => {
-    setDateRange(dates)
-    setQuickRange(null)
   }
 
   const handleQuickRangeToggle = (value) => {
@@ -106,6 +85,7 @@ const AppSubHeader = ({
 
   return (
     <CCard className="mb-3 p-3">
+      {/* Filter Row */}
       <CRow className="align-items-center g-2">
         <CCol xs={12} sm={6} md={4}>
           <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
@@ -135,16 +115,13 @@ const AppSubHeader = ({
         </CCol>
       </CRow>
 
+      {/* Quick Range */}
       <CRow className="mt-3">
         <CCol>
           <div className="d-flex flex-column gap-2">
             <span
               className="text-nowrap text-secondary"
-              style={{
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                letterSpacing: '0.3px',
-              }}
+              style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.3px' }}
             >
               Select Range Date
             </span>
@@ -174,6 +151,7 @@ const AppSubHeader = ({
         </CCol>
       </CRow>
 
+      {/* Advanced Filter */}
       <CRow className="mt-3">
         <Collapse ghost size="small" expandIconPosition="end">
           <Panel
@@ -196,7 +174,10 @@ const AppSubHeader = ({
               <RangePicker
                 size="middle"
                 value={dateRange}
-                onChange={handleRangePickerChange}
+                onChange={(dates) => {
+                  setDateRange(dates)
+                  setQuickRange(null)
+                }}
                 style={{ width: '100%' }}
                 allowClear
                 format="DD MMM YYYY"
