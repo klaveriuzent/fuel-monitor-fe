@@ -4,11 +4,12 @@ import { useSelector } from 'react-redux'
 import { DatePicker, Collapse, Tag } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
-import { useLocation } from 'react-router-dom'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 const { CheckableTag } = Tag
+
+const STORAGE_KEY = 'appSubHeaderFilters'
 
 const AppSubHeader = ({
   search,
@@ -18,13 +19,11 @@ const AppSubHeader = ({
   dateRange,
   setDateRange,
 }) => {
-  const location = useLocation()
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
-  const [isInitialized, setIsInitialized] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
   const baseURL = import.meta.env.VITE_API_BASE_URL
-  const storageKey = `appSubHeaderFilters:${location.pathname}`
 
   const quickRangeOptions = [
     { label: 'Today', value: 'today' },
@@ -64,93 +63,73 @@ const AppSubHeader = ({
   }, [fetchSites])
 
   useEffect(() => {
-    if (!isInitialized) {
+    if (!quickRange) {
       return
     }
 
-    if (quickRange) {
-      const [start, end] = calculateQuickRange(quickRange)
-      setDateRange([start, end])
-    }
-  }, [calculateQuickRange, isInitialized, quickRange, setDateRange])
+    const [start, end] = calculateQuickRange(quickRange)
+    setDateRange([start, end])
+  }, [calculateQuickRange, quickRange, setDateRange])
 
   useEffect(() => setSiteFilter('all'), [filterGroup, setSiteFilter])
 
   useEffect(() => {
-    setIsInitialized(false)
-
     if (typeof window === 'undefined') {
-      setSearch('')
-      setSiteFilter('all')
-      setQuickRange('today')
-      const [start, end] = calculateQuickRange('today')
-      setDateRange([start, end])
-      setIsInitialized(true)
       return
     }
 
-    try {
-      const storedFilters = window.localStorage.getItem(storageKey)
+    const stored = window.localStorage.getItem(STORAGE_KEY)
 
-      if (storedFilters) {
-        const parsedFilters = JSON.parse(storedFilters)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
 
-        setSearch(parsedFilters?.search ?? '')
-        setSiteFilter(parsedFilters?.siteFilter ?? 'all')
-
-        if (parsedFilters?.quickRange !== undefined && parsedFilters?.quickRange !== null) {
-          setQuickRange(parsedFilters.quickRange)
-          setDateRange(null)
-        } else {
-          setQuickRange(null)
-
-          if (parsedFilters?.dateRange?.length === 2) {
-            const [startDate, endDate] = parsedFilters.dateRange
-            setDateRange([startDate ? dayjs(startDate) : null, endDate ? dayjs(endDate) : null])
-          } else {
-            setDateRange(null)
-          }
+        if (typeof parsed.search === 'string') {
+          setSearch(parsed.search)
         }
-      } else {
-        setSearch('')
-        setSiteFilter('all')
-        setQuickRange('today')
+
+        if (typeof parsed.siteFilter === 'string') {
+          setSiteFilter(parsed.siteFilter)
+        }
+
+        if (parsed.quickRange === null || typeof parsed.quickRange === 'string') {
+          setQuickRange(parsed.quickRange)
+        }
+
+        if (Array.isArray(parsed.dateRange)) {
+          const restoredRange = parsed.dateRange.map((value) => (value ? dayjs(value) : null))
+          setDateRange(restoredRange)
+        }
+      } catch {
         const [start, end] = calculateQuickRange('today')
         setDateRange([start, end])
       }
-    } catch {
-      setSearch('')
-      setSiteFilter('all')
-      setQuickRange('today')
+    } else {
       const [start, end] = calculateQuickRange('today')
       setDateRange([start, end])
     }
 
-    setIsInitialized(true)
-  }, [calculateQuickRange, location.pathname, setDateRange, setSearch, setSiteFilter, storageKey])
+    setIsHydrated(true)
+  }, [calculateQuickRange, setDateRange, setSearch, setSiteFilter])
 
   useEffect(() => {
-    if (!isInitialized || typeof window === 'undefined') {
+    if (!isHydrated || typeof window === 'undefined') {
       return
     }
 
-    const serializedDateRange = Array.isArray(dateRange)
-      ? dateRange.map((date) => (date ? dayjs(date).toISOString() : null))
+    const serializedRange = Array.isArray(dateRange)
+      ? dateRange.map((value) => (value ? dayjs(value).toISOString() : null))
       : null
 
     const payload = {
       search,
       siteFilter,
       quickRange,
-      dateRange: serializedDateRange,
+      dateRange: serializedRange,
     }
 
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(payload))
-    } catch {
-      // Ignore storage errors
-    }
-  }, [dateRange, isInitialized, quickRange, search, siteFilter, storageKey])
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+  }, [dateRange, isHydrated, quickRange, search, siteFilter])
 
   const handleClearFilters = () => {
     setSearch('')
@@ -160,9 +139,6 @@ const AppSubHeader = ({
     const [start, end] = calculateQuickRange('today')
     setDateRange([start, end])
 
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(storageKey)
-    }
   }
 
   const handleQuickRangeToggle = (value) => {
