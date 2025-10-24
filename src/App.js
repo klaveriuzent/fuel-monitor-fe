@@ -26,13 +26,20 @@ const App = () => {
     const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0]
     if (theme) {
       setColorMode(theme)
+      return
     }
 
     if (isColorModeSet()) {
       return
     }
 
-    setColorMode(storedTheme)
+    // 🟩 Tambahan: fallback kalau belum ada theme di localStorage
+    const savedTheme = localStorage.getItem('coreui-free-react-admin-template-theme')
+    if (savedTheme) {
+      setColorMode(savedTheme)
+    } else {
+      setColorMode(storedTheme || 'light') // ✅ default light
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

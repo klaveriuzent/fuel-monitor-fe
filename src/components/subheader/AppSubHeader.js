@@ -20,7 +20,6 @@ const AppSubHeader = ({
   setDateRange,
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
-  const { pathname } = location
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
   const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -59,27 +58,39 @@ const AppSubHeader = ({
   }, [baseURL, filterGroup])
 
   useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const { search, siteFilter, quickRange, dateRange } = JSON.parse(saved)
+
+      if (search !== undefined) setSearch(search)
+      if (siteFilter !== undefined) setSiteFilter(siteFilter)
+      if (quickRange) {
+        setQuickRange(quickRange)
+        const [start, end] = calculateQuickRange(quickRange)
+        setDateRange([start, end])
+      } else if (dateRange) {
+        setDateRange(dateRange.map((d) => dayjs(d)))
+      }
+    } else {
+      const [start, end] = calculateQuickRange('today')
+      setDateRange([start, end])
+      setQuickRange('today')
+    }
+  }, [calculateQuickRange, setSearch, setSiteFilter, setDateRange])
+
+  useEffect(() => {
+    const filters = {
+      search,
+      siteFilter,
+      quickRange,
+      dateRange: dateRange?.map((d) => (d ? d.toISOString() : null)),
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters))
+  }, [search, siteFilter, quickRange, dateRange])
+
+  useEffect(() => {
     fetchSites()
   }, [fetchSites])
-
-  useEffect(() => {
-    if (!quickRange) {
-      return
-    }
-
-    const [start, end] = calculateQuickRange(quickRange)
-    setDateRange([start, end])
-  }, [calculateQuickRange, quickRange, setDateRange])
-
-  useEffect(() => setSiteFilter('all'), [filterGroup, setSiteFilter])
-
-  useEffect(() => {
-    setSearch('')
-    setSiteFilter('all')
-    setQuickRange('today')
-    const [start, end] = calculateQuickRange('today')
-    setDateRange([start, end])
-  }, [calculateQuickRange, pathname, setDateRange, setSearch, setSiteFilter])
 
   const handleClearFilters = () => {
     setSearch('')
@@ -88,7 +99,7 @@ const AppSubHeader = ({
 
     const [start, end] = calculateQuickRange('today')
     setDateRange([start, end])
-
+    localStorage.removeItem(STORAGE_KEY)
   }
 
   const handleQuickRangeToggle = (value) => {
@@ -97,6 +108,8 @@ const AppSubHeader = ({
       setDateRange(null)
     } else {
       setQuickRange(value)
+      const [start, end] = calculateQuickRange(value)
+      setDateRange([start, end])
     }
   }
 
