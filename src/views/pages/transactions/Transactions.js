@@ -48,10 +48,31 @@ const dataSource = [
   },
 ]
 
+const getColumnKey = (column) => {
+  if (column.key) return column.key
+  if (Array.isArray(column.dataIndex)) {
+    return column.dataIndex.filter(Boolean).join('.')
+  }
+  return column.dataIndex
+}
+
+const allTransactionColumnKeys = transactionColumns
+  .map((column) => getColumnKey(column))
+  .filter(Boolean)
+
 const Transactions = () => {
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState(null)
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState(allTransactionColumnKeys)
+
+  const tableColumns = useMemo(
+    () =>
+      transactionColumns.filter((column) =>
+        visibleColumnKeys.includes(getColumnKey(column)),
+      ),
+    [visibleColumnKeys],
+  )
 
   // filter data berdasarkan search, site, dan rentang tanggal
   const filteredData = useMemo(
@@ -131,6 +152,9 @@ const Transactions = () => {
         setSiteFilter={setSiteFilter}
         dateRange={dateRange}
         setDateRange={setDateRange}
+        columns={transactionColumns}
+        visibleColumnKeys={visibleColumnKeys}
+        setVisibleColumnKeys={setVisibleColumnKeys}
       />
 
       <CCard className="mb-4">
@@ -149,7 +173,7 @@ const Transactions = () => {
 
           <Table
             dataSource={filteredData}
-            columns={transactionColumns}
+            columns={tableColumns}
             pagination
             scroll={{ x: 'max-content' }}
             bordered
