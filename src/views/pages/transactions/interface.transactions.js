@@ -27,6 +27,12 @@ export const transactionColumns = [
     title: 'Date',
     dataIndex: 'waktu',
     key: 'waktu',
+    sorter: (a, b) => {
+      const timeA = a?.waktu ? new Date(a.waktu).getTime() : 0
+      const timeB = b?.waktu ? new Date(b.waktu).getTime() : 0
+      return timeA - timeB
+    },
+    sortDirections: ['ascend', 'descend'],
     render: formatDateTime,
   },
   { title: 'ID Card', dataIndex: 'id_card', key: 'id_card' },
@@ -41,18 +47,24 @@ export const transactionColumns = [
     title: 'Odometer',
     dataIndex: 'odometer',
     key: 'odometer',
+    sorter: (a, b) => Number(a.odometer ?? 0) - Number(b.odometer ?? 0),
+    sortDirections: ['ascend', 'descend'],
     render: (value) => Number(value).toLocaleString('id-ID'),
   },
   {
     title: 'Volume (L)',
     dataIndex: 'volume',
     key: 'volume',
+    sorter: (a, b) => Number(a.volume ?? 0) - Number(b.volume ?? 0),
+    sortDirections: ['ascend', 'descend'],
     render: formatDecimal,
   },
   {
     title: 'Unit Price (IDR)',
     dataIndex: 'unit_price',
     key: 'unit_price',
+    sorter: (a, b) => Number(a.unit_price ?? 0) - Number(b.unit_price ?? 0),
+    sortDirections: ['ascend', 'descend'],
     render: formatCurrency,
   },
 ]
