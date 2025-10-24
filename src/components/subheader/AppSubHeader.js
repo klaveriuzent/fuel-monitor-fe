@@ -158,10 +158,9 @@ const AppSubHeader = ({
             key="1"
             header={
               <span
-                className="text-secondary"
+                className="text-secondary fw-semibold"
                 style={{
                   fontSize: '0.8rem',
-                  fontWeight: 600,
                   letterSpacing: '0.3px',
                   marginLeft: '-6px',
                 }}
@@ -170,6 +169,9 @@ const AppSubHeader = ({
               </span>
             }
           >
+            <div className="mb-2 text-secondary fw-semibold" style={{ fontSize: '0.75rem' }}>
+              Range Date
+            </div>
             <div style={{ marginLeft: '-12px' }}>
               <RangePicker
                 size="middle"
