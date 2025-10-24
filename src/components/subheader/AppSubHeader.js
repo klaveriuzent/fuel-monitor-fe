@@ -8,6 +8,8 @@ import axios from 'axios'
 import './AppSubHeader.scss'
 import { getColumnKey } from '../../utils/table'
 
+const STORAGE_KEY = 'app-subheader-filters'
+
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 const { CheckableTag } = Tag
