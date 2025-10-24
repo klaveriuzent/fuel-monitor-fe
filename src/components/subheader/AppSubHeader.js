@@ -144,12 +144,9 @@ const AppSubHeader = ({
       }
 
       if (Array.isArray(savedVisible) && setVisibleColumnKeys) {
-        const filteredColumns =
-          savedVisible.length === 0
-            ? []
-            : savedVisible.filter((key) => availableColumnKeys.includes(key))
+        const filteredColumns = savedVisible.filter((key) => availableColumnKeys.includes(key))
 
-        if (filteredColumns.length || savedVisible.length === 0) {
+        if (filteredColumns.length) {
           setVisibleColumnKeys((prev = []) =>
             areArraysEqual(prev, filteredColumns) ? prev : filteredColumns,
           )
