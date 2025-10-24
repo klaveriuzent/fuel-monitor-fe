@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 import { DatePicker, Collapse, Tag } from 'antd'
@@ -20,6 +20,9 @@ const AppSubHeader = ({
   setSiteFilter,
   dateRange,
   setDateRange,
+  columns = [],
+  visibleColumnKeys,
+  setVisibleColumnKeys,
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
@@ -59,10 +62,70 @@ const AppSubHeader = ({
     }
   }, [baseURL, filterGroup])
 
+  const columnOptions = useMemo(() => {
+    const normalizeKey = (column) => {
+      if (!column) return null
+      if (column.key) return column.key
+      if (Array.isArray(column.dataIndex)) {
+        return column.dataIndex.filter(Boolean).join('.')
+      }
+      return column.dataIndex || null
+    }
+
+    const normalizeLabel = (column, fallback) => {
+      const { title } = column || {}
+
+      if (typeof title === 'string' || typeof title === 'number') {
+        return String(title)
+      }
+
+      if (React.isValidElement(title)) {
+        const child = title.props?.children
+        if (typeof child === 'string' || typeof child === 'number') {
+          return String(child)
+        }
+      }
+
+      if (Array.isArray(title)) {
+        return title.filter(Boolean).join(' ')
+      }
+
+      return fallback
+    }
+
+    return columns
+      .map((column) => {
+        const key = normalizeKey(column)
+        if (!key) return null
+        const fallbackLabel = key.toString().replace(/_/g, ' ')
+        const label = normalizeLabel(column, fallbackLabel)
+        return { key, label }
+      })
+      .filter(Boolean)
+  }, [columns])
+
+  const availableColumnKeys = useMemo(
+    () => columnOptions.map((option) => option.key),
+    [columnOptions],
+  )
+
+  const activeColumnKeys = useMemo(() => {
+    if (Array.isArray(visibleColumnKeys)) {
+      return visibleColumnKeys
+    }
+    return availableColumnKeys
+  }, [availableColumnKeys, visibleColumnKeys])
+
+  const areArraysEqual = useCallback((a = [], b = []) => {
+    if (a.length !== b.length) return false
+    return a.every((value) => b.includes(value))
+  }, [])
+
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
-      const { search, siteFilter, quickRange, dateRange } = JSON.parse(saved)
+      const { search, siteFilter, quickRange, dateRange, visibleColumnKeys: savedVisible } =
+        JSON.parse(saved)
 
       if (search !== undefined) setSearch(search)
       if (siteFilter !== undefined) setSiteFilter(siteFilter)
@@ -73,12 +136,43 @@ const AppSubHeader = ({
       } else if (dateRange) {
         setDateRange(dateRange.map((d) => dayjs(d)))
       }
+
+      if (Array.isArray(savedVisible) && setVisibleColumnKeys) {
+        const filteredColumns =
+          savedVisible.length === 0
+            ? []
+            : savedVisible.filter((key) => availableColumnKeys.includes(key))
+
+        if (filteredColumns.length || savedVisible.length === 0) {
+          setVisibleColumnKeys((prev = []) =>
+            areArraysEqual(prev, filteredColumns) ? prev : filteredColumns,
+          )
+        } else if (availableColumnKeys.length) {
+          setVisibleColumnKeys((prev = []) =>
+            areArraysEqual(prev, availableColumnKeys) ? prev : availableColumnKeys,
+          )
+        }
+      }
     } else {
       const [start, end] = calculateQuickRange('today')
       setDateRange([start, end])
       setQuickRange('today')
+
+      if (setVisibleColumnKeys && availableColumnKeys.length) {
+        setVisibleColumnKeys((prev = []) =>
+          prev.length ? prev : availableColumnKeys,
+        )
+      }
     }
-  }, [calculateQuickRange, setSearch, setSiteFilter, setDateRange])
+  }, [
+    calculateQuickRange,
+    setSearch,
+    setSiteFilter,
+    setDateRange,
+    setVisibleColumnKeys,
+    availableColumnKeys,
+    areArraysEqual,
+  ])
 
   useEffect(() => {
     const filters = {
@@ -86,9 +180,12 @@ const AppSubHeader = ({
       siteFilter,
       quickRange,
       dateRange: dateRange?.map((d) => (d ? d.toISOString() : null)),
+      visibleColumnKeys: Array.isArray(activeColumnKeys)
+        ? activeColumnKeys
+        : availableColumnKeys,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filters))
-  }, [search, siteFilter, quickRange, dateRange])
+  }, [search, siteFilter, quickRange, dateRange, activeColumnKeys, availableColumnKeys])
 
   useEffect(() => {
     fetchSites()
@@ -101,6 +198,9 @@ const AppSubHeader = ({
 
     const [start, end] = calculateQuickRange('today')
     setDateRange([start, end])
+    if (setVisibleColumnKeys && availableColumnKeys.length) {
+      setVisibleColumnKeys(availableColumnKeys)
+    }
     localStorage.removeItem(STORAGE_KEY)
   }
 
@@ -113,6 +213,20 @@ const AppSubHeader = ({
       const [start, end] = calculateQuickRange(value)
       setDateRange([start, end])
     }
+  }
+
+  const handleColumnToggle = (columnKey) => {
+    if (!setVisibleColumnKeys) return
+
+    setVisibleColumnKeys((prev = []) => {
+      const current = Array.isArray(prev) ? prev : []
+      const isActive = current.includes(columnKey)
+      const updated = isActive
+        ? current.filter((key) => key !== columnKey)
+        : [...current, columnKey]
+
+      return availableColumnKeys.filter((key) => updated.includes(key))
+    })
   }
 
   return (
@@ -204,6 +318,26 @@ const AppSubHeader = ({
             </div>
             <div className="app-subheader__range-label mt-3 mb-1 text-secondary fw-semibold">
               Select Column
+            </div>
+            <div className="app-subheader__column-tags">
+              {columnOptions.map((column) => {
+                const isActive = activeColumnKeys.includes(column.key)
+                return (
+                  <CheckableTag
+                    key={column.key}
+                    checked={isActive}
+                    onChange={() => handleColumnToggle(column.key)}
+                    className={`app-subheader__column-tag${
+                      isActive ? ' is-active' : ''
+                    }`}
+                  >
+                    {column.label}
+                  </CheckableTag>
+                )
+              })}
+              {!columnOptions.length && (
+                <span className="text-secondary small">No columns available</span>
+              )}
             </div>
           </Panel>
         </Collapse>
