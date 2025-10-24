@@ -11,6 +11,7 @@ import {
   formatDecimal,
 } from './interface.transactions'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
+import { getColumnKey } from '../../../utils/table'
 
 const dataSource = [
   {
@@ -48,10 +49,23 @@ const dataSource = [
   },
 ]
 
+const allTransactionColumnKeys = transactionColumns
+  .map((column) => getColumnKey(column))
+  .filter(Boolean)
+
 const Transactions = () => {
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState(null)
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState(allTransactionColumnKeys)
+
+  const tableColumns = useMemo(
+    () =>
+      transactionColumns.filter((column) =>
+        visibleColumnKeys.includes(getColumnKey(column)),
+      ),
+    [visibleColumnKeys],
+  )
 
   // filter data berdasarkan search, site, dan rentang tanggal
   const filteredData = useMemo(
@@ -131,6 +145,10 @@ const Transactions = () => {
         setSiteFilter={setSiteFilter}
         dateRange={dateRange}
         setDateRange={setDateRange}
+        columns={transactionColumns}
+        visibleColumnKeys={visibleColumnKeys}
+        setVisibleColumnKeys={setVisibleColumnKeys}
+        storageKey="appSubHeaderFilters:transactions"
       />
 
       <CCard className="mb-4">
@@ -149,7 +167,7 @@ const Transactions = () => {
 
           <Table
             dataSource={filteredData}
-            columns={transactionColumns}
+            columns={tableColumns}
             pagination
             scroll={{ x: 'max-content' }}
             bordered

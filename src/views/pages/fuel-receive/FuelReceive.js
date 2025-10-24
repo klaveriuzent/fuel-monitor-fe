@@ -7,6 +7,7 @@ import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import * as XLSX from 'xlsx'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
+import { getColumnKey } from '../../../utils/table'
 import {
   fuelReceiveColumns,
   formatDateTime,
@@ -16,10 +17,15 @@ import {
 
 dayjs.extend(isBetween)
 
+const allFuelReceiveColumnKeys = fuelReceiveColumns
+  .map((column) => getColumnKey(column))
+  .filter(Boolean)
+
 const FuelReceive = () => {
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState([null, null])
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState(allFuelReceiveColumnKeys)
 
   const dataSource = useMemo(
     () => [
@@ -85,6 +91,14 @@ const FuelReceive = () => {
       },
     ],
     []
+  )
+
+  const tableColumns = useMemo(
+    () =>
+      fuelReceiveColumns.filter((column) =>
+        visibleColumnKeys.includes(getColumnKey(column)),
+      ),
+    [visibleColumnKeys],
   )
 
   const filteredData = useMemo(() => {
@@ -177,6 +191,10 @@ const FuelReceive = () => {
         setSiteFilter={setSiteFilter}
         dateRange={dateRange}
         setDateRange={setDateRange}
+        columns={fuelReceiveColumns}
+        visibleColumnKeys={visibleColumnKeys}
+        setVisibleColumnKeys={setVisibleColumnKeys}
+        storageKey="appSubHeaderFilters:fuelReceive"
       />
 
       {/* Table Section */}
@@ -196,7 +214,7 @@ const FuelReceive = () => {
 
           <Table
             dataSource={filteredData}
-            columns={fuelReceiveColumns}
+            columns={tableColumns}
             pagination={true}
             scroll={{ x: 'max-content' }}
             bordered
