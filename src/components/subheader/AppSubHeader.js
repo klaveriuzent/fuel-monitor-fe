@@ -4,11 +4,12 @@ import { useSelector } from 'react-redux'
 import { DatePicker, Collapse, Tag } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
-import { useLocation } from 'react-router-dom'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 const { CheckableTag } = Tag
+
+const STORAGE_KEY = 'appSubHeaderFilters'
 
 const AppSubHeader = ({
   search,
@@ -18,7 +19,6 @@ const AppSubHeader = ({
   dateRange,
   setDateRange,
 }) => {
-  const location = useLocation()
   const filterGroup = useSelector((state) => state.filterGroup)
   const { pathname } = location
   const [siteOptions, setSiteOptions] = useState([])
