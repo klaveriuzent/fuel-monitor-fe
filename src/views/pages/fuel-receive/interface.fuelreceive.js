@@ -30,6 +30,16 @@ export const fuelReceiveColumns = [
     title: 'Date',
     dataIndex: 'waktu_mulai_delivery',
     key: 'waktu_mulai_delivery',
+    sorter: (a, b) => {
+      const timeA = a?.waktu_mulai_delivery
+        ? new Date(a.waktu_mulai_delivery).getTime()
+        : 0
+      const timeB = b?.waktu_mulai_delivery
+        ? new Date(b.waktu_mulai_delivery).getTime()
+        : 0
+      return timeA - timeB
+    },
+    sortDirections: ['ascend', 'descend'],
     render: formatDateTime,
   },
   {
