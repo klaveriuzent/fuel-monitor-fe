@@ -9,7 +9,6 @@ import './AppSubHeader.scss'
 import { getColumnKey } from '../../utils/table'
 
 const STORAGE_KEY = 'app-subheader-filters'
-
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
 const { CheckableTag } = Tag
@@ -76,9 +75,7 @@ const AppSubHeader = ({
     const normalizeLabel = (column, fallback) => {
       const { title } = column || {}
 
-      if (typeof title === 'string' || typeof title === 'number') {
-        return String(title)
-      }
+      if (typeof title === 'string' || typeof title === 'number') return String(title)
 
       if (React.isValidElement(title)) {
         const child = title.props?.children
@@ -87,9 +84,7 @@ const AppSubHeader = ({
         }
       }
 
-      if (Array.isArray(title)) {
-        return title.filter(Boolean).join(' ')
-      }
+      if (Array.isArray(title)) return title.filter(Boolean).join(' ')
 
       return fallback
     }
@@ -122,6 +117,7 @@ const AppSubHeader = ({
     return a.every((value) => b.includes(value))
   }, [])
 
+  // Load saved filters or set defaults
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
@@ -145,7 +141,6 @@ const AppSubHeader = ({
 
       if (Array.isArray(savedVisible) && setVisibleColumnKeys) {
         const filteredColumns = savedVisible.filter((key) => availableColumnKeys.includes(key))
-
         if (filteredColumns.length) {
           setVisibleColumnKeys((prev = []) =>
             areArraysEqual(prev, filteredColumns) ? prev : filteredColumns,
@@ -160,10 +155,6 @@ const AppSubHeader = ({
       const [start, end] = calculateQuickRange('today')
       setDateRange([start, end])
       setQuickRange('today')
-
-      if (setVisibleColumnKeys && availableColumnKeys.length) {
-        setVisibleColumnKeys((prev = []) => (prev.length ? prev : availableColumnKeys))
-      }
     }
   }, [
     calculateQuickRange,
@@ -175,6 +166,14 @@ const AppSubHeader = ({
     areArraysEqual,
   ])
 
+  // Default all columns visible when columns loaded (even if late)
+  useEffect(() => {
+    if (availableColumnKeys.length && setVisibleColumnKeys) {
+      setVisibleColumnKeys((prev = []) => (prev.length ? prev : availableColumnKeys))
+    }
+  }, [columns, availableColumnKeys, setVisibleColumnKeys])
+
+  // Save filters to localStorage
   useEffect(() => {
     const filters = {
       search,
@@ -197,9 +196,11 @@ const AppSubHeader = ({
 
     const [start, end] = calculateQuickRange('today')
     setDateRange([start, end])
+
     if (setVisibleColumnKeys && availableColumnKeys.length) {
       setVisibleColumnKeys(availableColumnKeys)
     }
+
     localStorage.removeItem(STORAGE_KEY)
   }
 
@@ -216,14 +217,12 @@ const AppSubHeader = ({
 
   const handleColumnToggle = (columnKey) => {
     if (!setVisibleColumnKeys) return
-
     setVisibleColumnKeys((prev = []) => {
       const current = Array.isArray(prev) ? prev : []
       const isActive = current.includes(columnKey)
       const updated = isActive
         ? current.filter((key) => key !== columnKey)
         : [...current, columnKey]
-
       return availableColumnKeys.filter((key) => updated.includes(key))
     })
   }
@@ -300,6 +299,7 @@ const AppSubHeader = ({
             <div className="app-subheader__range-label mb-1 text-secondary fw-semibold">
               Range Date
             </div>
+
             <div className="app-subheader__range-picker">
               <RangePicker
                 size="middle"
@@ -315,9 +315,11 @@ const AppSubHeader = ({
                 disabledDate={(current) => current && current > dayjs().endOf('day').add(1, 'year')}
               />
             </div>
+
             <div className="app-subheader__range-label mt-3 mb-1 text-secondary fw-semibold">
               Select Column
             </div>
+
             <div className="app-subheader__column-tags">
               {columnOptions.map((column) => {
                 const isActive = activeColumnKeys.includes(column.key)
@@ -332,6 +334,7 @@ const AppSubHeader = ({
                   </CheckableTag>
                 )
               })}
+
               {!columnOptions.length && (
                 <span className="text-secondary small">No columns available</span>
               )}
