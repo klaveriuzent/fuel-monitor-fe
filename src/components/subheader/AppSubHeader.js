@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { DatePicker, Collapse, Tag } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
+import { useLocation } from 'react-router-dom'
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
@@ -17,6 +18,7 @@ const AppSubHeader = ({
   dateRange,
   setDateRange,
 }) => {
+  const location = useLocation()
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
@@ -67,6 +69,12 @@ const AppSubHeader = ({
   }, [calculateQuickRange, quickRange, setDateRange])
 
   useEffect(() => setSiteFilter('all'), [filterGroup, setSiteFilter])
+
+  useEffect(() => {
+    setSearch('')
+    setSiteFilter('all')
+    setQuickRange('today')
+  }, [location.pathname, setSearch, setSiteFilter])
 
   const handleClearFilters = () => {
     setSearch('')
