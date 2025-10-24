@@ -143,7 +143,6 @@ const Transactions = () => {
               onClick={handleExport}
               disabled={!filteredData.length}
             >
-              <i className="bi bi-file-earmark-excel me-1"></i>
               Export to Excel
             </CButton>
           </div>

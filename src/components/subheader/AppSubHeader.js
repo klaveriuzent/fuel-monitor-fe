@@ -184,7 +184,7 @@ const AppSubHeader = ({
               </span>
             }
           >
-            <div className="app-subheader__range-label mb-2 text-secondary fw-semibold">
+            <div className="app-subheader__range-label mb-1 text-secondary fw-semibold">
               Range Date
             </div>
             <div className="app-subheader__range-picker">
@@ -201,6 +201,9 @@ const AppSubHeader = ({
                 style={{ width: '100%', marginLeft: '12px' }}
                 disabledDate={(current) => current && current > dayjs().endOf('day').add(1, 'year')}
               />
+            </div>
+            <div className="app-subheader__range-label mt-3 mb-1 text-secondary fw-semibold">
+              Select Column
             </div>
           </Panel>
         </Collapse>
