@@ -195,8 +195,10 @@ const AppSubHeader = ({
                   setDateRange(dates)
                   setQuickRange(null)
                 }}
+                className="app-subheader__range-picker ant-range-custom"
                 allowClear
                 format="DD MMM YYYY"
+                style={{ width: '100%', marginLeft: '12px' }}
                 disabledDate={(current) => current && current > dayjs().endOf('day').add(1, 'year')}
               />
             </div>

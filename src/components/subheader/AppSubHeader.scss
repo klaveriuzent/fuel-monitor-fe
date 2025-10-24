@@ -70,3 +70,47 @@
     }
   }
 }
+
+.ant-range-custom {
+  .ant-picker-input > input {
+    color: var(--cui-body-color, #212529);
+  }
+
+  .ant-picker-clear {
+    color: var(--cui-body-color, #495057);
+  }
+
+  background-color: var(--cui-body-bg, #fff);
+  border-color: var(--cui-border-color, #dee2e6);
+
+  &:hover,
+  &.ant-picker-focused {
+    border-color: var(--cui-primary, #0d6efd);
+  }
+
+  .ant-picker-suffix {
+    color: var(--cui-body-color, #495057);
+  }
+}
+
+[data-coreui-theme='dark'] {
+  .ant-range-custom {
+    background-color: var(--cui-body-bg, #1e1e1e);
+    border-color: var(--cui-border-color, rgba(255, 255, 255, 0.15));
+
+    .ant-picker-input > input {
+      color: var(--cui-body-color, rgba(255, 255, 255, 0.85));
+      background-color: transparent;
+    }
+
+    .ant-picker-suffix,
+    .ant-picker-clear {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .ant-picker-dropdown {
+      background-color: var(--cui-body-bg, #1f1f1f);
+      color: var(--cui-body-color, rgba(255, 255, 255, 0.85));
+    }
+  }
+}
