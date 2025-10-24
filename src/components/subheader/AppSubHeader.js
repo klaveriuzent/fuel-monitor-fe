@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, { useCallback, useEffect, useState } from 'react'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
@@ -11,7 +10,14 @@ const { Panel } = Collapse
 
 const { CheckableTag } = Tag
 
-const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange, setDateRange }) => {
+const AppSubHeader = ({
+  search,
+  setSearch,
+  siteFilter,
+  setSiteFilter,
+  dateRange,
+  setDateRange,
+}) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
   const [quickRange, setQuickRange] = useState('today')
@@ -101,7 +107,7 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange,
   return (
     <CCard className="mb-3 p-3">
       <CRow className="align-items-center g-2">
-        <CCol xs={12} sm={6} md={3}>
+        <CCol xs={12} sm={6} md={4}>
           <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
             <option value="all">All Sites</option>
             {siteOptions.map((site) => (
@@ -112,7 +118,7 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange,
           </CFormSelect>
         </CCol>
 
-        <CCol xs={12} sm={12} md={6}>
+        <CCol xs={12} sm={12} md={8}>
           <div className="d-flex align-items-center gap-2" style={{ width: '100%' }}>
             <CFormInput
               type="text"
@@ -132,15 +138,33 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange,
       <CRow className="mt-3">
         <CCol>
           <div className="d-flex flex-column gap-2">
-            <span className="text-nowrap" style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+            <span
+              className="text-nowrap text-secondary"
+              style={{
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                letterSpacing: '0.3px',
+              }}
+            >
               Select Range Date
             </span>
-            <div className="d-flex flex-wrap gap-2">
+
+            <div className="d-flex flex-wrap">
               {quickRangeOptions.map((option) => (
                 <CheckableTag
                   key={option.value}
                   checked={quickRange === option.value}
                   onChange={() => handleQuickRangeToggle(option.value)}
+                  style={{
+                    borderRadius: '6px',
+                    padding: '4px 10px',
+                    fontSize: '0.8rem',
+                    transition: 'all 0.2s ease-in-out',
+                    backgroundColor: quickRange === option.value ? '#0d6efd' : '',
+                    color: quickRange === option.value ? '#fff' : '#495057',
+                    border: `1px solid ${quickRange === option.value ? '#0d6efd' : '#dee2e6'}`,
+                    cursor: 'pointer',
+                  }}
                 >
                   {option.label}
                 </CheckableTag>
@@ -151,9 +175,24 @@ const AppSubHeader = ({ search, setSearch, siteFilter, setSiteFilter, dateRange,
       </CRow>
 
       <CRow className="mt-3">
-        <Collapse ghost size="small">
-          <Panel header="Advanced Filter" key="1">
-            <div className="ps-2">
+        <Collapse ghost size="small" expandIconPosition="end">
+          <Panel
+            key="1"
+            header={
+              <span
+                className="text-secondary"
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.3px',
+                  marginLeft: '-6px',
+                }}
+              >
+                Advanced Filter
+              </span>
+            }
+          >
+            <div style={{ marginLeft: '-12px' }}>
               <RangePicker
                 size="middle"
                 value={dateRange}
