@@ -1,16 +1,9 @@
 import React, { useState } from 'react'
 import { Row, Col, Pagination, Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
-import {
-  CFormInput,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardTitle,
-  CCardText,
-  CRow,
-  CCol,
-} from '@coreui/react'
+import { CCard, CCardBody, CCardTitle, CCardText } from '@coreui/react'
+
+import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 
 // Generator data dummy
 const generateData = () =>
@@ -314,13 +307,23 @@ const FuelStock = () => {
   const data = generateData()
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [filterSite, setFilterSite] = useState('')
+  const [filterSite, setFilterSite] = useState('all')
   const pageSize = 8
+
+  const handleSearchChange = (value) => {
+    setSearch(value)
+    setCurrentPage(1)
+  }
+
+  const handleSiteFilterChange = (value) => {
+    setFilterSite(value)
+    setCurrentPage(1)
+  }
 
   const filteredData = data.filter((item) => {
     const matchSearch = item.id.toLowerCase().includes(search.toLowerCase())
     const matchSite =
-      filterSite === '' || item.site.toLowerCase().includes(filterSite.toLowerCase())
+      filterSite === 'all' || item.site.toLowerCase().includes(filterSite.toLowerCase())
     return matchSearch && matchSite
   })
 
@@ -329,49 +332,12 @@ const FuelStock = () => {
 
   return (
     <div>
-      <CCard className="mb-3 p-3">
-        <CRow className="align-items-center g-2">
-          <CCol xs={12} sm={5} md={4}>
-            <CFormInput
-              type="text"
-              placeholder="Search by Tank ID..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setCurrentPage(1)
-              }}
-              size="sm"
-            />
-          </CCol>
-
-          <CCol xs={12} sm={4} md={3}>
-            <CFormInput
-              type="text"
-              placeholder="Filter by Site..."
-              value={filterSite}
-              onChange={(e) => {
-                setFilterSite(e.target.value)
-                setCurrentPage(1)
-              }}
-              size="sm"
-            />
-          </CCol>
-
-          <CCol xs="auto">
-            <CButton
-              color="secondary"
-              size="sm"
-              onClick={() => {
-                setSearch('')
-                setFilterSite('')
-                setCurrentPage(1)
-              }}
-            >
-              Clear
-            </CButton>
-          </CCol>
-        </CRow>
-      </CCard>
+      <AppSubHeaderStock
+        search={search}
+        setSearch={handleSearchChange}
+        siteFilter={filterSite}
+        setSiteFilter={handleSiteFilterChange}
+      />
 
       <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
         <Pagination
