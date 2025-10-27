@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Row, Col, Pagination, Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { CCard, CCardBody, CCardTitle, CCardText } from '@coreui/react'
@@ -304,7 +304,7 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
 }
 
 const FuelStock = () => {
-  const data = generateData()
+  const data = useMemo(() => generateData(), [])
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [filterSite, setFilterSite] = useState('all')
