@@ -4,6 +4,8 @@ import { Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { CCard, CCardBody, CCardTitle, CCardText } from '@coreui/react'
 
+import './FuelCard.scss'
+
 const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) => {
   const waterPercent = (waterLevel / capacity) * 100
   const fuelPercent = (fuelLevel / capacity) * 100
@@ -35,65 +37,25 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
 
   return (
     <Tooltip title={tooltipContent} placement="top">
-      <div
-        style={{
-          position: 'relative',
-          width: '100%',
-          height: '160px',
-          border: '2px solid #ccc',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          background: '#f9f9f9',
-          cursor: 'pointer',
-        }}
-      >
+      <div className="tank-visual">
         {[0, 25, 50, 75, 100].map((s) => (
           <div
             key={s}
-            style={{
-              position: 'absolute',
-              bottom: `${s}%`,
-              left: 0,
-              width: '100%',
-              height: '1px',
-              background: '#555',
-              opacity: s === 0 || s === 100 ? 0.5 : 0.3,
-            }}
+            className={`tank-visual__gridline${s === 0 || s === 100 ? ' tank-visual__gridline--edge' : ''}`}
+            style={{ bottom: `${s}%` }}
           />
         ))}
 
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            width: '100%',
-            height: `${waterHeight}%`,
-            background: 'linear-gradient(to top, #3B82F6, #60A5FA)',
-            opacity: 0.7,
-            transition: 'height 0.6s ease-in-out',
-            zIndex: 1,
-          }}
-        ></div>
+        <div className="tank-visual__water" style={{ height: `${waterHeight}%` }}></div>
 
         <div
+          className="tank-visual__fuel"
           style={{
-            position: 'absolute',
-            bottom: `${waterHeight}%`,
-            width: '100%',
             height: `${fuelHeight}%`,
-            overflow: 'hidden',
-            transition: 'height 0.6s ease-in-out, bottom 0.6s ease-in-out',
-            zIndex: 2,
+            bottom: `${waterHeight}%`,
           }}
         >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(to top, #F59E0B, #FBBF24)',
-              opacity: 0.7,
-            }}
-          />
+          <div className="tank-visual__fuel-fill" />
         </div>
       </div>
     </Tooltip>
@@ -111,116 +73,54 @@ TankVisual.propTypes = {
 const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
   const [showFuel, setShowFuel] = useState(true)
   const [showWater, setShowWater] = useState(true)
+
+  const handleFuelKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      setShowFuel((prev) => !prev)
+    }
+  }
+
+  const handleWaterKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      setShowWater((prev) => !prev)
+    }
+  }
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-        gap: '6px',
-        marginLeft: '18px',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          height: '160px',
-          width: '60px',
-          paddingTop: '4px',
-          marginRight: '6px',
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            background: '#f9f9f9',
-            border: '2px solid #ccc',
-            borderRadius: '4px',
-            marginBottom: '6px',
-            textAlign: 'center',
-            fontSize: '0.75rem',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2px',
-          }}
-        >
-          {temperature} °C
-        </div>
+    <div className="tank-with-scale">
+      <div className="tank-with-scale__controls">
+        <div className="tank-with-scale__temperature">{temperature} °C</div>
 
         <div
-          onClick={() => setShowFuel((p) => !p)}
-          style={{
-            flex: 1,
-            background: showFuel ? '#fff3e0' : '#f9f9f9',
-            border: '2px solid #ccc',
-            borderRadius: '4px',
-            marginBottom: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
+          className={`fuel-card__toggle fuel-card__toggle--fuel${showFuel ? ' is-active' : ''}`}
+          onClick={() => setShowFuel((prev) => !prev)}
+          onKeyDown={handleFuelKeyDown}
+          role="button"
+          tabIndex={0}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <FireOutlined
-              style={{
-                fontSize: '1rem',
-                marginTop: '2px',
-                color: showFuel ? '#F59E0B' : '#aaa',
-              }}
-            />
-            <span
-              style={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                marginTop: '-2px',
-              }}
-            >
-              Fuel
-            </span>
+          <div className="fuel-card__toggle-content">
+            <FireOutlined className="fuel-card__toggle-icon fuel-card__toggle-icon--fuel" />
+            <span className="fuel-card__toggle-label">Fuel</span>
           </div>
         </div>
 
         <div
-          onClick={() => setShowWater((p) => !p)}
-          style={{
-            flex: 1,
-            background: showWater ? '#e0f2fe' : '#f9f9f9',
-            border: '2px solid #ccc',
-            borderRadius: '4px',
-            marginBottom: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
+          className={`fuel-card__toggle fuel-card__toggle--water${showWater ? ' is-active' : ''}`}
+          onClick={() => setShowWater((prev) => !prev)}
+          onKeyDown={handleWaterKeyDown}
+          role="button"
+          tabIndex={0}
         >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <ExperimentOutlined
-              style={{
-                fontSize: '1rem',
-                marginTop: '2px',
-                color: showWater ? '#3B82F6' : '#aaa',
-              }}
-            />
-            <span
-              style={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                marginTop: '-2px',
-              }}
-            >
-              Water
-            </span>
+          <div className="fuel-card__toggle-content">
+            <ExperimentOutlined className="fuel-card__toggle-icon fuel-card__toggle-icon--water" />
+            <span className="fuel-card__toggle-label">Water</span>
           </div>
         </div>
       </div>
 
-      <div style={{ width: 'calc(100% - 120px)', minWidth: '100px' }}>
+      <div className="tank-with-scale__visual">
         <TankVisual
           fuelLevel={fuelLevel}
           waterLevel={waterLevel}
@@ -230,32 +130,9 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
         />
       </div>
 
-      <div
-        style={{
-          position: 'relative',
-          height: '160px',
-          width: '40px',
-          marginLeft: '4px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-around',
-          fontSize: '0.65rem',
-          color: '#333',
-          fontWeight: '600',
-          paddingTop: '20px',
-          paddingBottom: '20px',
-        }}
-      >
+      <div className="tank-with-scale__markers">
         {[75, 50, 25].map((s) => (
-          <div
-            key={s}
-            style={{
-              height: '0px',
-              display: 'flex',
-              alignItems: 'center',
-              lineHeight: '1',
-            }}
-          >
+          <div key={s} className="tank-with-scale__marker">
             {s}%
           </div>
         ))}
@@ -273,10 +150,10 @@ TankWithScale.propTypes = {
 
 const FuelCard = ({ item }) => (
   <Badge.Ribbon text={item.status} color={item.status === 'Online' ? 'green' : 'red'}>
-    <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
-      <CCardBody style={{ padding: '12px' }}>
-        <CCardTitle style={{ fontSize: '1rem', marginBottom: '8px' }}>{item.id}</CCardTitle>
-        <CCardText style={{ fontSize: '0.85rem' }}>
+    <CCard className="fuel-card shadow-sm h-full">
+      <CCardBody className="fuel-card__body">
+        <CCardTitle className="fuel-card__title">{item.id}</CCardTitle>
+        <CCardText className="fuel-card__details">
           <b>Type:</b> {item.type} <br />
           <b>Site:</b> {item.site} <br />
           <b>Tank Height:</b> {item.tankHeight} cm <br />
@@ -290,7 +167,7 @@ const FuelCard = ({ item }) => (
           temperature={item.temperature}
         />
 
-        <CCardText style={{ fontSize: '0.75rem', marginTop: '18px' }}>
+        <CCardText className="fuel-card__summary">
           <b>Fuel:</b> {item.fuelLevel} L
           <br />
           <b>Water:</b> {item.waterLevel} L
