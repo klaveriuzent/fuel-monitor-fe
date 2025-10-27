@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { Row, Col, Pagination, Tag } from 'antd'

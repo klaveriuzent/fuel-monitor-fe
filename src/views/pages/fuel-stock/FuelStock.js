@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Row, Col, Pagination, Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { CCard, CCardBody, CCardTitle, CCardText } from '@coreui/react'
@@ -515,15 +515,21 @@ const FuelStock = () => {
   const [filterSite, setFilterSite] = useState('all')
   const pageSize = 8
 
-  const handleSearchChange = (value) => {
-    setSearch(value)
-    setCurrentPage(1)
-  }
+  const handleSearchChange = useCallback(
+    (value) => {
+      setSearch(value)
+      setCurrentPage(1)
+    },
+    [setCurrentPage, setSearch],
+  )
 
-  const handleSiteFilterChange = (value) => {
-    setFilterSite(value)
-    setCurrentPage(1)
-  }
+  const handleSiteFilterChange = useCallback(
+    (value) => {
+      setFilterSite(value)
+      setCurrentPage(1)
+    },
+    [setCurrentPage, setFilterSite],
+  )
 
   const filteredData = data.filter((item) => {
     const matchSearch = item.id.toLowerCase().includes(search.toLowerCase())

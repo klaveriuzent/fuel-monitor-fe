@@ -95,8 +95,11 @@ const AppSubHeaderStock = ({
   useEffect(() => {
     const saved = localStorage.getItem(storageKey)
     if (saved) {
-      const { search: savedSearch, siteFilter: savedSite, visibleColumnKeys: savedVisible } =
-        JSON.parse(saved)
+      const {
+        search: savedSearch,
+        siteFilter: savedSite,
+        visibleColumnKeys: savedVisible,
+      } = JSON.parse(saved)
 
       if (savedSearch !== undefined) setSearch(savedSearch)
       if (savedSite !== undefined) setSiteFilter(savedSite)
