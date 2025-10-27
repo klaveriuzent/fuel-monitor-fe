@@ -3,12 +3,11 @@ import { useSelector } from 'react-redux'
 import { Collapse, Tag } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
-
 import './AppSubHeader.scss'
 
-const DEFAULT_STORAGE_KEY = 'app-subheader-stock-filters'
 const { Panel } = Collapse
 const { CheckableTag } = Tag
+const DEFAULT_STORAGE_KEY = 'app-subheader-stock-filters'
 
 const AppSubHeaderStock = ({
   search,
@@ -24,6 +23,7 @@ const AppSubHeaderStock = ({
   const [siteOptions, setSiteOptions] = useState([])
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
+  // Fetch daftar site dari API
   const fetchSites = useCallback(async () => {
     try {
       const url =
@@ -49,18 +49,12 @@ const AppSubHeaderStock = ({
 
     const normalizeLabel = (column, fallback) => {
       const { title } = column || {}
-
       if (typeof title === 'string' || typeof title === 'number') return String(title)
-
       if (React.isValidElement(title)) {
         const child = title.props?.children
-        if (typeof child === 'string' || typeof child === 'number') {
-          return String(child)
-        }
+        if (typeof child === 'string' || typeof child === 'number') return String(child)
       }
-
       if (Array.isArray(title)) return title.filter(Boolean).join(' ')
-
       return fallback
     }
 
@@ -92,9 +86,12 @@ const AppSubHeaderStock = ({
     return a.every((value) => b.includes(value))
   }, [])
 
+  // 🧩 Restore filter dari localStorage (hanya sekali di mount)
   useEffect(() => {
     const saved = localStorage.getItem(storageKey)
-    if (saved) {
+    if (!saved) return
+
+    try {
       const {
         search: savedSearch,
         siteFilter: savedSite,
@@ -116,22 +113,20 @@ const AppSubHeaderStock = ({
           )
         }
       }
+    } catch {
+      console.warn('Failed to parse saved filters')
     }
-  }, [
-    setSearch,
-    setSiteFilter,
-    setVisibleColumnKeys,
-    availableColumnKeys,
-    areArraysEqual,
-    storageKey,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
+  // Pastikan visibleColumnKeys selalu sinkron dengan kolom tersedia
   useEffect(() => {
     if (availableColumnKeys.length && setVisibleColumnKeys) {
       setVisibleColumnKeys((prev = []) => (prev.length ? prev : availableColumnKeys))
     }
-  }, [columns, availableColumnKeys, setVisibleColumnKeys])
+  }, [availableColumnKeys, setVisibleColumnKeys])
 
+  // Simpan filter ke localStorage setiap kali berubah
   useEffect(() => {
     const filters = {
       search,
@@ -141,21 +136,22 @@ const AppSubHeaderStock = ({
     localStorage.setItem(storageKey, JSON.stringify(filters))
   }, [search, siteFilter, activeColumnKeys, availableColumnKeys, storageKey])
 
+  // Fetch site list saat pertama kali dan tiap filterGroup berubah
   useEffect(() => {
     fetchSites()
   }, [fetchSites])
 
+  // Reset filter
   const handleClearFilters = () => {
     setSearch('')
     setSiteFilter('all')
-
     if (setVisibleColumnKeys && availableColumnKeys.length) {
       setVisibleColumnKeys(availableColumnKeys)
     }
-
     localStorage.removeItem(storageKey)
   }
 
+  // Toggle column visibility
   const handleColumnToggle = (columnKey) => {
     if (!setVisibleColumnKeys) return
     setVisibleColumnKeys((prev = []) => {
@@ -171,17 +167,19 @@ const AppSubHeaderStock = ({
   return (
     <CCard className="app-subheader mb-3 p-3">
       <CRow className="align-items-center g-2">
+        {/* Filter Site */}
         <CCol xs={12} sm={6} md={4}>
           <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
             <option value="all">All Sites</option>
             {siteOptions.map((site) => (
-              <option key={site.id} value={site.id_site}>
+              <option key={site.id_site || site.id} value={site.id_site}>
                 {site.id_site}
               </option>
             ))}
           </CFormSelect>
         </CCol>
 
+        {/* Search & Clear */}
         <CCol xs={12} sm={12} md={8}>
           <div className="app-subheader__search d-flex align-items-center gap-2">
             <CFormInput
@@ -199,6 +197,7 @@ const AppSubHeaderStock = ({
         </CCol>
       </CRow>
 
+      {/* Column Selector */}
       {!!columnOptions.length && (
         <CRow className="mt-3">
           <Collapse ghost size="small" expandIconPosition="end">
