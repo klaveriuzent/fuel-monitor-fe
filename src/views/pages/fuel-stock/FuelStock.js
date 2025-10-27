@@ -544,18 +544,6 @@ const FuelStock = () => {
         setSiteFilter={handleSiteFilterChange}
       />
 
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredData.length}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-          responsive
-          simple
-        />
-      </div>
-
       <Row gutter={[16, 16]}>
         {paginatedData.map((item) => (
           <Col key={item.id} xs={24} sm={12} md={8} lg={6}>
@@ -599,7 +587,6 @@ const FuelStock = () => {
           onChange={(page) => setCurrentPage(page)}
           showSizeChanger={false}
           responsive
-          simple
         />
       </div>
     </div>
