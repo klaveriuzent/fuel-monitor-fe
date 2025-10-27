@@ -38,7 +38,8 @@ const Transactions = () => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const res = await axios.get(`${baseURL}transaksi`)
+        const params = siteFilter !== 'all' ? { id_site: siteFilter } : undefined
+        const res = await axios.get(`${baseURL}transaksi`, { params })
         if (res.data && Array.isArray(res.data.data)) {
           const formatted = res.data.data.map((item, idx) => ({
             key: item.no_urut || idx,
@@ -61,7 +62,7 @@ const Transactions = () => {
     }
 
     fetchData()
-  }, [])
+  }, [siteFilter])
 
   // Filter pencarian
   const filteredData = useMemo(
