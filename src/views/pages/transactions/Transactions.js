@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
+import axios from 'axios'
 import dayjs from 'dayjs'
 import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
@@ -13,47 +14,15 @@ import {
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import { getColumnKey } from '../../../utils/table'
 
-const dataSource = [
-  {
-    key: '1',
-    id_card: 'ID-001',
-    odometer: 342466,
-    id_site: 'SIMP_SIMP_Balam_Estate',
-    plat: 'BM 1234 XX',
-    username: 'operator-01',
-    waktu: '2025-09-30T08:36:48Z',
-    volume: 19.0,
-    unit_price: 6800,
-  },
-  {
-    key: '2',
-    id_card: 'ID-002',
-    odometer: 298754,
-    id_site: 'SIMP_SIMP_Talang_Estate',
-    plat: 'BM 5678 YY',
-    username: 'operator-02',
-    waktu: '2025-10-02T11:22:15Z',
-    volume: 22.5,
-    unit_price: 6900,
-  },
-  {
-    key: '3',
-    id_card: 'ID-003',
-    odometer: 365102,
-    id_site: 'SIMP_SIMP_Sawit_Estate',
-    plat: '',
-    username: 'operator-03',
-    waktu: '2025-10-05T06:54:03Z',
-    volume: 17.25,
-    unit_price: 7000,
-  },
-]
+const baseURL = import.meta.env.VITE_API_BASE_URL
 
 const allTransactionColumnKeys = transactionColumns
   .map((column) => getColumnKey(column))
   .filter(Boolean)
 
 const Transactions = () => {
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState(null)
@@ -64,10 +33,40 @@ const Transactions = () => {
     [visibleColumnKeys],
   )
 
-  // filter data berdasarkan search, site, dan rentang tanggal
+  // Ambil data dari API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const res = await axios.get(`${baseURL}transaksi`)
+        if (res.data && Array.isArray(res.data.data)) {
+          const formatted = res.data.data.map((item, idx) => ({
+            key: item.no_urut || idx,
+            id_card: item.id_card,
+            odometer: Number(item.odometer),
+            id_site: item.id_site,
+            plat: item.plat,
+            username: item.username,
+            waktu: item.waktu,
+            volume: parseFloat(item.volume),
+            unit_price: parseFloat(item.unit_price),
+          }))
+          setData(formatted)
+        }
+      } catch (err) {
+        console.error('Error fetching transactions:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Filter pencarian
   const filteredData = useMemo(
     () =>
-      dataSource.filter((item) => {
+      data.filter((item) => {
         const matchesText = [
           item.id_site,
           item.id_card,
@@ -99,9 +98,10 @@ const Transactions = () => {
 
         return matchesText && matchesSite && matchesDate
       }),
-    [dateRange, search, siteFilter],
+    [dateRange, search, siteFilter, data],
   )
 
+  // Export Excel (tetap sama)
   const handleExport = () => {
     const exportData = filteredData.map((item) => ({
       Site: item.id_site,
@@ -165,6 +165,7 @@ const Transactions = () => {
           <Table
             dataSource={filteredData}
             columns={tableColumns}
+            loading={loading}
             pagination
             scroll={{ x: 'max-content' }}
             bordered
