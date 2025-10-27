@@ -17,9 +17,8 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
   const tooltipContent = (
     <div>
       <div style={{ fontWeight: 'bold' }}>
-        Total: {totalLiters.toLocaleString()}L / {capacity.toLocaleString()}L ({
-          totalHeight.toFixed(1)
-        }%)
+        Total: {totalLiters.toLocaleString()}L / {capacity.toLocaleString()}L (
+        {totalHeight.toFixed(1)}%)
       </div>
       {showFuel && (
         <div style={{ marginTop: '4px' }}>
