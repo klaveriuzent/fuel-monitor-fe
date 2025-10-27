@@ -41,7 +41,8 @@ const FuelReceive = () => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const res = await axios.get(`${baseURL}tankdeliv`)
+        const params = siteFilter !== 'all' ? { id_site: siteFilter } : undefined
+        const res = await axios.get(`${baseURL}tankdeliv`, { params })
         if (res.data && Array.isArray(res.data.data)) {
           const formatted = res.data.data.map((item, idx) => ({
             key: item.no || idx,
@@ -68,7 +69,7 @@ const FuelReceive = () => {
     }
 
     fetchData()
-  }, [])
+  }, [siteFilter])
 
   // Filter pencarian + tanggal + site
   const filteredData = useMemo(() => {
