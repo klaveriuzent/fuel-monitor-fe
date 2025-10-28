@@ -22,6 +22,7 @@ import {
   CFormCheck,
 } from '@coreui/react'
 import axios from 'axios'
+import './masterData.scss'
 
 const mapSiteData = (item) => ({
   key: item.id,
@@ -112,9 +113,9 @@ const MasterSites = () => {
   }
 
   return (
-    <div>
+    <div className="master-data-page">
       {/* Filter Section */}
-      <CCard className="mb-3 p-3">
+      <CCard className="master-data-filter-card mb-3">
         <CRow className="align-items-center g-2">
           <CCol xs={12} sm={5} md={4}>
             <CFormInput
@@ -167,7 +168,7 @@ const MasterSites = () => {
       </CCard>
 
       {/* Pagination Top */}
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+      <div className="master-data-pagination">
         <Pagination
           current={currentPage}
           pageSize={pageSize}
@@ -181,63 +182,56 @@ const MasterSites = () => {
 
       {/* Cards Section */}
       <Row gutter={[16, 16]}>
-        {paginatedData.map((site) => (
-          <Col key={site.key} xs={24} sm={12} md={8} lg={6}>
-            <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
-              <CCardBody
-                style={{
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  height: '100%',
-                }}
-              >
-                {/* Status */}
-                <div style={{ marginBottom: '6px' }}>
-                  <Tag
-                    color={site.active ? 'green' : 'red'}
-                    style={{ display: 'inline-block', fontSize: '0.7rem', padding: '0 6px' }}
-                  >
-                    {site.active ? 'Active' : 'Offline'}
-                  </Tag>
-                </div>
+        {paginatedData.map((site) => {
+          const statusClass = site.active
+            ? 'master-data-status-tag master-data-status-tag--active'
+            : 'master-data-status-tag master-data-status-tag--offline'
 
-                {/* Konten utama */}
-                <div>
-                  <CCardTitle style={{ fontSize: '0.8rem', marginBottom: '6px' }}>
-                    {site.idSite} - {site.bacode}
-                  </CCardTitle>
+          return (
+            <Col key={site.key} xs={24} sm={12} md={8} lg={6}>
+              <CCard className="shadow-sm master-data-card">
+                <CCardBody className="master-data-card__body">
+                  {/* Status */}
+                  <div className="master-data-card__status">
+                    <Tag className={statusClass}>{site.active ? 'Active' : 'Offline'}</Tag>
+                  </div>
 
-                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                    <b>Area:</b> {site.area}
-                  </CCardText>
-                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                    <b>City:</b> {site.locationCity}
-                  </CCardText>
-                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                    <b>Address:</b> {site.locationAddress}
-                  </CCardText>
-                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                    <b>Coordinates:</b> {site.coordinates}
-                  </CCardText>
+                  {/* Konten utama */}
+                  <div>
+                    <CCardTitle className="master-data-card__title">
+                      {site.idSite} - {site.bacode}
+                    </CCardTitle>
 
-                  <CCardText style={{ fontSize: '0.7rem', color: '#666', marginTop: '8px' }}>
-                    <b>Created:</b> {site.userCreate} ({site.dateCreate}) <br />
-                    <b>Updated:</b> {site.updateBy} ({site.updateDate})
-                  </CCardText>
-                </div>
+                    <CCardText className="master-data-card__text">
+                      <b>Area:</b> {site.area}
+                    </CCardText>
+                    <CCardText className="master-data-card__text">
+                      <b>City:</b> {site.locationCity}
+                    </CCardText>
+                    <CCardText className="master-data-card__text">
+                      <b>Address:</b> {site.locationAddress}
+                    </CCardText>
+                    <CCardText className="master-data-card__text">
+                      <b>Coordinates:</b> {site.coordinates}
+                    </CCardText>
 
-                {/* Tombol konsisten di bawah */}
-                <div style={{ marginTop: 'auto', textAlign: 'right' }}>
-                  <CButton size="sm" color="primary" onClick={() => handleEdit(site)}>
-                    Edit
-                  </CButton>
-                </div>
-              </CCardBody>
-            </CCard>
-          </Col>
-        ))}
+                    <CCardText className="master-data-card__meta text-body-secondary">
+                      <b>Created:</b> {site.userCreate} ({site.dateCreate}) <br />
+                      <b>Updated:</b> {site.updateBy} ({site.updateDate})
+                    </CCardText>
+                  </div>
+
+                  {/* Tombol konsisten di bawah */}
+                  <div className="master-data-card__actions">
+                    <CButton size="sm" color="primary" onClick={() => handleEdit(site)}>
+                      Edit
+                    </CButton>
+                  </div>
+                </CCardBody>
+              </CCard>
+            </Col>
+          )
+        })}
 
         {loading && (
           <Col xs={24} className="text-center">
@@ -252,7 +246,7 @@ const MasterSites = () => {
       </Row>
 
       {/* Pagination Bottom */}
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+      <div className="master-data-pagination">
         <Pagination
           current={currentPage}
           pageSize={pageSize}

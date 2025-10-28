@@ -22,6 +22,7 @@ import {
   CFormCheck,
 } from '@coreui/react'
 import axios from 'axios'
+import './masterData.scss'
 
 const mapTankData = (item) => ({
   key: item.id,
@@ -108,9 +109,9 @@ const MasterTanks = () => {
   }
 
   return (
-    <div>
+    <div className="master-data-page">
       {/* Filter Section */}
-      <CCard className="mb-3 p-3">
+      <CCard className="master-data-filter-card mb-3">
         <CRow className="align-items-center g-2">
           <CCol xs={12} sm={5} md={4}>
             <CFormInput
@@ -163,7 +164,7 @@ const MasterTanks = () => {
       </CCard>
 
       {/* Pagination Top */}
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+      <div className="master-data-pagination">
         <Pagination
           current={currentPage}
           pageSize={pageSize}
@@ -177,63 +178,56 @@ const MasterTanks = () => {
 
       {/* Cards Section */}
       <Row gutter={[16, 16]}>
-        {paginatedData.map((tank) => (
-          <Col key={tank.key} xs={24} sm={12} md={8} lg={6}>
-            <CCard className="shadow-sm h-full" style={{ height: '100%' }}>
-              <CCardBody
-                style={{
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  height: '100%',
-                }}
-              >
-                {/* Status */}
-                <div style={{ marginBottom: '6px' }}>
-                  <Tag
-                    color={tank.active ? 'green' : 'red'}
-                    style={{ display: 'inline-block', fontSize: '0.7rem', padding: '0 6px' }}
-                  >
-                    {tank.active ? 'Active' : 'Offline'}
-                  </Tag>
-                </div>
+        {paginatedData.map((tank) => {
+          const statusClass = tank.active
+            ? 'master-data-status-tag master-data-status-tag--active'
+            : 'master-data-status-tag master-data-status-tag--offline'
 
-                {/* Konten utama */}
-                <div>
-                  <CCardTitle style={{ fontSize: '0.8rem', marginBottom: '6px' }}>
-                    Tank {tank.idTank} - {tank.idSite}
-                  </CCardTitle>
+          return (
+            <Col key={tank.key} xs={24} sm={12} md={8} lg={6}>
+              <CCard className="shadow-sm master-data-card">
+                <CCardBody className="master-data-card__body">
+                  {/* Status */}
+                  <div className="master-data-card__status">
+                    <Tag className={statusClass}>{tank.active ? 'Active' : 'Offline'}</Tag>
+                  </div>
 
-                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                    <b>Type:</b> {tank.type}
-                  </CCardText>
-                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                    <b>Grade:</b> {tank.grade}
-                  </CCardText>
-                  <CCardText style={{ fontSize: '0.8rem', marginBottom: '4px' }}>
-                    <b>Company:</b> {tank.company}
-                  </CCardText>
+                  {/* Konten utama */}
+                  <div>
+                    <CCardTitle className="master-data-card__title">
+                      Tank {tank.idTank} - {tank.idSite}
+                    </CCardTitle>
 
-                  {tank.lastData && (
-                    <CCardText style={{ fontSize: '0.75rem', marginTop: '8px', color: '#555' }}>
-                      <b>Last Update:</b> {tank.lastData.update_date} <br />
-                      <b>Volume Oil:</b> {tank.lastData.volume_oil} L <br />
-                      <b>Temperature:</b> {tank.lastData.temperature} °C
+                    <CCardText className="master-data-card__text">
+                      <b>Type:</b> {tank.type}
                     </CCardText>
-                  )}
-                </div>
+                    <CCardText className="master-data-card__text">
+                      <b>Grade:</b> {tank.grade}
+                    </CCardText>
+                    <CCardText className="master-data-card__text">
+                      <b>Company:</b> {tank.company}
+                    </CCardText>
 
-                {/* Tombol konsisten di bawah */}
-                <div style={{ marginTop: 'auto', textAlign: 'right' }}>
-                  <CButton size="sm" color="primary" onClick={() => handleEdit(tank)}>
-                    Edit
-                  </CButton>
-                </div>
-              </CCardBody>
-            </CCard>
-          </Col>
-        ))}
+                    {tank.lastData && (
+                      <CCardText className="master-data-card__meta text-body-secondary">
+                        <b>Last Update:</b> {tank.lastData.update_date} <br />
+                        <b>Volume Oil:</b> {tank.lastData.volume_oil} L <br />
+                        <b>Temperature:</b> {tank.lastData.temperature} °C
+                      </CCardText>
+                    )}
+                  </div>
+
+                  {/* Tombol konsisten di bawah */}
+                  <div className="master-data-card__actions">
+                    <CButton size="sm" color="primary" onClick={() => handleEdit(tank)}>
+                      Edit
+                    </CButton>
+                  </div>
+                </CCardBody>
+              </CCard>
+            </Col>
+          )
+        })}
 
         {loading && (
           <Col xs={24} className="text-center">
@@ -248,7 +242,7 @@ const MasterTanks = () => {
       </Row>
 
       {/* Pagination Bottom */}
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+      <div className="master-data-pagination">
         <Pagination
           current={currentPage}
           pageSize={pageSize}
