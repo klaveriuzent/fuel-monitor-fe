@@ -213,7 +213,7 @@ const WidgetsDropdown = ({
         <CWidgetStatsA
           color="warning"
           value={`${transaksiData.length} records`}
-          title="Fuel Dispensed"
+          title="Fuel Dispensed (Transaction)"
           action={
             <CDropdown alignment="end">
               <CDropdownToggle color="transparent" caret={false} className="text-white p-0">
