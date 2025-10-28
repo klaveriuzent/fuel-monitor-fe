@@ -170,7 +170,7 @@ const FuelCard = ({ item }) => (
           <br />
           <b>Water:</b> {item.volume_air} L
           <br />
-          <b>Tank Height:</b> {item.tankHeight} L
+          <b>Empty Space:</b> {item.ruang_kosong} L
           <br />
           <small>Last Updated: {item.update_date}</small>
         </CCardText>
@@ -185,7 +185,7 @@ FuelCard.propTypes = {
     aktif_flag: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     id_site: PropTypes.string.isRequired,
-    tankHeight: PropTypes.number.isRequired,
+    ruang_kosong: PropTypes.number.isRequired,
     max_capacity: PropTypes.number.isRequired,
     volume_oil: PropTypes.number.isRequired,
     volume_air: PropTypes.number.isRequired,
