@@ -149,30 +149,30 @@ TankWithScale.propTypes = {
 }
 
 const FuelCard = ({ item }) => (
-  <Badge.Ribbon text={item.status} color={item.status === 'Online' ? 'green' : 'red'}>
+  <Badge.Ribbon text={item.aktif_flag} color={item.aktif_flag === 'Online' ? 'green' : 'red'}>
     <CCard className="fuel-card shadow-sm h-full">
       <CCardBody className="fuel-card__body">
-        <CCardTitle className="fuel-card__title">{item.id}</CCardTitle>
+        <CCardTitle className="fuel-card__title">{item.id_tank}</CCardTitle>
         <CCardText className="fuel-card__details">
           <b>Type:</b> {item.type} <br />
-          <b>Site:</b> {item.site} <br />
+          <b>Site:</b> {item.id_site} <br />
           <b>Tank Height:</b> {item.tankHeight} cm <br />
-          <b>Capacity:</b> {item.capacity} L
+          <b>Capacity:</b> {item.max_capacity} L
         </CCardText>
 
         <TankWithScale
-          fuelLevel={item.fuelLevel}
-          waterLevel={item.waterLevel}
-          capacity={item.capacity}
+          fuelLevel={item.volume_oil}
+          waterLevel={item.volume_air}
+          capacity={item.max_capacity}
           temperature={item.temperature}
         />
 
         <CCardText className="fuel-card__summary">
-          <b>Fuel:</b> {item.fuelLevel} L
+          <b>Fuel:</b> {item.volume_oil} L
           <br />
-          <b>Water:</b> {item.waterLevel} L
+          <b>Water:</b> {item.volume_air} L
           <br />
-          <small>Last Updated: {item.lastUpdated}</small>
+          <small>Last Updated: {item.update_date}</small>
         </CCardText>
       </CCardBody>
     </CCard>
@@ -181,16 +181,16 @@ const FuelCard = ({ item }) => (
 
 FuelCard.propTypes = {
   item: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
+    id_tank: PropTypes.string.isRequired,
+    aktif_flag: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
-    site: PropTypes.string.isRequired,
+    id_site: PropTypes.string.isRequired,
     tankHeight: PropTypes.number.isRequired,
-    capacity: PropTypes.number.isRequired,
-    fuelLevel: PropTypes.number.isRequired,
-    waterLevel: PropTypes.number.isRequired,
+    max_capacity: PropTypes.number.isRequired,
+    volume_oil: PropTypes.number.isRequired,
+    volume_air: PropTypes.number.isRequired,
     temperature: PropTypes.string.isRequired,
-    lastUpdated: PropTypes.string.isRequired,
+    update_date: PropTypes.string.isRequired,
   }).isRequired,
 }
 
