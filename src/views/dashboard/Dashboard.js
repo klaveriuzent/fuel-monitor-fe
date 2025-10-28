@@ -305,7 +305,12 @@ const Dashboard = () => {
 
   return (
     <>
-      <WidgetsDropdown className="mb-4" />
+      <WidgetsDropdown
+        className="mb-4"
+        fuelStockData={fuelStockData}
+        fuelReceiveData={fuelReceiveData}
+        transaksiData={transaksiData}
+      />
       <CCard className="mb-4">
         <CCardBody>
           <CRow>
