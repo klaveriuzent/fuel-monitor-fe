@@ -155,7 +155,6 @@ const FuelCard = ({ item }) => (
         <CCardTitle className="fuel-card__title">{item.id_tank}</CCardTitle>
         <CCardText className="fuel-card__details">
           <b>Site:</b> {item.id_site} <br />
-          <b>Tank Height:</b> {item.tankHeight} cm <br />
           <b>Capacity:</b> {item.max_capacity} L
         </CCardText>
 
@@ -170,6 +169,8 @@ const FuelCard = ({ item }) => (
           <b>Fuel:</b> {item.volume_oil} L
           <br />
           <b>Water:</b> {item.volume_air} L
+          <br />
+          <b>Tank Height:</b> {item.tankHeight} L
           <br />
           <small>Last Updated: {item.update_date}</small>
         </CCardText>

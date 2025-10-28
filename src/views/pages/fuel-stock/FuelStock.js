@@ -61,7 +61,6 @@ const dataSource = [
     temperature: '30.2',
     update_date: '2025-09-30 07:20',
   },
-  // dst... (hapus juga field type di seluruh objek lain)
 ]
 
 const FuelStock = () => {
