@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import classNames from 'classnames'
 
 import {
@@ -52,8 +52,14 @@ import avatar6 from 'src/assets/images/avatars/6.jpg'
 
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
+import AppSubHeader from '../../components/subheader/AppSubHeader'
 
 const Dashboard = () => {
+  const [search, setSearch] = useState('')
+  const [siteFilter, setSiteFilter] = useState('all')
+  const [dateRange, setDateRange] = useState([null, null])
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState([])
+
   const progressExample = [
     { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
     { title: 'Unique', value: '24.093 Users', percent: 20, color: 'info' },
@@ -305,6 +311,18 @@ const Dashboard = () => {
 
   return (
     <>
+      <AppSubHeader
+        search={search}
+        setSearch={setSearch}
+        siteFilter={siteFilter}
+        setSiteFilter={setSiteFilter}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        columns={[]}
+        visibleColumnKeys={visibleColumnKeys}
+        setVisibleColumnKeys={setVisibleColumnKeys}
+        storageKey="appSubHeaderFilters:dashboard"
+      />
       <WidgetsDropdown
         className="mb-4"
         fuelStockData={fuelStockData}
