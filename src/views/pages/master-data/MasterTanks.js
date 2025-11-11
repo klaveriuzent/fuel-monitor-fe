@@ -210,7 +210,12 @@ const MasterTanks = () => {
 
                     {tank.lastData && (
                       <CCardText className="master-data-card__meta text-body-secondary">
-                        <b>Last Update:</b> {tank.lastData.update_date} <br />
+                        <b>Last Update:</b>{' '}
+                        {new Date(tank.lastData.update_date)
+                          .toISOString()
+                          .replace('T', ' ')
+                          .replace('Z', '')}{' '}
+                        <br />
                         <b>Volume Oil:</b> {tank.lastData.volume_oil} L <br />
                         <b>Temperature:</b> {tank.lastData.temperature} °C
                       </CCardText>
