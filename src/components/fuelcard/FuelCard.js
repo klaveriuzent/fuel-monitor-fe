@@ -149,7 +149,10 @@ TankWithScale.propTypes = {
 }
 
 const FuelCard = ({ item }) => (
-  <Badge.Ribbon text={item.aktif_flag} color={item.aktif_flag === 'Online' ? 'green' : 'red'}>
+  <Badge.Ribbon
+    text={item.aktif_flag === '1' ? 'Online' : 'Offline'}
+    color={item.aktif_flag === '1' ? 'green' : 'red'}
+  >
     <CCard className="fuel-card shadow-sm h-full">
       <CCardBody className="fuel-card__body">
         <CCardTitle className="fuel-card__title">{item.id_tank}</CCardTitle>

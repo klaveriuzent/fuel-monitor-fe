@@ -9,7 +9,7 @@ const dataSource = [
   {
     id_tank: 'Tank 001',
     id_site: 'Site A',
-    aktif_flag: 'Online',
+    aktif_flag: '1',
     volume_oil: 5200,
     volume_air: 120,
     max_capacity: 8000,
@@ -20,7 +20,7 @@ const dataSource = [
   {
     id_tank: 'Tank 002',
     id_site: 'Site B',
-    aktif_flag: 'Online',
+    aktif_flag: '1',
     volume_oil: 6100,
     volume_air: 90,
     max_capacity: 8000,
@@ -31,7 +31,7 @@ const dataSource = [
   {
     id_tank: 'Tank 003',
     id_site: 'Site C',
-    aktif_flag: 'Online',
+    aktif_flag: '1',
     volume_oil: 4700,
     volume_air: 150,
     max_capacity: 8000,
@@ -42,7 +42,7 @@ const dataSource = [
   {
     id_tank: 'Tank 004',
     id_site: 'Site D',
-    aktif_flag: 'Offline',
+    aktif_flag: '0',
     volume_oil: 3100,
     volume_air: 200,
     max_capacity: 8000,
@@ -53,7 +53,7 @@ const dataSource = [
   {
     id_tank: 'Tank 005',
     id_site: 'Site E',
-    aktif_flag: 'Online',
+    aktif_flag: '1',
     volume_oil: 6900,
     volume_air: 80,
     max_capacity: 8000,
