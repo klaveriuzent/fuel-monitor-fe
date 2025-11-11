@@ -22,7 +22,7 @@ const FuelStock = () => {
       try {
         let url = `${baseURL}/ms-tank`
         if (filterSite && filterSite !== 'all') {
-          url += `?id_location=${filterSite}`
+          url += `?id_site=${filterSite}`
         }
 
         const response = await fetch(url)
@@ -31,22 +31,33 @@ const FuelStock = () => {
         }
 
         const apiData = await response.json()
-        const mappedData = Array.isArray(apiData)
-          ? apiData.map((item) => {
-              const tankData = item.last_tank_data || {}
-              return {
-                id_tank: tankData.id_tank ?? '',
-                id_site: tankData.id_site ?? '',
-                aktif_flag: tankData.aktif_flag ?? '',
-                volume_oil: tankData.volume_oil ?? '',
-                volume_air: tankData.volume_air ?? '',
-                max_capacity: tankData.max_capacity ?? '',
-                ruang_kosong: tankData.ruang_kosong ?? '',
-                temperature: tankData.temperature ?? '',
-                update_date: tankData.update_date ?? '',
-              }
-            })
-          : []
+        // console.log('API Response:', apiData)
+
+        // pastikan ambil array di dalam property data jika ada
+        const list = Array.isArray(apiData.data) ? apiData.data : apiData
+
+        const mappedData = list.map((item) => {
+          const tankData =
+            Array.isArray(item.last_tank_data) && item.last_tank_data.length > 0
+              ? item.last_tank_data[0]
+              : {}
+
+          // if (item.id_site === 'LSIP_LSIP_SEI_LAKITAN_ESTATE') {
+          //   console.log(`Last Tank Data [${item.id_site}]:`, tankData)
+          // }
+
+          return {
+            id_tank: tankData.id_tank ?? '',
+            id_site: tankData.id_site ?? item.id_site ?? '',
+            aktif_flag: tankData.aktif_flag ?? '',
+            volume_oil: tankData.volume_oil ?? '',
+            volume_air: tankData.volume_air ?? '',
+            max_capacity: tankData.max_capacity ?? '',
+            ruang_kosong: tankData.ruang_kosong ?? '',
+            temperature: tankData.temperature ?? '',
+            update_date: tankData.update_date ?? '',
+          }
+        })
 
         if (isMounted) {
           setData(mappedData)
@@ -106,7 +117,7 @@ const FuelStock = () => {
           </Col>
         ) : (
           paginatedData.map((item) => (
-            <Col key={item.id_tank} xs={24} sm={12} md={8} lg={6}>
+            <Col key={`${item.id_site}-${item.id_tank}`} xs={24} sm={12} md={8} lg={6}>
               <FuelCard item={item} />
             </Col>
           ))

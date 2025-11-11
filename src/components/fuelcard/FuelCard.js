@@ -155,7 +155,7 @@ const FuelCard = ({ item }) => (
   >
     <CCard className="fuel-card shadow-sm h-full">
       <CCardBody className="fuel-card__body">
-        <CCardTitle className="fuel-card__title">{item.id_tank}</CCardTitle>
+        <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
         <CCardText className="fuel-card__details">
           <b>Site:</b> {item.id_site} <br />
           <b>Capacity:</b> {item.max_capacity} L
@@ -175,7 +175,19 @@ const FuelCard = ({ item }) => (
           <br />
           <b>Empty Space:</b> {item.ruang_kosong} L
           <br />
-          <small>Last Updated: {item.update_date}</small>
+          <small>
+            Last Updated:{' '}
+            {item.update_date
+              ? new Date(item.update_date).toLocaleString('en-GB', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                })
+              : '-'}{' '}
+          </small>
         </CCardText>
       </CCardBody>
     </CCard>
