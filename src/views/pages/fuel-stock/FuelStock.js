@@ -1,74 +1,74 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Row, Col, Pagination } from 'antd'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
 
-// Static data source
-const dataSource = [
-  {
-    id_tank: 'Tank 001',
-    id_site: 'Site A',
-    aktif_flag: '1',
-    volume_oil: 5200,
-    volume_air: 120,
-    max_capacity: 8000,
-    ruang_kosong: 300,
-    temperature: '27.5',
-    update_date: '2025-09-30 08:15',
-  },
-  {
-    id_tank: 'Tank 002',
-    id_site: 'Site B',
-    aktif_flag: '1',
-    volume_oil: 6100,
-    volume_air: 90,
-    max_capacity: 8000,
-    ruang_kosong: 300,
-    temperature: '29.1',
-    update_date: '2025-09-30 09:05',
-  },
-  {
-    id_tank: 'Tank 003',
-    id_site: 'Site C',
-    aktif_flag: '1',
-    volume_oil: 4700,
-    volume_air: 150,
-    max_capacity: 8000,
-    ruang_kosong: 300,
-    temperature: '26.4',
-    update_date: '2025-09-29 16:40',
-  },
-  {
-    id_tank: 'Tank 004',
-    id_site: 'Site D',
-    aktif_flag: '0',
-    volume_oil: 3100,
-    volume_air: 200,
-    max_capacity: 8000,
-    ruang_kosong: 300,
-    temperature: '24.8',
-    update_date: '2025-09-28 11:55',
-  },
-  {
-    id_tank: 'Tank 005',
-    id_site: 'Site E',
-    aktif_flag: '1',
-    volume_oil: 6900,
-    volume_air: 80,
-    max_capacity: 8000,
-    ruang_kosong: 300,
-    temperature: '30.2',
-    update_date: '2025-09-30 07:20',
-  },
-]
+const baseURL = import.meta.env.VITE_API_BASE_URL
 
 const FuelStock = () => {
-  const data = useMemo(() => dataSource, [])
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [filterSite, setFilterSite] = useState('all')
   const pageSize = 8
+
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        let url = `${baseURL}/ms-tank`
+        if (filterSite && filterSite !== 'all') {
+          url += `?id_location=${filterSite}`
+        }
+
+        const response = await fetch(url)
+        if (!response.ok) {
+          throw new Error('Failed to fetch fuel stock data')
+        }
+
+        const apiData = await response.json()
+        const mappedData = Array.isArray(apiData)
+          ? apiData.map((item) => {
+              const tankData = item.last_tank_data || {}
+              return {
+                id_tank: tankData.id_tank ?? '',
+                id_site: tankData.id_site ?? '',
+                aktif_flag: tankData.aktif_flag ?? '',
+                volume_oil: tankData.volume_oil ?? '',
+                volume_air: tankData.volume_air ?? '',
+                max_capacity: tankData.max_capacity ?? '',
+                ruang_kosong: tankData.ruang_kosong ?? '',
+                temperature: tankData.temperature ?? '',
+                update_date: tankData.update_date ?? '',
+              }
+            })
+          : []
+
+        if (isMounted) {
+          setData(mappedData)
+        }
+      } catch (error) {
+        console.error(error)
+        if (isMounted) {
+          setData([])
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    fetchData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [filterSite])
 
   const handleSearchChange = useCallback((value) => {
     setSearch(value)
@@ -100,11 +100,17 @@ const FuelStock = () => {
       />
 
       <Row gutter={[16, 16]}>
-        {paginatedData.map((item) => (
-          <Col key={item.id_tank} xs={24} sm={12} md={8} lg={6}>
-            <FuelCard item={item} />
+        {loading ? (
+          <Col span={24}>
+            <div style={{ textAlign: 'center', width: '100%' }}>Loading...</div>
           </Col>
-        ))}
+        ) : (
+          paginatedData.map((item) => (
+            <Col key={item.id_tank} xs={24} sm={12} md={8} lg={6}>
+              <FuelCard item={item} />
+            </Col>
+          ))
+        )}
       </Row>
 
       <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
