@@ -3,6 +3,7 @@ import { Row, Col, Pagination } from 'antd'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
+import { mapFuelStockData } from './interface.fuelstock'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
@@ -12,6 +13,7 @@ const FuelStock = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [filterSite, setFilterSite] = useState('all')
+
   const pageSize = 8
 
   useEffect(() => {
@@ -21,7 +23,7 @@ const FuelStock = () => {
       setLoading(true)
       try {
         let url = `${baseURL}/ms-tank`
-        if (filterSite && filterSite !== 'all') {
+        if (filterSite !== 'all') {
           url += `?id_site=${filterSite}`
         }
 
@@ -31,33 +33,7 @@ const FuelStock = () => {
         }
 
         const apiData = await response.json()
-        // console.log('API Response:', apiData)
-
-        // pastikan ambil array di dalam property data jika ada
-        const list = Array.isArray(apiData.data) ? apiData.data : apiData
-
-        const mappedData = list.map((item) => {
-          const tankData =
-            Array.isArray(item.last_tank_data) && item.last_tank_data.length > 0
-              ? item.last_tank_data[0]
-              : {}
-
-          // if (item.id_site === 'LSIP_LSIP_SEI_LAKITAN_ESTATE') {
-          //   console.log(`Last Tank Data [${item.id_site}]:`, tankData)
-          // }
-
-          return {
-            id_tank: tankData.id_tank ?? '',
-            id_site: tankData.id_site ?? item.id_site ?? '',
-            aktif_flag: tankData.aktif_flag ?? '',
-            volume_oil: tankData.volume_oil ?? '',
-            volume_air: tankData.volume_air ?? '',
-            max_capacity: tankData.max_capacity ?? '',
-            ruang_kosong: tankData.ruang_kosong ?? '',
-            temperature: tankData.temperature ?? '',
-            update_date: tankData.update_date ?? '',
-          }
-        })
+        const mappedData = mapFuelStockData(apiData)
 
         if (isMounted) {
           setData(mappedData)
@@ -95,6 +71,7 @@ const FuelStock = () => {
     const matchSearch = item.id_tank.toLowerCase().includes(search.toLowerCase())
     const matchSite =
       filterSite === 'all' || item.id_site.toLowerCase().includes(filterSite.toLowerCase())
+
     return matchSearch && matchSite
   })
 
@@ -113,7 +90,7 @@ const FuelStock = () => {
       <Row gutter={[16, 16]}>
         {loading ? (
           <Col span={24}>
-            <div style={{ textAlign: 'center', width: '100%' }}>Loading...</div>
+            <div style={{ textAlign: 'center' }}>Loading...</div>
           </Col>
         ) : (
           paginatedData.map((item) => (
@@ -129,7 +106,7 @@ const FuelStock = () => {
           current={currentPage}
           pageSize={pageSize}
           total={filteredData.length}
-          onChange={(page) => setCurrentPage(page)}
+          onChange={setCurrentPage}
           showSizeChanger={false}
           responsive
         />
