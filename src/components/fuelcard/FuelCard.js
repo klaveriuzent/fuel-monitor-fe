@@ -163,9 +163,15 @@ TankWithScale.propTypes = {
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
 
+  const baseDate = item.update_date ? new Date(item.update_date) : new Date()
+  const dayName = baseDate.toLocaleDateString('id-ID', { weekday: 'long' })
+  const day = String(baseDate.getDate()).padStart(2, '0')
+  const month = String(baseDate.getMonth() + 1).padStart(2, '0')
+  const year = baseDate.getFullYear()
+
   const hourlyLabels = Array.from({ length: 24 }, (_, index) => {
     const hour = String(index).padStart(2, '0')
-    return `Senin ${hour}:00`
+    return `${dayName}, ${day}-${month}-${year} ${hour}:00`
   })
 
   const fuelData = [
@@ -232,7 +238,10 @@ const FuelCard = ({ item }) => {
         onClose={() => setIsModalVisible(false)}
       >
         <CModalHeader>
-          <CModalTitle>Grafik Level Tank</CModalTitle>
+          <CModalTitle>
+            Tank {item.id_tank} - {item.id_site}
+          </CModalTitle>
+          <div>(Hari, DD-MM-YYYY HH:mm)</div>
         </CModalHeader>
         <CModalBody>
           <CChartLine
@@ -276,8 +285,8 @@ const FuelCard = ({ item }) => {
                   ticks: {
                     color: getStyle('--cui-body-color'),
                     maxRotation: 0,
-                    autoSkip: true,
-                    maxTicksLimit: 8,
+                    autoSkip: false,
+                    maxTicksLimit: 24,
                   },
                 },
                 y: {
