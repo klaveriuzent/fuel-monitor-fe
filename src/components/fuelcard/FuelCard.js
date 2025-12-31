@@ -287,6 +287,8 @@ const FuelCard = ({ item }) => {
                     maxRotation: 0,
                     autoSkip: false,
                     maxTicksLimit: 24,
+                    maxRotation: 45,
+                    minRotation: 45,
                   },
                 },
                 y: {
