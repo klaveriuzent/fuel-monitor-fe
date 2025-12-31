@@ -2,7 +2,19 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
-import { CCard, CCardBody, CCardTitle, CCardText } from '@coreui/react'
+import {
+  CCard,
+  CCardBody,
+  CCardTitle,
+  CCardText,
+  CButton,
+  CModal,
+  CModalBody,
+  CModalHeader,
+  CModalTitle,
+} from '@coreui/react'
+import { CChartLine } from '@coreui/react-chartjs'
+import { getStyle } from '@coreui/utils'
 
 import './FuelCard.scss'
 
@@ -148,51 +160,201 @@ TankWithScale.propTypes = {
   temperature: PropTypes.string.isRequired,
 }
 
-const FuelCard = ({ item }) => (
-  <Badge.Ribbon
-    text={item.aktif_flag === '1' ? 'Online' : 'Offline'}
-    color={item.aktif_flag === '1' ? 'green' : 'red'}
-  >
-    <CCard className="fuel-card shadow-sm h-full">
-      <CCardBody className="fuel-card__body">
-        <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
-        <CCardText className="fuel-card__details">
-          <b>Site:</b> {item.id_site} <br />
-          <b>Capacity:</b> {item.max_capacity} L
-        </CCardText>
+const FuelCard = ({ item }) => {
+  const [isModalVisible, setIsModalVisible] = useState(false)
 
-        <TankWithScale
-          fuelLevel={item.volume_oil}
-          waterLevel={item.volume_air}
-          capacity={item.max_capacity}
-          temperature={item.temperature}
-        />
+  const hourlyLabels = Array.from({ length: 24 }, (_, index) => {
+    const hour = String(index).padStart(2, '0')
+    return `Senin ${hour}:00`
+  })
 
-        <CCardText className="fuel-card__summary">
-          <b>Fuel:</b> {item.volume_oil} L
-          <br />
-          <b>Water:</b> {item.volume_air} L
-          <br />
-          <b>Empty Space:</b> {item.ruang_kosong} L
-          <br />
-          <small>
-            Last Updated:{' '}
-            {item.update_date
-              ? new Date(item.update_date).toLocaleString('en-GB', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit',
-                })
-              : '-'}{' '}
-          </small>
-        </CCardText>
-      </CCardBody>
-    </CCard>
-  </Badge.Ribbon>
-)
+  const fuelData = [
+    120,
+    118,
+    117,
+    116,
+    115,
+    114,
+    114,
+    113,
+    112,
+    111,
+    111,
+    110,
+    109,
+    108,
+    108,
+    107,
+    106,
+    106,
+    105,
+    104,
+    104,
+    103,
+    102,
+    101,
+  ]
+
+  const waterData = [
+    12,
+    12,
+    13,
+    13,
+    13,
+    14,
+    14,
+    14,
+    15,
+    15,
+    15,
+    16,
+    16,
+    16,
+    17,
+    17,
+    18,
+    18,
+    18,
+    19,
+    19,
+    20,
+    20,
+    20,
+  ]
+
+  return (
+    <Badge.Ribbon
+      text={item.aktif_flag === '1' ? 'Online' : 'Offline'}
+      color={item.aktif_flag === '1' ? 'green' : 'red'}
+    >
+      <CCard className="fuel-card shadow-sm h-full">
+        <CCardBody className="fuel-card__body">
+          <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
+          <CCardText className="fuel-card__details">
+            <b>Site:</b> {item.id_site} <br />
+            <b>Capacity:</b> {item.max_capacity} L
+          </CCardText>
+
+          <TankWithScale
+            fuelLevel={item.volume_oil}
+            waterLevel={item.volume_air}
+            capacity={item.max_capacity}
+            temperature={item.temperature}
+          />
+
+          <CCardText className="fuel-card__summary">
+            <b>Fuel:</b> {item.volume_oil} L
+            <br />
+            <b>Water:</b> {item.volume_air} L
+            <br />
+            <b>Empty Space:</b> {item.ruang_kosong} L
+            <br />
+            <small>
+              Last Updated:{' '}
+              {item.update_date
+                ? new Date(item.update_date).toLocaleString('en-GB', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })
+                : '-'}{' '}
+            </small>
+          </CCardText>
+
+          <CButton color="primary" size="sm" onClick={() => setIsModalVisible(true)}>
+            Lihat Grafik
+          </CButton>
+        </CCardBody>
+      </CCard>
+
+      <CModal
+        alignment="center"
+        size="lg"
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+      >
+        <CModalHeader>
+          <CModalTitle>Grafik Level Tank</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CChartLine
+            style={{ height: '260px' }}
+            data={{
+              labels: hourlyLabels,
+              datasets: [
+                {
+                  label: 'Fuel',
+                  backgroundColor: `rgba(${getStyle('--cui-warning-rgb')}, .1)`,
+                  borderColor: getStyle('--cui-warning'),
+                  pointHoverBackgroundColor: getStyle('--cui-warning'),
+                  borderWidth: 2,
+                  data: fuelData,
+                  fill: true,
+                },
+                {
+                  label: 'Water',
+                  backgroundColor: 'transparent',
+                  borderColor: getStyle('--cui-info'),
+                  pointHoverBackgroundColor: getStyle('--cui-info'),
+                  borderWidth: 2,
+                  data: waterData,
+                },
+              ],
+            }}
+            options={{
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: 'bottom',
+                },
+              },
+              scales: {
+                x: {
+                  grid: {
+                    color: getStyle('--cui-border-color-translucent'),
+                    drawOnChartArea: false,
+                  },
+                  ticks: {
+                    color: getStyle('--cui-body-color'),
+                    maxRotation: 0,
+                    autoSkip: true,
+                    maxTicksLimit: 8,
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  border: {
+                    color: getStyle('--cui-border-color-translucent'),
+                  },
+                  grid: {
+                    color: getStyle('--cui-border-color-translucent'),
+                  },
+                  ticks: {
+                    color: getStyle('--cui-body-color'),
+                  },
+                },
+              },
+              elements: {
+                line: {
+                  tension: 0.35,
+                },
+                point: {
+                  radius: 2,
+                  hitRadius: 6,
+                  hoverRadius: 4,
+                },
+              },
+            }}
+          />
+        </CModalBody>
+      </CModal>
+    </Badge.Ribbon>
+  )
+}
 
 FuelCard.propTypes = {
   item: PropTypes.shape({
