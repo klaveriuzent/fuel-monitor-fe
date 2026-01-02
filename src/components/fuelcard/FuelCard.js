@@ -357,7 +357,6 @@ const FuelCard = ({ item }) => {
                   },
                   ticks: {
                     color: getStyle('--cui-body-color'),
-                    maxRotation: 0,
                     autoSkip: false,
                     maxTicksLimit: 24,
                     maxRotation: 45,
