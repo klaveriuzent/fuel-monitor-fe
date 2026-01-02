@@ -461,11 +461,20 @@ const FuelCard = ({ item }) => {
                   },
                   ticks: {
                     color: getStyle('--cui-body-color'),
-                    autoSkip: false,
-                    maxTicksLimit: 24,
+                    autoSkip: timeScale !== 'day',
+                    maxTicksLimit:
+                      timeScale === 'day' ? labels.length : Math.min(labels.length, 7),
                     maxRotation: 45,
                     minRotation: 45,
-                    callback: (value, index) => formatAxisLabel(labels[index] ?? value, timeScale),
+                    callback: (value, index) => {
+                      const labelDate = labels[index]
+
+                      if (!labelDate) {
+                        return ''
+                      }
+
+                      return formatAxisLabel(labelDate, timeScale)
+                    },
                   },
                 },
                 y: {
