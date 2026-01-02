@@ -173,16 +173,18 @@ const FuelCard = ({ item }) => {
       hour12: false,
     }).format(date)
 
-    return formattedTime.replace('.', ':')
+    return formattedTime.replaceAll('.', ':')
   }
 
-  const getDayLabels = (date) =>
-    Array.from({ length: 24 }, (_, index) => {
-      const labelDate = new Date(date)
+  const getDayLabels = (date) => {
+    const end = new Date(date)
+
+    return Array.from({ length: 24 }, (_, index) => {
       const hoursAgo = 23 - index
-      labelDate.setHours(date.getHours() - hoursAgo)
+      const labelDate = new Date(end.getTime() - hoursAgo * 60 * 60 * 1000)
       return formatTimeLabel(labelDate)
     })
+  }
 
   const getWeekLabels = (date) => {
     const dayIndex = date.getDay()
