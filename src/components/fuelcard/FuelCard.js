@@ -187,8 +187,13 @@ const FuelCard = ({ item }) => {
   }
 
   const formatDateLabel = (date, options) => {
-    const formattedDate = new Intl.DateTimeFormat('id-ID', options).format(date)
-    return formattedDate.replaceAll('.', ':')
+    return new Date(date)
+      .toLocaleString('id-ID', {
+        timeZone: 'UTC',
+        hourCycle: 'h23',
+        ...options,
+      })
+      .replace(/\./g, ':')
   }
 
   const getDateRange = (scale) => {
@@ -224,20 +229,18 @@ const FuelCard = ({ item }) => {
   }
 
   const formatTooltipLabel = (dateValue, scale) => {
-    const date = new Date(dateValue)
-
     if (scale === 'week' || scale === 'month') {
-      return formatDateLabel(date, {
+      return formatDateLabel(dateValue, {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false,
+        second: '2-digit',
       })
     }
 
-    return formatTimeLabel(date)
+    return formatTimeLabel(dateValue)
   }
 
   useEffect(() => {
