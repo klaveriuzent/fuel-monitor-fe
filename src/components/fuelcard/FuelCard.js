@@ -181,6 +181,11 @@ const FuelCard = ({ item }) => {
     return formattedTime.replaceAll('.', ':')
   }
 
+  const formatDateLabel = (date, options) => {
+    const formattedDate = new Intl.DateTimeFormat('id-ID', options).format(date)
+    return formattedDate.replaceAll('.', ':')
+  }
+
   const getDateRange = (scale) => {
     const end = new Date()
     const start = new Date(end)
@@ -203,11 +208,28 @@ const FuelCard = ({ item }) => {
     const date = new Date(dateValue)
 
     if (scale === 'week') {
-      return date.toLocaleDateString('id-ID', { weekday: 'short' })
+      return formatDateLabel(date, { day: '2-digit', month: 'short' })
     }
 
     if (scale === 'month') {
-      return date.toLocaleDateString('id-ID', { day: '2-digit' })
+      return formatDateLabel(date, { day: '2-digit', month: 'short' })
+    }
+
+    return formatTimeLabel(date)
+  }
+
+  const formatTooltipLabel = (dateValue, scale) => {
+    const date = new Date(dateValue)
+
+    if (scale === 'week' || scale === 'month') {
+      return formatDateLabel(date, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
     }
 
     return formatTimeLabel(date)
@@ -248,7 +270,7 @@ const FuelCard = ({ item }) => {
           (a, b) => new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime(),
         )
 
-        const nextLabels = sortedData.map((entry) => formatAxisLabel(entry.tanggal, timeScale))
+        const nextLabels = sortedData.map((entry) => entry.tanggal)
         const nextFuelData = sortedData.map((entry) => Number(entry.tinggi_oil) || 0)
         const nextWaterData = sortedData.map((entry) => Number(entry.tinggi_air) || 0)
 
@@ -401,6 +423,27 @@ const FuelCard = ({ item }) => {
                   display: true,
                   position: 'bottom',
                 },
+                tooltip: {
+                  mode: 'index',
+                  intersect: false,
+                  callbacks: {
+                    label: (context) => {
+                      if (context.datasetIndex !== 0) {
+                        return null
+                      }
+
+                      const fuelValue = fuelData[context.dataIndex] ?? 0
+                      const waterValue = waterData[context.dataIndex] ?? 0
+                      const labelDate = labels[context.dataIndex]
+
+                      return [
+                        `Fuel: ${fuelValue} L`,
+                        `Water: ${waterValue} L`,
+                        `Time: ${formatTooltipLabel(labelDate, timeScale)}`,
+                      ]
+                    },
+                  },
+                },
               },
               scales: {
                 x: {
@@ -414,6 +457,8 @@ const FuelCard = ({ item }) => {
                     maxTicksLimit: 24,
                     maxRotation: 45,
                     minRotation: 45,
+                    callback: (value, index) =>
+                      formatAxisLabel(labels[index] ?? value, timeScale),
                   },
                 },
                 y: {
