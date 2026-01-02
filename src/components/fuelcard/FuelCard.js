@@ -172,13 +172,18 @@ const FuelCard = ({ item }) => {
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const formatTimeLabel = (date) => {
-    const formattedTime = new Intl.DateTimeFormat('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(date)
-
-    return formattedTime.replaceAll('.', ':')
+    new Date(date)
+      .toLocaleString('id-ID', {
+        timeZone: 'UTC',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+      })
+      .replace(/\./g, ':')
   }
 
   const formatDateLabel = (date, options) => {
@@ -457,8 +462,7 @@ const FuelCard = ({ item }) => {
                     maxTicksLimit: 24,
                     maxRotation: 45,
                     minRotation: 45,
-                    callback: (value, index) =>
-                      formatAxisLabel(labels[index] ?? value, timeScale),
+                    callback: (value, index) => formatAxisLabel(labels[index] ?? value, timeScale),
                   },
                 },
                 y: {
