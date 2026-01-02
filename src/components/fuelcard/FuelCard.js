@@ -179,7 +179,8 @@ const FuelCard = ({ item }) => {
   const getDayLabels = (date) =>
     Array.from({ length: 24 }, (_, index) => {
       const labelDate = new Date(date)
-      labelDate.setHours(date.getHours() - index)
+      const hoursAgo = 23 - index
+      labelDate.setHours(date.getHours() - hoursAgo)
       return formatTimeLabel(labelDate)
     })
 
