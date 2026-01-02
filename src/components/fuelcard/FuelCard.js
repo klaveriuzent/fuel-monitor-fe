@@ -210,9 +210,13 @@ const FuelCard = ({ item }) => {
   }
 
   const getMonthLabels = (date) => {
-    const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+    const daysInMonth = new Date(date.getFullYear(), date.getMonth(), 0).getDate()
 
-    return Array.from({ length: daysInMonth }, (_, index) => String(index + 1).padStart(2, '0'))
+    return Array.from({ length: daysInMonth }, (_, index) => {
+      const labelDate = new Date(date)
+      labelDate.setDate(date.getDate() - (daysInMonth - 1 - index))
+      return labelDate.toLocaleDateString('id-ID', { day: '2-digit' })
+    })
   }
 
   const getTimeScaleLabels = (scale, date) => {
