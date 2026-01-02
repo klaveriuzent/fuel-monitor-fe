@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
@@ -163,8 +163,27 @@ TankWithScale.propTypes = {
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [timeScale, setTimeScale] = useState('day')
+  const [baseDate, setBaseDate] = useState(
+    item.update_date ? new Date(item.update_date) : new Date(),
+  )
 
-  const baseDate = item.update_date ? new Date(item.update_date) : new Date()
+  useEffect(() => {
+    setBaseDate(item.update_date ? new Date(item.update_date) : new Date())
+  }, [item.update_date])
+
+  useEffect(() => {
+    if (!isModalVisible) {
+      return undefined
+    }
+
+    setBaseDate(new Date())
+
+    const intervalId = setInterval(() => {
+      setBaseDate(new Date())
+    }, 60000)
+
+    return () => clearInterval(intervalId)
+  }, [isModalVisible])
 
   const formatTimeLabel = (date) => {
     const formattedTime = new Intl.DateTimeFormat('id-ID', {
@@ -177,13 +196,9 @@ const FuelCard = ({ item }) => {
   }
 
   const getDayLabels = (date) => {
-    const end = new Date(date)
-
-    return Array.from({ length: 24 }, (_, index) => {
-      const hoursAgo = 23 - index
-      const labelDate = new Date(end.getTime() - hoursAgo * 60 * 60 * 1000)
-      return formatTimeLabel(labelDate)
-    })
+    return Array.from({ length: 24 }, (_, index) =>
+      formatTimeLabel(new Date(date.getTime() - (23 - index) * 60 * 60 * 1000)),
+    )
   }
 
   const getWeekLabels = (date) => {
