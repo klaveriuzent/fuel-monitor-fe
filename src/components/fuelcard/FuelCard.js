@@ -163,27 +163,13 @@ TankWithScale.propTypes = {
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [timeScale, setTimeScale] = useState('day')
-  const [baseDate, setBaseDate] = useState(
-    item.update_date ? new Date(item.update_date) : new Date(),
-  )
+  const [fuelData, setFuelData] = useState([])
+  const [waterData, setWaterData] = useState([])
+  const [labels, setLabels] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
-  useEffect(() => {
-    setBaseDate(item.update_date ? new Date(item.update_date) : new Date())
-  }, [item.update_date])
-
-  useEffect(() => {
-    if (!isModalVisible) {
-      return undefined
-    }
-
-    setBaseDate(new Date())
-
-    const intervalId = setInterval(() => {
-      setBaseDate(new Date())
-    }, 60000)
-
-    return () => clearInterval(intervalId)
-  }, [isModalVisible])
+  const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const formatTimeLabel = (date) => {
     const formattedTime = new Intl.DateTimeFormat('id-ID', {
@@ -195,66 +181,106 @@ const FuelCard = ({ item }) => {
     return formattedTime.replaceAll('.', ':')
   }
 
-  const getDayLabels = (date) => {
-    return Array.from({ length: 24 }, (_, index) =>
-      formatTimeLabel(new Date(date.getTime() - (23 - index) * 60 * 60 * 1000)),
-    )
-  }
+  const getDateRange = (scale) => {
+    const end = new Date()
+    const start = new Date(end)
 
-  const getWeekLabels = (date) => {
-    return Array.from({ length: 7 }, (_, index) => {
-      const labelDate = new Date(date)
-      labelDate.setDate(date.getDate() - (6 - index))
-      return labelDate.toLocaleDateString('id-ID', { weekday: 'short' })
-    })
-  }
-
-  const getMonthLabels = (date) => {
-    const daysInMonth = new Date(date.getFullYear(), date.getMonth(), 0).getDate()
-
-    return Array.from({ length: daysInMonth }, (_, index) => {
-      const labelDate = new Date(date)
-      labelDate.setDate(date.getDate() - (daysInMonth - 1 - index))
-      return labelDate.toLocaleDateString('id-ID', { day: '2-digit' })
-    })
-  }
-
-  const getTimeScaleLabels = (scale, date) => {
     if (scale === 'week') {
-      return getWeekLabels(date)
+      start.setDate(end.getDate() - 6)
+    } else if (scale === 'month') {
+      start.setMonth(end.getMonth() - 1)
+    }
+
+    const formatDate = (date) => date.toISOString().split('T')[0]
+
+    return {
+      startDate: formatDate(start),
+      endDate: formatDate(end),
+    }
+  }
+
+  const formatAxisLabel = (dateValue, scale) => {
+    const date = new Date(dateValue)
+
+    if (scale === 'week') {
+      return date.toLocaleDateString('id-ID', { weekday: 'short' })
     }
 
     if (scale === 'month') {
-      return getMonthLabels(date)
+      return date.toLocaleDateString('id-ID', { day: '2-digit' })
     }
 
-    return getDayLabels(date)
+    return formatTimeLabel(date)
   }
 
-  const normalizeLabels = (labels, targetLength) => {
-    if (labels.length > targetLength) {
-      return labels.slice(0, targetLength)
+  useEffect(() => {
+    if (!isModalVisible) {
+      return undefined
     }
 
-    if (labels.length < targetLength) {
-      return [...labels, ...Array(targetLength - labels.length).fill('')]
+    let isMounted = true
+    const controller = new AbortController()
+
+    const fetchHistory = async () => {
+      setIsLoading(true)
+      setErrorMessage('')
+      try {
+        const { startDate, endDate } = getDateRange(timeScale)
+        const params = new URLSearchParams({
+          id_site: item.id_site,
+          start_date: startDate,
+          end_date: endDate,
+        })
+        const response = await fetch(`${baseURL}/tank/history?${params.toString()}`, {
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch tank history data')
+        }
+
+        const data = await response.json()
+        const filteredData = Array.isArray(data)
+          ? data.filter((entry) => String(entry.id_tank) === String(item.id_tank))
+          : []
+
+        const sortedData = filteredData.sort(
+          (a, b) => new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime(),
+        )
+
+        const nextLabels = sortedData.map((entry) => formatAxisLabel(entry.tanggal, timeScale))
+        const nextFuelData = sortedData.map((entry) => Number(entry.tinggi_oil) || 0)
+        const nextWaterData = sortedData.map((entry) => Number(entry.tinggi_air) || 0)
+
+        if (isMounted) {
+          setLabels(nextLabels)
+          setFuelData(nextFuelData)
+          setWaterData(nextWaterData)
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching tank history data:', error)
+          if (isMounted) {
+            setLabels([])
+            setFuelData([])
+            setWaterData([])
+            setErrorMessage('Gagal memuat data grafik.')
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
     }
 
-    return labels
-  }
+    fetchHistory()
 
-  const fuelData = [
-    120, 118, 117, 116, 115, 114, 114, 113, 112, 111, 111, 110, 109, 108, 108, 107, 106, 106, 105,
-    104, 104, 103, 102, 101,
-  ]
-
-  const waterData = [
-    12, 12, 13, 13, 13, 14, 14, 14, 15, 15, 15, 16, 16, 16, 17, 17, 18, 18, 18, 19, 19, 20, 20, 20,
-  ]
-
-  const rawTimeScaleLabels = getTimeScaleLabels(timeScale, baseDate)
-  const timeScaleLabels =
-    timeScale === 'day' ? normalizeLabels(rawTimeScaleLabels, fuelData.length) : rawTimeScaleLabels
+    return () => {
+      isMounted = false
+      controller.abort()
+    }
+  }, [baseURL, isModalVisible, item.id_site, item.id_tank, timeScale])
 
   return (
     <Badge.Ribbon
@@ -298,7 +324,14 @@ const FuelCard = ({ item }) => {
             </small>
           </CCardText>
 
-          <CButton color="primary" size="sm" onClick={() => setIsModalVisible(true)}>
+          <CButton
+            color="primary"
+            size="sm"
+            onClick={() => {
+              setTimeScale('day')
+              setIsModalVisible(true)
+            }}
+          >
             Lihat Grafik
           </CButton>
         </CCardBody>
@@ -335,10 +368,12 @@ const FuelCard = ({ item }) => {
               </label>
             ))}
           </div>
+          {isLoading && <div className="mb-2">Loading chart...</div>}
+          {errorMessage && <div className="mb-2 text-danger">{errorMessage}</div>}
           <CChartLine
             style={{ height: '260px' }}
             data={{
-              labels: timeScaleLabels,
+              labels,
               datasets: [
                 {
                   label: 'Fuel',
@@ -383,6 +418,7 @@ const FuelCard = ({ item }) => {
                 },
                 y: {
                   beginAtZero: true,
+                  suggestedMax: Number(item.max_capacity),
                   border: {
                     color: getStyle('--cui-border-color-translucent'),
                   },
@@ -391,6 +427,7 @@ const FuelCard = ({ item }) => {
                   },
                   ticks: {
                     color: getStyle('--cui-body-color'),
+                    callback: (value) => `${value} cm`,
                   },
                 },
               },
