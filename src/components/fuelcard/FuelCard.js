@@ -202,14 +202,9 @@ const FuelCard = ({ item }) => {
   }
 
   const getWeekLabels = (date) => {
-    const dayIndex = date.getDay()
-    const diffToMonday = (dayIndex + 6) % 7
-    const startOfWeek = new Date(date)
-    startOfWeek.setDate(date.getDate() - diffToMonday)
-
     return Array.from({ length: 7 }, (_, index) => {
-      const labelDate = new Date(startOfWeek)
-      labelDate.setDate(startOfWeek.getDate() + index)
+      const labelDate = new Date(date)
+      labelDate.setDate(date.getDate() - (6 - index))
       return labelDate.toLocaleDateString('id-ID', { weekday: 'short' })
     })
   }
@@ -253,7 +248,9 @@ const FuelCard = ({ item }) => {
     12, 12, 13, 13, 13, 14, 14, 14, 15, 15, 15, 16, 16, 16, 17, 17, 18, 18, 18, 19, 19, 20, 20, 20,
   ]
 
-  const timeScaleLabels = normalizeLabels(getTimeScaleLabels(timeScale, baseDate), fuelData.length)
+  const rawTimeScaleLabels = getTimeScaleLabels(timeScale, baseDate)
+  const timeScaleLabels =
+    timeScale === 'day' ? normalizeLabels(rawTimeScaleLabels, fuelData.length) : rawTimeScaleLabels
 
   return (
     <Badge.Ribbon
