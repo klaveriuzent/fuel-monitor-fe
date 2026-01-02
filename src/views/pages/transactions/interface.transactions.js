@@ -1,11 +1,16 @@
 export const formatDateTime = (value) =>
-  new Date(value).toLocaleString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  new Date(value)
+    .toLocaleString('id-ID', {
+      timeZone: 'UTC',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    })
+    .replace(/\./g, ':')
 
 export const formatDecimal = (value) =>
   Number(value).toLocaleString('id-ID', {
@@ -13,13 +18,15 @@ export const formatDecimal = (value) =>
     maximumFractionDigits: 2,
   })
 
-export const formatCurrency = (value) =>
-  new Intl.NumberFormat('id-ID', {
+export const formatCurrency = (value) => {
+  const safeValue = Number(value)
+  return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(Number(value))
+  }).format(isNaN(safeValue) ? 0 : safeValue)
+}
 
 export const transactionColumns = [
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },

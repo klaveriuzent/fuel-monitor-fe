@@ -38,6 +38,7 @@ const Transactions = () => {
     const fetchData = async () => {
       try {
         setLoading(true)
+        setData([])
         const params = siteFilter !== 'all' ? { id_site: siteFilter } : undefined
         const res = await axios.get(`${baseURL}transaksi`, { params })
         if (res.data && Array.isArray(res.data.data)) {
