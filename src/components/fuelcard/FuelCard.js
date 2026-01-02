@@ -199,9 +199,7 @@ const FuelCard = ({ item }) => {
   const getMonthLabels = (date) => {
     const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
 
-    return Array.from({ length: daysInMonth }, (_, index) =>
-      String(index + 1).padStart(2, '0'),
-    )
+    return Array.from({ length: daysInMonth }, (_, index) => String(index + 1).padStart(2, '0'))
   }
 
   const getTimeScaleLabels = (scale, date) => {
@@ -297,7 +295,6 @@ const FuelCard = ({ item }) => {
           <CModalTitle>
             Tank {item.id_tank} - {item.id_site}
           </CModalTitle>
-          <div>(Hari, DD-MM-YYYY HH:mm)</div>
         </CModalHeader>
         <CModalBody>
           <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
