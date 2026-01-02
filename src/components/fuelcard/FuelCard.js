@@ -162,17 +162,71 @@ TankWithScale.propTypes = {
 
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [timeScale, setTimeScale] = useState('day')
 
   const baseDate = item.update_date ? new Date(item.update_date) : new Date()
-  const dayName = baseDate.toLocaleDateString('id-ID', { weekday: 'long' })
-  const day = String(baseDate.getDate()).padStart(2, '0')
-  const month = String(baseDate.getMonth() + 1).padStart(2, '0')
-  const year = baseDate.getFullYear()
 
-  const hourlyLabels = Array.from({ length: 24 }, (_, index) => {
-    const hour = String(index).padStart(2, '0')
-    return `${dayName}, ${day}-${month}-${year} ${hour}:00`
-  })
+  const formatTimeLabel = (date) => {
+    const formattedTime = new Intl.DateTimeFormat('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(date)
+
+    return formattedTime.replace('.', ':')
+  }
+
+  const getDayLabels = (date) =>
+    Array.from({ length: 24 }, (_, index) => {
+      const labelDate = new Date(date)
+      labelDate.setHours(date.getHours() - index)
+      return formatTimeLabel(labelDate)
+    })
+
+  const getWeekLabels = (date) => {
+    const dayIndex = date.getDay()
+    const diffToMonday = (dayIndex + 6) % 7
+    const startOfWeek = new Date(date)
+    startOfWeek.setDate(date.getDate() - diffToMonday)
+
+    return Array.from({ length: 7 }, (_, index) => {
+      const labelDate = new Date(startOfWeek)
+      labelDate.setDate(startOfWeek.getDate() + index)
+      return labelDate.toLocaleDateString('id-ID', { weekday: 'short' })
+    })
+  }
+
+  const getMonthLabels = (date) => {
+    const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+
+    return Array.from({ length: daysInMonth }, (_, index) =>
+      String(index + 1).padStart(2, '0'),
+    )
+  }
+
+  const getTimeScaleLabels = (scale, date) => {
+    if (scale === 'week') {
+      return getWeekLabels(date)
+    }
+
+    if (scale === 'month') {
+      return getMonthLabels(date)
+    }
+
+    return getDayLabels(date)
+  }
+
+  const normalizeLabels = (labels, targetLength) => {
+    if (labels.length > targetLength) {
+      return labels.slice(0, targetLength)
+    }
+
+    if (labels.length < targetLength) {
+      return [...labels, ...Array(targetLength - labels.length).fill('')]
+    }
+
+    return labels
+  }
 
   const fuelData = [
     120, 118, 117, 116, 115, 114, 114, 113, 112, 111, 111, 110, 109, 108, 108, 107, 106, 106, 105,
@@ -182,6 +236,8 @@ const FuelCard = ({ item }) => {
   const waterData = [
     12, 12, 13, 13, 13, 14, 14, 14, 15, 15, 15, 16, 16, 16, 17, 17, 18, 18, 18, 19, 19, 20, 20, 20,
   ]
+
+  const timeScaleLabels = normalizeLabels(getTimeScaleLabels(timeScale, baseDate), fuelData.length)
 
   return (
     <Badge.Ribbon
@@ -244,10 +300,29 @@ const FuelCard = ({ item }) => {
           <div>(Hari, DD-MM-YYYY HH:mm)</div>
         </CModalHeader>
         <CModalBody>
+          <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
+            <strong>Time Scale:</strong>
+            {[
+              { label: 'Day', value: 'day' },
+              { label: 'Week', value: 'week' },
+              { label: 'Month', value: 'month' },
+            ].map((option) => (
+              <label key={option.value} className="d-flex align-items-center gap-2">
+                <input
+                  type="radio"
+                  name={`time-scale-${item.id_tank}`}
+                  value={option.value}
+                  checked={timeScale === option.value}
+                  onChange={() => setTimeScale(option.value)}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
           <CChartLine
             style={{ height: '260px' }}
             data={{
-              labels: hourlyLabels,
+              labels: timeScaleLabels,
               datasets: [
                 {
                   label: 'Fuel',
