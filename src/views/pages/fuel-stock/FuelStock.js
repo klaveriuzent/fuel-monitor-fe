@@ -21,6 +21,7 @@ const FuelStock = () => {
 
     const fetchData = async () => {
       setLoading(true)
+      setData([])
       try {
         let url = `${baseURL}/ms-tank`
         if (filterSite !== 'all') {

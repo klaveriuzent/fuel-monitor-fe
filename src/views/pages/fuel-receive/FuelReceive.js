@@ -41,6 +41,7 @@ const FuelReceive = () => {
     const fetchData = async () => {
       try {
         setLoading(true)
+        setData([])
         const params = siteFilter !== 'all' ? { id_site: siteFilter } : undefined
         const res = await axios.get(`${baseURL}tankdeliv`, { params })
         if (res.data && Array.isArray(res.data.data)) {
