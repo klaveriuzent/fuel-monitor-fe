@@ -427,7 +427,7 @@ const FuelCard = ({ item }) => {
                   },
                   ticks: {
                     color: getStyle('--cui-body-color'),
-                    callback: (value) => `${value} cm`,
+                    callback: (value) => `${value} L`,
                   },
                 },
               },
