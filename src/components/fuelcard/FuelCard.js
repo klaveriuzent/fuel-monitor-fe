@@ -462,8 +462,7 @@ const FuelCard = ({ item }) => {
                   ticks: {
                     color: getStyle('--cui-body-color'),
                     autoSkip: timeScale !== 'day',
-                    maxTicksLimit:
-                      timeScale === 'day' ? labels.length : Math.min(labels.length, 7),
+                    maxTicksLimit: timeScale === 'day' ? labels.length : Math.min(labels.length, 7),
                     maxRotation: 45,
                     minRotation: 45,
                     callback: (value, index) => {
