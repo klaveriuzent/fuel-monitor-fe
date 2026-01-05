@@ -55,6 +55,7 @@ const FuelReceive = () => {
             nama_pengemudi: item.nama_pengemudi,
             pengirim: item.pengirim,
             id_site: item.id_site,
+            id_tank: item.id_tank,
             total_deliv: parseFloat(item.total_deliv || 0),
             total_permintaan: parseFloat(item.total_permintaan || 0),
             total_selisih: parseFloat(item.total_selisih || 0),
@@ -115,6 +116,7 @@ const FuelReceive = () => {
   const handleExport = () => {
     const exportData = filteredData.map((item) => ({
       Site: item.id_site,
+      Tank: item.id_tank,
       Date: formatDateTime(item.waktu_mulai_delivery),
       'No. Invoice': item.no_invoice,
       'No. DO': item.no_do,

@@ -93,6 +93,7 @@ const formatValueOrDash = (value, formatter = (val) => val) =>
 
 export const fuelReceiveColumns = [
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },
+  { title: 'Tank', dataIndex: 'id_tank', key: 'id_tank' },
   {
     title: 'Date',
     dataIndex: 'waktu_mulai_delivery',
