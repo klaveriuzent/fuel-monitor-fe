@@ -45,22 +45,23 @@ const FuelReceive = () => {
         const params = siteFilter !== 'all' ? { id_site: siteFilter } : undefined
         const res = await axios.get(`${baseURL}tankdeliv`, { params })
         if (res.data && Array.isArray(res.data.data)) {
-          const formatted = res.data.data.map((item, idx) => ({
-            key: item.no || idx,
+          const formatted = res.data.data.map((item) => ({
+            key: `${item.id_site}-${item.id_tank}-${item.waktu_mulai_delivery}`,
             waktu_mulai_delivery: item.waktu_mulai_delivery,
+            id_site: item.id_site,
+            id_tank: item.id_tank,
             volume_permintaan: parseFloat(item.volume_permintaan || 0),
             no_do: item.no_do,
             no_invoice: item.no_invoice,
             no_kendaraan: item.no_kendaraan,
             nama_pengemudi: item.nama_pengemudi,
             pengirim: item.pengirim,
-            id_site: item.id_site,
-            id_tank: item.id_tank,
             total_deliv: parseFloat(item.total_deliv || 0),
             total_permintaan: parseFloat(item.total_permintaan || 0),
             total_selisih: parseFloat(item.total_selisih || 0),
             persentase_selisih: parseFloat(item.persentase_selisih || 0),
           }))
+
           setData(formatted)
         }
       } catch (err) {

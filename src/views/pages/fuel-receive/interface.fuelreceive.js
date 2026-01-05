@@ -3,22 +3,37 @@ import { Tag } from 'antd'
 const parseDateSafe = (value) => {
   if (!value) return null
 
-  // kalau sudah Date object
-  if (value instanceof Date) return isNaN(value.getTime()) ? null : value
+  // sudah Date object
+  if (value instanceof Date) {
+    return isNaN(value.getTime()) ? null : value
+  }
 
   const str = String(value).trim()
 
-  // ISO (2025-12-26T00:00:00Z)
+  // 1️⃣ ISO (2025-12-26T00:00:00Z)
   if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
     const d = new Date(str)
     return isNaN(d.getTime()) ? null : d
   }
 
-  // "Dec 26 2025 12:00AM"
-  // format: MMM DD YYYY hh:mmAM/PM (tanpa spasi sebelum AM/PM)
+  // 2️⃣ SQL datetime string (2025-12-30 00:00:00.000)
+  if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}(\.\d{3})?$/.test(str)) {
+    const d = new Date(str.replace(' ', 'T') + 'Z')
+    return isNaN(d.getTime()) ? null : d
+  }
+
+  // 3️⃣ Date saja (2025-12-30)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const d = new Date(`${str}T00:00:00Z`)
+    return isNaN(d.getTime()) ? null : d
+  }
+
+  // 4️⃣ "Dec 26 2025 12:00AM"
   const m = str.match(/^([A-Za-z]{3})\s+(\d{1,2})\s+(\d{4})\s+(\d{1,2}):(\d{2})(AM|PM)$/i)
+
   if (m) {
     const [, monStr, dayStr, yearStr, hourStr, minStr, apRaw] = m
+
     const months = {
       jan: 0,
       feb: 1,
@@ -43,14 +58,12 @@ const parseDateSafe = (value) => {
     const year = Number(yearStr)
     const ap = apRaw.toUpperCase()
 
-    // konversi 12 jam → 24 jam
     if (ap === 'AM') {
       if (hour === 12) hour = 0
     } else {
       if (hour !== 12) hour += 12
     }
 
-    // Anggap input ini UTC biar konsisten dengan formatter kamu (timeZone: 'UTC')
     const d = new Date(Date.UTC(year, mon, day, hour, minute, 0))
     return isNaN(d.getTime()) ? null : d
   }
@@ -99,8 +112,8 @@ export const fuelReceiveColumns = [
     dataIndex: 'waktu_mulai_delivery',
     key: 'waktu_mulai_delivery',
     sorter: (a, b) => {
-      const timeA = a?.waktu_mulai_delivery ? new Date(a.waktu_mulai_delivery).getTime() : 0
-      const timeB = b?.waktu_mulai_delivery ? new Date(b.waktu_mulai_delivery).getTime() : 0
+      const timeA = parseDateSafe(a?.waktu_mulai_delivery)?.getTime() ?? 0
+      const timeB = parseDateSafe(b?.waktu_mulai_delivery)?.getTime() ?? 0
       return timeA - timeB
     },
     sortDirections: ['ascend', 'descend'],
