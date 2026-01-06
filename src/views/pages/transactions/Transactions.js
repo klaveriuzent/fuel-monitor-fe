@@ -43,7 +43,7 @@ const Transactions = () => {
         const res = await axios.get(`${baseURL}transaksi`, { params })
         if (res.data && Array.isArray(res.data.data)) {
           const formatted = res.data.data.map((item, idx) => ({
-            key: item.no_urut || idx,
+            key: `${item.id_site}-${item.id_tank}-${item.waktu_mulai}`,
             id_card: item.id_card,
             odometer: Number(item.odometer),
             id_site: item.id_site,
