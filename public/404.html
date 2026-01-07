@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="Fuel Monitoring">
+    <title>Fuel Monitoring</title>
+    <script>
+      ;(function () {
+        var basePath = '/fuelmonitoring'
+        var location = window.location
+        var pathname = location.pathname.startsWith(basePath)
+          ? location.pathname.slice(basePath.length)
+          : location.pathname
+        var newUrl =
+          location.protocol +
+          '//' +
+          location.host +
+          basePath +
+          '/?/' +
+          pathname.replace(/^\/+/, '') +
+          location.search +
+          location.hash
+        location.replace(newUrl)
+      })()
+    </script>
+  </head>
+  <body></body>
+</html>

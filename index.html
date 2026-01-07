@@ -6,6 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Fuel Monitoring">
     <title>Fuel Monitoring</title>
+    <script>
+      ;(function (location) {
+        if (location.search[1] === '/') {
+          var decoded = location.search
+            .slice(1)
+            .split('&')
+            .map(function (part) {
+              return part.replace(/~and~/g, '&')
+            })
+            .join('?')
+          window.history.replaceState(null, null, location.pathname.slice(0, -1) + decoded + location.hash)
+        }
+      })(window.location)
+    </script>
     <link rel="manifest" href="/manifest.json">
     <link rel="shortcut icon" href="/src/assets/brand/favicon.ico">
   </head>
