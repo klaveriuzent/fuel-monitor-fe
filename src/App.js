@@ -43,7 +43,7 @@ const App = () => {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <BrowserRouter basename="/">
+    <BrowserRouter basename="/fuelmonitoring">
       {' '}
       <Suspense
         fallback={
