@@ -343,6 +343,7 @@ const FuelCard = ({ item }) => {
               Last Updated:{' '}
               {item.update_date
                 ? new Date(item.update_date).toLocaleString('en-GB', {
+                    timeZone: 'UTC',
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit',
