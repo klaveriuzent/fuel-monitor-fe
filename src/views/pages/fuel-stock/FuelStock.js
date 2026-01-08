@@ -23,7 +23,7 @@ const FuelStock = () => {
       setLoading(true)
       setData([])
       try {
-        let url = `${baseURL}/ms-tank`
+        let url = `${baseURL}ms-tank`
         if (filterSite !== 'all') {
           url += `?id_site=${filterSite}`
         }

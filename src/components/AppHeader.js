@@ -23,7 +23,7 @@ const AppHeader = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const { data } = await axios.get(`${baseURL}/location`)
+        const { data } = await axios.get(`${baseURL}location`)
         if (data && data.data) {
           setLocations(data.data)
         }

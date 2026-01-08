@@ -28,8 +28,8 @@ const AppSubHeaderStock = ({
     try {
       const url =
         filterGroup && filterGroup !== 'all'
-          ? `${baseURL}/site?id_location=${filterGroup}`
-          : `${baseURL}/site`
+          ? `${baseURL}site?id_location=${filterGroup}`
+          : `${baseURL}site`
       const { data } = await axios.get(url)
       setSiteOptions(Array.isArray(data?.data) ? data.data : [])
     } catch {

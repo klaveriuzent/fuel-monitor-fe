@@ -54,7 +54,7 @@ const MasterTanks = () => {
   const fetchTanks = useCallback(async () => {
     setLoading(true)
     try {
-      let url = `${baseURL}/ms-tank`
+      let url = `${baseURL}ms-tank`
       if (filterGroup && filterGroup !== 'all') {
         url += `?id_location=${filterGroup}`
       }
@@ -100,7 +100,7 @@ const MasterTanks = () => {
 
   const handleSave = async () => {
     try {
-      // await axios.put(`${baseURL}/ms-tank/${selectedRecord.id}`, formData)
+      // await axios.put(`${baseURL}ms-tank/${selectedRecord.id}`, formData)
       setVisible(false)
       fetchTanks()
     } catch (error) {

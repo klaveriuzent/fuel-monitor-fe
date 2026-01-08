@@ -59,7 +59,7 @@ const MasterSites = () => {
   const fetchSites = useCallback(async () => {
     setLoading(true)
     try {
-      let url = `${baseURL}/site`
+      let url = `${baseURL}site`
       if (filterGroup && filterGroup !== 'all') {
         url += `?id_location=${filterGroup}`
       }
@@ -104,7 +104,7 @@ const MasterSites = () => {
 
   const handleSave = async () => {
     try {
-      // await axios.put(`${baseURL}/site/${selectedRecord.id}`, formData)
+      // await axios.put(`${baseURL}site/${selectedRecord.id}`, formData)
       setVisible(false)
       fetchSites()
     } catch (error) {
