@@ -8,8 +8,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isApplicationLogin, setIsApplicationLogin] = useState(true)
 
-  const IdApp = 'adf47b09-2646-4b84-a6dc-aaf590909932'
-  const KeyApp = 'iKWY4qVOByG/oxIVyBi4BtkhVUc9+qlpuDb+CYLhyW4='
+  const IdApp = import.meta.env.VITE_APP_ID
+  const KeyApp = import.meta.env.VITE_APP_KEY
 
   const sha256 = async (message) => {
     const msgBuffer = new TextEncoder().encode(message)
