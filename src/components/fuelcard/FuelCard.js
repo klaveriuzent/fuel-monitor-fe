@@ -261,7 +261,7 @@ const FuelCard = ({ item }) => {
           start_date: startDate,
           end_date: endDate,
         })
-        const response = await fetch(`${baseURL}/tank/history?${params.toString()}`, {
+        const response = await fetch(`${baseURL}tank/history?${params.toString()}`, {
           signal: controller.signal,
         })
 

@@ -31,7 +31,7 @@ const Login = () => {
     localStorage.setItem('GUID', guid)
 
     try {
-      const res = await fetch(`${baseURL}/user/get_login?id=${IdApp}&id_trx=${guid}`, {
+      const res = await fetch(`${baseURL}auth/get_login?id=${IdApp}&id_trx=${guid}`, {
         credentials: 'include',
       })
       const json = await res.json()
@@ -76,7 +76,7 @@ const Login = () => {
 
       const validDetail = await sha256(token)
 
-      await fetch(`${baseURL}/auth/get_token`, {
+      await fetch(`${baseURL}auth/get_token`, {
         method: 'POST',
         headers,
         credentials: 'include',
@@ -88,7 +88,7 @@ const Login = () => {
       })
 
       const res = await fetch(
-        `${baseURL}/user/detail_by_name_application?name_application=FuelMonitoring`,
+        `${baseURL}auth/detail_by_name_application?name_application=FuelMonitoring`,
         {
           headers,
           credentials: 'include',
