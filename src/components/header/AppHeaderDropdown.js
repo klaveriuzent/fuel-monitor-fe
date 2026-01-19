@@ -13,6 +13,7 @@ import {
 import avatar0 from './../../assets/images/avatars/0.jpg'
 
 const themeStorageKey = 'coreui-free-react-admin-template-theme'
+const baseURL = import.meta.env.VITE_API_BASE_URL
 
 const resolveCurrentTheme = () => {
   if (typeof document !== 'undefined') {
@@ -30,6 +31,22 @@ const resolveCurrentTheme = () => {
   }
 
   return 'light'
+}
+
+const handleLogout = async () => {
+  try {
+    await fetch(`${baseURL}/auth/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+
+    window.location.href = '/fuelmonitoring/login'
+  } catch (error) {
+    console.error('Logout gagal', error)
+  }
 }
 
 const AppHeaderDropdown = () => {
@@ -74,7 +91,7 @@ const AppHeaderDropdown = () => {
             onChange={handleThemeToggle}
           />
         </CDropdownItem>
-        <CDropdownItem href="#">Log Out</CDropdownItem>
+        <CDropdownItem onClick={handleLogout}>Log Out</CDropdownItem>
       </CDropdownMenu>
     </CDropdown>
   )
