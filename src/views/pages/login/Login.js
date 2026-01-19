@@ -31,9 +31,7 @@ const Login = () => {
     localStorage.setItem('GUID', guid)
 
     try {
-      const res = await fetch(`${baseURL}auth/get_login?id=${IdApp}&id_trx=${guid}`, {
-        credentials: 'include',
-      })
+      const res = await fetch(`${baseURL}auth/get_login?id=${IdApp}&id_trx=${guid}`)
       const json = await res.json()
       if (json.objek) {
         window.location.href = json.objek
