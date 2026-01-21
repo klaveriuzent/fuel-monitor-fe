@@ -289,7 +289,7 @@ const AppSubHeader = ({
 
       {/* Advanced Filter */}
       <CRow className="mt-3">
-        <Collapse ghost size="small" expandIconPosition="end">
+        {/* <Collapse ghost size="small" expandIconPlacement="end">
           <Panel
             key="1"
             header={
@@ -342,7 +342,72 @@ const AppSubHeader = ({
               )}
             </div>
           </Panel>
-        </Collapse>
+        </Collapse> */}
+        <Collapse
+          ghost
+          size="small"
+          expandIconPlacement="end"
+          items={[
+            {
+              key: '1',
+              label: (
+                <span className="app-subheader__advanced-title text-secondary fw-semibold">
+                  Advanced Filter
+                </span>
+              ),
+              children: (
+                <>
+                  <div className="app-subheader__range-label mb-1 text-secondary fw-semibold">
+                    Range Date
+                  </div>
+
+                  <div className="app-subheader__range-picker">
+                    <RangePicker
+                      size="middle"
+                      value={dateRange}
+                      onChange={(dates) => {
+                        setDateRange(dates)
+                        setQuickRange(null)
+                      }}
+                      className="app-subheader__range-picker ant-range-custom"
+                      allowClear
+                      format="DD MMM YYYY"
+                      style={{ width: '100%', marginLeft: '12px' }}
+                      disabledDate={(current) =>
+                        current && current > dayjs().endOf('day').add(1, 'year')
+                      }
+                    />
+                  </div>
+
+                  <div className="app-subheader__range-label mt-3 mb-1 text-secondary fw-semibold">
+                    Select Column
+                  </div>
+
+                  <div className="app-subheader__column-tags">
+                    {columnOptions.map((column) => {
+                      const isActive = activeColumnKeys.includes(column.key)
+
+                      return (
+                        <CheckableTag
+                          key={column.key}
+                          checked={isActive}
+                          onChange={() => handleColumnToggle(column.key)}
+                          className={`app-subheader__column-tag${isActive ? ' is-active' : ''}`}
+                        >
+                          {column.label}
+                        </CheckableTag>
+                      )
+                    })}
+
+                    {!columnOptions.length && (
+                      <span className="text-secondary small">No columns available</span>
+                    )}
+                  </div>
+                </>
+              ),
+            },
+          ]}
+        />
       </CRow>
     </CCard>
   )

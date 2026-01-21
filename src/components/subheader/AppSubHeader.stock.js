@@ -200,7 +200,7 @@ const AppSubHeaderStock = ({
       {/* Column Selector */}
       {!!columnOptions.length && (
         <CRow className="mt-3">
-          <Collapse ghost size="small" expandIconPosition="end">
+          {/* <Collapse ghost size="small" expandIconPlacement="end">
             <Panel
               key="1"
               header={
@@ -225,7 +225,40 @@ const AppSubHeaderStock = ({
                 })}
               </div>
             </Panel>
-          </Collapse>
+          </Collapse> */}
+          <Collapse
+            ghost
+            size="small"
+            expandIconPlacement="end"
+            items={[
+              {
+                key: '1',
+                label: (
+                  <span className="app-subheader__advanced-title text-secondary fw-semibold">
+                    Select Column
+                  </span>
+                ),
+                children: (
+                  <div className="app-subheader__column-tags">
+                    {columnOptions.map((column) => {
+                      const isActive = activeColumnKeys.includes(column.key)
+
+                      return (
+                        <CheckableTag
+                          key={column.key}
+                          checked={isActive}
+                          onChange={() => handleColumnToggle(column.key)}
+                          className={`app-subheader__column-tag${isActive ? ' is-active' : ''}`}
+                        >
+                          {column.label}
+                        </CheckableTag>
+                      )
+                    })}
+                  </div>
+                ),
+              },
+            ]}
+          />
         </CRow>
       )}
     </CCard>

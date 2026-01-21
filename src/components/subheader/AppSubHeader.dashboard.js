@@ -176,7 +176,7 @@ const AppSubHeaderDashboard = ({
 
       {/* Advanced Filter */}
       <CRow className="mt-3">
-        <Collapse ghost size="small" expandIconPosition="end">
+        {/* <Collapse ghost size="small" expandIconPlacement="end">
           <Panel
             key="1"
             header={
@@ -205,7 +205,47 @@ const AppSubHeaderDashboard = ({
               />
             </div>
           </Panel>
-        </Collapse>
+        </Collapse> */}
+        <Collapse
+          ghost
+          size="small"
+          expandIconPlacement="end"
+          items={[
+            {
+              key: '1',
+              label: (
+                <span className="app-subheader__advanced-title text-secondary fw-semibold">
+                  Advanced Filter
+                </span>
+              ),
+              children: (
+                <>
+                  <div className="app-subheader__range-label mb-1 text-secondary fw-semibold">
+                    Range Date
+                  </div>
+
+                  <div className="app-subheader__range-picker">
+                    <RangePicker
+                      size="middle"
+                      value={dateRange}
+                      onChange={(dates) => {
+                        setDateRange(dates)
+                        setQuickRange(null)
+                      }}
+                      className="app-subheader__range-picker ant-range-custom"
+                      allowClear
+                      format="DD MMM YYYY"
+                      style={{ width: '100%', marginLeft: '12px' }}
+                      disabledDate={(current) =>
+                        current && current > dayjs().endOf('day').add(1, 'year')
+                      }
+                    />
+                  </div>
+                </>
+              ),
+            },
+          ]}
+        />
       </CRow>
     </CCard>
   )
