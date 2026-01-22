@@ -68,8 +68,13 @@ const FuelStock = () => {
     setCurrentPage(1)
   }, [])
 
+  const normalizedSearch = search.trim().toLowerCase()
+
   const filteredData = data.filter((item) => {
-    const matchSearch = item.id_tank.toLowerCase().includes(search.toLowerCase())
+    const matchSearch =
+      normalizedSearch.length === 0 ||
+      item.id_tank.toLowerCase().includes(normalizedSearch) ||
+      item.id_site.toLowerCase().includes(normalizedSearch)
     const matchSite =
       filterSite === 'all' || item.id_site.toLowerCase().includes(filterSite.toLowerCase())
 
