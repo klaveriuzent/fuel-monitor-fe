@@ -21,9 +21,30 @@
 
   .ant-pagination-item,
   .ant-pagination-prev button,
-  .ant-pagination-next button {
+  .ant-pagination-next button,
+  .ant-pagination-item-link {
     background-color: var(--cui-body-bg);
     border-color: var(--cui-border-color-translucent, rgba(0, 0, 0, 0.1));
+  }
+
+  .ant-pagination-item a {
+    color: inherit;
+  }
+
+  .ant-pagination-item-ellipsis {
+    color: inherit;
+  }
+
+  .ant-table-placeholder,
+  .ant-empty,
+  .ant-empty-description {
+    color: inherit;
+  }
+
+  .ant-table-column-sorter,
+  .ant-table-column-sorter-up,
+  .ant-table-column-sorter-down {
+    color: inherit;
   }
 }
 
@@ -60,7 +81,8 @@
 
   .ant-pagination-item,
   .ant-pagination-prev button,
-  .ant-pagination-next button {
+  .ant-pagination-next button,
+  .ant-pagination-item-link {
     background-color: var(--cui-dark-bg-subtle, #1c1f26);
     border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
   }
@@ -68,5 +90,32 @@
   .ant-pagination-item-active {
     background-color: rgba(13, 110, 253, 0.2);
     border-color: rgba(13, 110, 253, 0.4);
+  }
+
+  .ant-pagination-item-ellipsis,
+  .ant-pagination-item a {
+    color: inherit;
+  }
+
+  .ant-pagination-disabled button,
+  .ant-pagination-disabled .ant-pagination-item-link {
+    color: rgba(233, 236, 239, 0.5);
+  }
+
+  .ant-table-placeholder {
+    background-color: transparent;
+  }
+
+  .ant-empty-description {
+    color: inherit;
+  }
+
+  .ant-table-column-sorter {
+    color: inherit;
+  }
+
+  .ant-table-column-sorter-up.active,
+  .ant-table-column-sorter-down.active {
+    color: var(--cui-primary, #0d6efd);
   }
 }
