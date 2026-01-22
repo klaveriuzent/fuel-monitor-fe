@@ -11,6 +11,7 @@ import {
   formatDateTime,
   formatDecimal,
 } from './interface.transactions'
+import '../tableDarkMode.scss'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import { getColumnKey } from '../../../utils/table'
 
@@ -168,6 +169,7 @@ const Transactions = () => {
           <Table
             dataSource={filteredData}
             columns={tableColumns}
+            className="app-data-table"
             loading={loading}
             pagination
             scroll={{ x: 'max-content' }}
