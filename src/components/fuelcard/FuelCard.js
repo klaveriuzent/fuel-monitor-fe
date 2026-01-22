@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
@@ -18,30 +18,43 @@ import { getStyle } from '@coreui/utils'
 
 import './FuelCard.scss'
 
+const toNumber = (v) => {
+  if (v === null || v === undefined) return 0
+  if (typeof v === 'number') return Number.isFinite(v) ? v : 0
+  const n = Number(String(v).replace(',', '.'))
+  return Number.isFinite(n) ? n : 0
+}
+
+const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
+
 const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) => {
-  const waterPercent = (waterLevel / capacity) * 100
-  const fuelPercent = (fuelLevel / capacity) * 100
+  const safeCapacity = Math.max(1, toNumber(capacity))
+  const fuel = clamp(toNumber(fuelLevel), 0, safeCapacity)
+  const water = clamp(toNumber(waterLevel), 0, safeCapacity)
+
+  const waterPercent = (water / safeCapacity) * 100
+  const fuelPercent = (fuel / safeCapacity) * 100
 
   const waterHeight = showWater ? waterPercent : 0
   const fuelHeight = showFuel ? fuelPercent : 0
 
-  const totalHeight = waterHeight + fuelHeight
-  const totalLiters = fuelLevel + waterLevel
+  const totalHeight = clamp(waterHeight + fuelHeight, 0, 100)
+  const totalLiters = fuel + water
 
   const tooltipContent = (
     <div>
       <div style={{ fontWeight: 'bold' }}>
-        Total: {totalLiters.toLocaleString()}L / {capacity.toLocaleString()}L (
+        Total: {totalLiters.toLocaleString()}L / {safeCapacity.toLocaleString()}L (
         {totalHeight.toFixed(1)}%)
       </div>
       {showFuel && (
         <div style={{ marginTop: '4px' }}>
-          ⛽ Fuel: {fuelLevel.toLocaleString()}L ({fuelPercent.toFixed(1)}%)
+          ⛽ Fuel: {fuel.toLocaleString()}L ({fuelPercent.toFixed(1)}%)
         </div>
       )}
       {showWater && (
         <div>
-          💧 Water: {waterLevel.toLocaleString()}L ({waterPercent.toFixed(1)}%)
+          💧 Water: {water.toLocaleString()}L ({waterPercent.toFixed(1)}%)
         </div>
       )}
     </div>
@@ -58,7 +71,7 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
           />
         ))}
 
-        <div className="tank-visual__water" style={{ height: `${waterHeight}%` }}></div>
+        <div className="tank-visual__water" style={{ height: `${waterHeight}%` }} />
 
         <div
           className="tank-visual__fuel"
@@ -75,9 +88,9 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
 }
 
 TankVisual.propTypes = {
-  fuelLevel: PropTypes.number.isRequired,
-  waterLevel: PropTypes.number.isRequired,
-  capacity: PropTypes.number.isRequired,
+  fuelLevel: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  waterLevel: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  capacity: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   showFuel: PropTypes.bool.isRequired,
   showWater: PropTypes.bool.isRequired,
 }
@@ -154,10 +167,10 @@ const TankWithScale = ({ fuelLevel, waterLevel, capacity, temperature }) => {
 }
 
 TankWithScale.propTypes = {
-  fuelLevel: PropTypes.number.isRequired,
-  waterLevel: PropTypes.number.isRequired,
-  capacity: PropTypes.number.isRequired,
-  temperature: PropTypes.string.isRequired,
+  fuelLevel: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  waterLevel: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  capacity: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  temperature: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 }
 
 const FuelCard = ({ item }) => {
@@ -171,82 +184,43 @@ const FuelCard = ({ item }) => {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
-  const formatTimeLabel = (date) => {
-    new Date(date)
-      .toLocaleString('id-ID', {
-        timeZone: 'UTC',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hourCycle: 'h23',
-      })
-      .replace(/\./g, ':')
-  }
-
-  const formatDateLabel = (date, options) => {
-    return new Date(date)
-      .toLocaleString('id-ID', {
-        timeZone: 'UTC',
-        hourCycle: 'h23',
-        ...options,
-      })
-      .replace(/\./g, ':')
-  }
-
-  const getDateRange = (scale) => {
-    const end = new Date()
-    const start = new Date(end)
-
-    if (scale === 'week') {
-      start.setDate(end.getDate() - 6)
-    } else if (scale === 'month') {
-      start.setMonth(end.getMonth() - 1)
-    }
-
-    const formatDate = (date) => date.toISOString().split('T')[0]
-
-    return {
-      startDate: formatDate(start),
-      endDate: formatDate(end),
-    }
-  }
-
   const formatAxisLabel = (dateValue, scale) => {
-    const date = new Date(dateValue)
-
-    if (scale === 'week') {
-      return formatDateLabel(date, { day: '2-digit', month: 'short' })
-    }
-
-    if (scale === 'month') {
-      return formatDateLabel(date, { day: '2-digit', month: 'short' })
-    }
-
-    return formatTimeLabel(date)
+    if (!dateValue) return ''
+    // API bucket:
+    // day   -> "YYYY-MM-DD HH:00:00"
+    // week/month -> "YYYY-MM-DD"
+    if (scale === 'day') return String(dateValue).slice(11, 16) // HH:mm
+    return new Date(dateValue).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
   }
 
   const formatTooltipLabel = (dateValue, scale) => {
-    if (scale === 'week' || scale === 'month') {
-      return formatDateLabel(dateValue, {
-        day: '2-digit',
-        month: 'short',
+    if (!dateValue) return ''
+    if (scale === 'day') {
+      return new Date(dateValue).toLocaleString('id-ID', {
+        timeZone: 'UTC',
         year: 'numeric',
+        month: 'short',
+        day: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
+        hourCycle: 'h23',
       })
     }
-
-    return formatTimeLabel(dateValue)
+    return new Date(dateValue).toLocaleDateString('id-ID', {
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    })
   }
 
+  const chartMax = useMemo(() => {
+    const cap = toNumber(item.max_capacity)
+    return cap > 0 ? cap : undefined
+  }, [item.max_capacity])
+
   useEffect(() => {
-    if (!isModalVisible) {
-      return undefined
-    }
+    if (!isModalVisible) return undefined
 
     let isMounted = true
     const controller = new AbortController()
@@ -255,12 +229,12 @@ const FuelCard = ({ item }) => {
       setIsLoading(true)
       setErrorMessage('')
       try {
-        const { startDate, endDate } = getDateRange(timeScale)
         const params = new URLSearchParams({
           id_site: item.id_site,
-          start_date: startDate,
-          end_date: endDate,
+          id_tank: item.id_tank,
+          filter: timeScale, // day | week | month
         })
+
         const response = await fetch(`${baseURL}tank/history?${params.toString()}`, {
           signal: controller.signal,
         })
@@ -270,17 +244,18 @@ const FuelCard = ({ item }) => {
         }
 
         const data = await response.json()
-        const filteredData = Array.isArray(data)
-          ? data.filter((entry) => String(entry.id_tank) === String(item.id_tank))
-          : []
+        const rows = Array.isArray(data) ? data : []
 
-        const sortedData = filteredData.sort(
-          (a, b) => new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime(),
-        )
+        // Backend filtered-history seharusnya sudah sesuai id_tank,
+        // tapi tetap kita jaga biar aman.
+        const filtered = rows.filter((e) => String(e.id_tank) === String(item.id_tank))
 
-        const nextLabels = sortedData.map((entry) => entry.tanggal)
-        const nextFuelData = sortedData.map((entry) => Number(entry.tinggi_oil) || 0)
-        const nextWaterData = sortedData.map((entry) => Number(entry.tinggi_air) || 0)
+        // Sort aman untuk day/week/month (string bucket tetap bisa di Date)
+        const sorted = [...filtered].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
+
+        const nextLabels = sorted.map((e) => e.tanggal)
+        const nextFuelData = sorted.map((e) => toNumber(e.tinggi_oil))
+        const nextWaterData = sorted.map((e) => toNumber(e.tinggi_air))
 
         if (isMounted) {
           setLabels(nextLabels)
@@ -288,7 +263,7 @@ const FuelCard = ({ item }) => {
           setWaterData(nextWaterData)
         }
       } catch (error) {
-        if (error.name !== 'AbortError') {
+        if (error?.name !== 'AbortError') {
           console.error('Error fetching tank history data:', error)
           if (isMounted) {
             setLabels([])
@@ -298,9 +273,7 @@ const FuelCard = ({ item }) => {
           }
         }
       } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
+        if (isMounted) setIsLoading(false)
       }
     }
 
@@ -351,7 +324,7 @@ const FuelCard = ({ item }) => {
                     minute: '2-digit',
                     second: '2-digit',
                   })
-                : '-'}{' '}
+                : '-'}
             </small>
           </CCardText>
 
@@ -399,8 +372,10 @@ const FuelCard = ({ item }) => {
               </label>
             ))}
           </div>
+
           {isLoading && <div className="mb-2">Loading chart...</div>}
           {errorMessage && <div className="mb-2 text-danger">{errorMessage}</div>}
+
           <CChartLine
             style={{ height: '260px' }}
             data={{
@@ -428,22 +403,17 @@ const FuelCard = ({ item }) => {
             options={{
               maintainAspectRatio: false,
               plugins: {
-                legend: {
-                  display: true,
-                  position: 'bottom',
-                },
+                legend: { display: true, position: 'bottom' },
                 tooltip: {
                   mode: 'index',
                   intersect: false,
                   callbacks: {
                     label: (context) => {
-                      if (context.datasetIndex !== 0) {
-                        return null
-                      }
-
-                      const fuelValue = fuelData[context.dataIndex] ?? 0
-                      const waterValue = waterData[context.dataIndex] ?? 0
-                      const labelDate = labels[context.dataIndex]
+                      if (context.datasetIndex !== 0) return null
+                      const idx = context.dataIndex
+                      const fuelValue = fuelData[idx] ?? 0
+                      const waterValue = waterData[idx] ?? 0
+                      const labelDate = labels[idx]
 
                       return [
                         `Fuel: ${fuelValue} L`,
@@ -463,44 +433,31 @@ const FuelCard = ({ item }) => {
                   ticks: {
                     color: getStyle('--cui-body-color'),
                     autoSkip: timeScale !== 'day',
-                    maxTicksLimit: timeScale === 'day' ? labels.length : Math.min(labels.length, 7),
+                    maxTicksLimit: timeScale === 'day' ? 24 : 7,
                     maxRotation: 45,
                     minRotation: 45,
-                    callback: (value, index) => {
-                      const labelDate = labels[index]
-
-                      if (!labelDate) {
-                        return ''
-                      }
-
-                      return formatAxisLabel(labelDate, timeScale)
-                    },
+                    callback: (_, index) => formatAxisLabel(labels[index], timeScale),
                   },
                 },
                 y: {
-                  beginAtZero: true,
-                  suggestedMax: Number(item.max_capacity),
+                  min: 0,
+                  max: 20000,
+                  ticks: {
+                    stepSize: 4000,
+                    color: getStyle('--cui-body-color'),
+                    callback: (value) => `${value} L`,
+                  },
                   border: {
                     color: getStyle('--cui-border-color-translucent'),
                   },
                   grid: {
                     color: getStyle('--cui-border-color-translucent'),
                   },
-                  ticks: {
-                    color: getStyle('--cui-body-color'),
-                    callback: (value) => `${value} L`,
-                  },
                 },
               },
               elements: {
-                line: {
-                  tension: 0.35,
-                },
-                point: {
-                  radius: 2,
-                  hitRadius: 6,
-                  hoverRadius: 4,
-                },
+                line: { tension: 0.35 },
+                point: { radius: 2, hitRadius: 6, hoverRadius: 4 },
               },
             }}
           />
@@ -512,16 +469,16 @@ const FuelCard = ({ item }) => {
 
 FuelCard.propTypes = {
   item: PropTypes.shape({
-    id_tank: PropTypes.string.isRequired,
+    id_tank: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     aktif_flag: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
+    type: PropTypes.string,
     id_site: PropTypes.string.isRequired,
-    ruang_kosong: PropTypes.number.isRequired,
-    max_capacity: PropTypes.number.isRequired,
-    volume_oil: PropTypes.number.isRequired,
-    volume_air: PropTypes.number.isRequired,
-    temperature: PropTypes.string.isRequired,
-    update_date: PropTypes.string.isRequired,
+    ruang_kosong: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    max_capacity: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    volume_oil: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    volume_air: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+    temperature: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    update_date: PropTypes.string,
   }).isRequired,
 }
 
