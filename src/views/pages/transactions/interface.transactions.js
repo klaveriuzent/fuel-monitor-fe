@@ -67,6 +67,18 @@ export const transactionColumns = [
     render: formatDecimal,
   },
   {
+    title: 'Stock By Receive',
+    dataIndex: 'stock_by_receive',
+    key: 'stock_by_receive',
+    render: () => '-',
+  },
+  {
+    title: 'Stock By ATG',
+    dataIndex: 'stock_by_atg',
+    key: 'stock_by_atg',
+    render: () => '-',
+  },
+  {
     title: 'Unit Price (IDR)',
     dataIndex: 'unit_price',
     key: 'unit_price',
