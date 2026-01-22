@@ -49,6 +49,7 @@
 }
 
 [data-coreui-theme='dark'] .app-data-table {
+  /* Table */
   .ant-table,
   .ant-table-container,
   .ant-table-content,
@@ -64,7 +65,6 @@
 
   .ant-table-tbody > tr > td {
     background-color: transparent;
-    color: inherit;
   }
 
   .ant-table-tbody > tr.ant-table-row:hover > td {
@@ -74,17 +74,18 @@
   .ant-table-thead > tr > th,
   .ant-table-tbody > tr > td,
   .ant-table-container,
-  .ant-table-cell,
-  .ant-table-bordered .ant-table-container {
+  .ant-table-cell {
     border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
   }
 
+  /* Pagination */
   .ant-pagination-item,
   .ant-pagination-prev button,
   .ant-pagination-next button,
   .ant-pagination-item-link {
     background-color: var(--cui-dark-bg-subtle, #1c1f26);
     border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+    color: inherit;
   }
 
   .ant-pagination-item-active {
@@ -92,26 +93,104 @@
     border-color: rgba(13, 110, 253, 0.4);
   }
 
-  .ant-pagination-item-ellipsis,
-  .ant-pagination-item a {
-    color: inherit;
-  }
-
-  .ant-pagination-disabled button,
-  .ant-pagination-disabled .ant-pagination-item-link {
+  .ant-pagination-disabled button {
     color: rgba(233, 236, 239, 0.5);
   }
 
-  .ant-table-placeholder {
-    background-color: transparent;
+  /* Quick jumper input */
+  .ant-pagination-options-quick-jumper input {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26);
+    color: var(--cui-body-color, #e9ecef);
+    border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+  }
+
+  .ant-pagination-options-quick-jumper input::placeholder {
+    color: rgba(233, 236, 239, 0.5);
+  }
+
+  /* Page size select */
+  .ant-select-selector {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26) !important;
+    color: var(--cui-body-color, #e9ecef);
+    border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+  }
+
+  .ant-select-arrow {
+    color: rgba(233, 236, 239, 0.7);
+  }
+}
+
+[data-coreui-theme='dark'] {
+  .ant-select-dropdown {
+    background-color: #1c1f26;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  .ant-select-item {
+    color: #e9ecef;
+  }
+
+  .ant-select-item-option-active {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .ant-select-item-option-selected {
+    background-color: rgba(13, 110, 253, 0.2);
+    color: #fff;
+  }
+}
+
+[data-coreui-theme='dark'] .app-data-table {
+  .ant-select {
+    --ant-select-selector-bg: var(--cui-dark-bg-subtle, #1c1f26);
+    --ant-select-border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+    --ant-select-arrow-color: rgba(233, 236, 239, 0.7);
+  }
+}
+
+[data-coreui-theme='dark'] .app-data-table {
+  .ant-table-expanded-row-fixed {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26);
   }
 
   .ant-empty-description {
-    color: inherit;
+    color: rgba(233, 236, 239, 0.7);
   }
 
+  .ant-empty-image svg {
+    /* bayangan bawah */
+    ellipse {
+      fill: rgba(255, 255, 255, 0.08);
+    }
+
+    /* outline */
+    g[stroke] {
+      stroke: rgba(255, 255, 255, 0.28);
+    }
+
+    /* bagian isi */
+    path[fill] {
+      fill: rgba(255, 255, 255, 0.12);
+    }
+  }
+}
+
+[data-coreui-theme='dark'] .app-data-table {
+  /* Hover & focus header sortable */
+  .ant-table-thead > tr > th.ant-table-column-has-sorters:hover,
+  .ant-table-thead > tr > th.ant-table-column-has-sorters:focus,
+  .ant-table-thead > tr > th.ant-table-column-has-sorters.ant-table-column-sort {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* Judul kolom */
+  .ant-table-column-title {
+    color: var(--cui-body-color, #e9ecef);
+  }
+
+  /* Sorter icons */
   .ant-table-column-sorter {
-    color: inherit;
+    color: rgba(233, 236, 239, 0.7);
   }
 
   .ant-table-column-sorter-up.active,
