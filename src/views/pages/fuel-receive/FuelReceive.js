@@ -14,6 +14,7 @@ import {
   formatDecimal,
   formatPercentage,
 } from './interface.fuelreceive'
+import '../tableDarkMode.scss'
 
 dayjs.extend(isBetween)
 
@@ -184,6 +185,7 @@ const FuelReceive = () => {
           <Table
             dataSource={filteredData}
             columns={tableColumns}
+            className="app-data-table"
             loading={loading}
             pagination
             scroll={{ x: 'max-content' }}

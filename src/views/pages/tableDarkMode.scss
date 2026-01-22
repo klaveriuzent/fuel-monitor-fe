@@ -1,0 +1,72 @@
+.app-data-table {
+  color: inherit;
+
+  .ant-table,
+  .ant-table-container,
+  .ant-table-content,
+  .ant-table-body {
+    background-color: var(--cui-body-bg);
+    color: inherit;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    border-color: var(--cui-border-color-translucent, rgba(0, 0, 0, 0.1));
+  }
+
+  .ant-pagination,
+  .ant-pagination * {
+    color: inherit;
+  }
+
+  .ant-pagination-item,
+  .ant-pagination-prev button,
+  .ant-pagination-next button {
+    background-color: var(--cui-body-bg);
+    border-color: var(--cui-border-color-translucent, rgba(0, 0, 0, 0.1));
+  }
+}
+
+[data-coreui-theme='dark'] .app-data-table {
+  .ant-table,
+  .ant-table-container,
+  .ant-table-content,
+  .ant-table-body {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26);
+    color: var(--cui-body-color, #e9ecef);
+  }
+
+  .ant-table-thead > tr > th {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26);
+    color: inherit;
+  }
+
+  .ant-table-tbody > tr > td {
+    background-color: transparent;
+    color: inherit;
+  }
+
+  .ant-table-tbody > tr.ant-table-row:hover > td {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td,
+  .ant-table-container,
+  .ant-table-cell,
+  .ant-table-bordered .ant-table-container {
+    border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+  }
+
+  .ant-pagination-item,
+  .ant-pagination-prev button,
+  .ant-pagination-next button {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26);
+    border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+  }
+
+  .ant-pagination-item-active {
+    background-color: rgba(13, 110, 253, 0.2);
+    border-color: rgba(13, 110, 253, 0.4);
+  }
+}
