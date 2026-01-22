@@ -184,7 +184,7 @@ const AppSubHeaderStock = ({
           <div className="app-subheader__search d-flex align-items-center gap-2">
             <CFormInput
               type="text"
-              placeholder="Search ..."
+              placeholder="Search id tank or site ..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               size="sm"
