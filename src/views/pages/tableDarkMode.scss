@@ -1,6 +1,10 @@
+/* ======================================================
+ * Base (Light / Inherit)
+ * ====================================================== */
 .app-data-table {
   color: inherit;
 
+  /* Table */
   .ant-table,
   .ant-table-container,
   .ant-table-content,
@@ -14,6 +18,7 @@
     border-color: var(--cui-border-color-translucent, rgba(0, 0, 0, 0.1));
   }
 
+  /* Pagination */
   .ant-pagination,
   .ant-pagination * {
     color: inherit;
@@ -27,20 +32,15 @@
     border-color: var(--cui-border-color-translucent, rgba(0, 0, 0, 0.1));
   }
 
-  .ant-pagination-item a {
-    color: inherit;
-  }
-
+  .ant-pagination-item a,
   .ant-pagination-item-ellipsis {
     color: inherit;
   }
 
+  /* Empty & sorter */
   .ant-table-placeholder,
   .ant-empty,
-  .ant-empty-description {
-    color: inherit;
-  }
-
+  .ant-empty-description,
   .ant-table-column-sorter,
   .ant-table-column-sorter-up,
   .ant-table-column-sorter-down {
@@ -48,8 +48,11 @@
   }
 }
 
+/* ======================================================
+ * Dark Mode – Scoped to app-data-table
+ * ====================================================== */
 [data-coreui-theme='dark'] .app-data-table {
-  /* Table */
+  /* ---------- Table ---------- */
   .ant-table,
   .ant-table-container,
   .ant-table-content,
@@ -60,7 +63,6 @@
 
   .ant-table-thead > tr > th {
     background-color: var(--cui-dark-bg-subtle, #1c1f26);
-    color: inherit;
   }
 
   .ant-table-tbody > tr > td {
@@ -78,14 +80,13 @@
     border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
   }
 
-  /* Pagination */
+  /* ---------- Pagination ---------- */
   .ant-pagination-item,
   .ant-pagination-prev button,
   .ant-pagination-next button,
   .ant-pagination-item-link {
     background-color: var(--cui-dark-bg-subtle, #1c1f26);
     border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
-    color: inherit;
   }
 
   .ant-pagination-item-active {
@@ -97,7 +98,6 @@
     color: rgba(233, 236, 239, 0.5);
   }
 
-  /* Quick jumper input */
   .ant-pagination-options-quick-jumper input {
     background-color: var(--cui-dark-bg-subtle, #1c1f26);
     color: var(--cui-body-color, #e9ecef);
@@ -108,7 +108,13 @@
     color: rgba(233, 236, 239, 0.5);
   }
 
-  /* Page size select */
+  /* ---------- Select (page size) ---------- */
+  .ant-select {
+    --ant-select-selector-bg: var(--cui-dark-bg-subtle, #1c1f26);
+    --ant-select-border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+    --ant-select-arrow-color: rgba(233, 236, 239, 0.7);
+  }
+
   .ant-select-selector {
     background-color: var(--cui-dark-bg-subtle, #1c1f26) !important;
     color: var(--cui-body-color, #e9ecef);
@@ -118,9 +124,59 @@
   .ant-select-arrow {
     color: rgba(233, 236, 239, 0.7);
   }
+
+  /* ---------- Expanded row & Empty ---------- */
+  .ant-table-expanded-row-fixed {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26);
+  }
+
+  .ant-empty-description {
+    color: rgba(233, 236, 239, 0.7);
+  }
+
+  .ant-empty-image svg {
+    ellipse {
+      fill: rgba(255, 255, 255, 0.08);
+    }
+
+    g[stroke] {
+      stroke: rgba(255, 255, 255, 0.28);
+    }
+
+    path[fill] {
+      fill: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  /* ---------- Sortable header hover ---------- */
+  .ant-table-thead > tr > th.ant-table-column-has-sorters:hover,
+  .ant-table-thead > tr > th.ant-table-column-has-sorters:focus,
+  .ant-table-thead > tr > th.ant-table-column-has-sorters.ant-table-column-sort {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .ant-table-column-title {
+    color: var(--cui-body-color, #e9ecef);
+  }
+
+  .ant-table-column-sorter {
+    color: rgba(233, 236, 239, 0.7);
+  }
+
+  .ant-table-column-sorter-up.active,
+  .ant-table-column-sorter-down.active {
+    color: var(--cui-primary, #0d6efd);
+  }
 }
 
+/* ======================================================
+ * Dark Mode – GLOBAL (dropdown, tooltip, portal)
+ * ====================================================== */
 [data-coreui-theme='dark'] {
+  .ant-table-thead > tr > th {
+    color: var(--cui-body-color, #e9ecef);
+  }
+
   .ant-select-dropdown {
     background-color: #1c1f26;
     border: 1px solid rgba(255, 255, 255, 0.16);
@@ -138,63 +194,33 @@
     background-color: rgba(13, 110, 253, 0.2);
     color: #fff;
   }
-}
 
-[data-coreui-theme='dark'] .app-data-table {
-  .ant-select {
-    --ant-select-selector-bg: var(--cui-dark-bg-subtle, #1c1f26);
-    --ant-select-border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
-    --ant-select-arrow-color: rgba(233, 236, 239, 0.7);
+  .ant-tooltip-inner {
+    background-color: #0f1115;
+    color: #e9ecef;
+  }
+
+  .ant-tooltip-arrow::before {
+    background-color: #0f1115;
   }
 }
 
 [data-coreui-theme='dark'] .app-data-table {
-  .ant-table-expanded-row-fixed {
-    background-color: var(--cui-dark-bg-subtle, #1c1f26);
-  }
-
-  .ant-empty-description {
-    color: rgba(233, 236, 239, 0.7);
-  }
-
-  .ant-empty-image svg {
-    /* bayangan bawah */
-    ellipse {
-      fill: rgba(255, 255, 255, 0.08);
-    }
-
-    /* outline */
-    g[stroke] {
-      stroke: rgba(255, 255, 255, 0.28);
-    }
-
-    /* bagian isi */
-    path[fill] {
-      fill: rgba(255, 255, 255, 0.12);
-    }
-  }
-}
-
-[data-coreui-theme='dark'] .app-data-table {
-  /* Hover & focus header sortable */
-  .ant-table-thead > tr > th.ant-table-column-has-sorters:hover,
-  .ant-table-thead > tr > th.ant-table-column-has-sorters:focus,
-  .ant-table-thead > tr > th.ant-table-column-has-sorters.ant-table-column-sort {
-    background-color: rgba(255, 255, 255, 0.06);
-  }
-
-  /* Judul kolom */
-  .ant-table-column-title {
+  /* Prev / Next arrow */
+  .ant-pagination-item-link {
     color: var(--cui-body-color, #e9ecef);
   }
 
-  /* Sorter icons */
-  .ant-table-column-sorter {
-    color: rgba(233, 236, 239, 0.7);
+  /* Ellipsis (•••) */
+  .ant-pagination-item-ellipsis {
+    color: rgba(233, 236, 239, 0.7) !important;
   }
 
-  .ant-table-column-sorter-up.active,
-  .ant-table-column-sorter-down.active {
-    color: var(--cui-primary, #0d6efd);
+  .ant-pagination-item-link:hover {
+    color: #fff;
+  }
+
+  .ant-pagination-disabled .ant-pagination-item-link {
+    color: rgba(233, 236, 239, 0.4);
   }
 }
