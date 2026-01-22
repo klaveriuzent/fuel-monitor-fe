@@ -196,7 +196,14 @@ const AppSubHeaderStock = ({
               Clear
             </CButton>
             {onExport && (
-              <CButton color="success" size="sm" onClick={onExport} disabled={isExportDisabled}>
+              <CButton
+                color="success"
+                size="sm"
+                className="text-white"
+                style={{ whiteSpace: 'nowrap' }}
+                onClick={onExport}
+                disabled={isExportDisabled}
+              >
                 Export to Excel
               </CButton>
             )}
