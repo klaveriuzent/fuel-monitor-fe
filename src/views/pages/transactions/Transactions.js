@@ -152,7 +152,8 @@ const Transactions = () => {
 
       <CCard className="mb-4">
         <CCardBody>
-          <div className="d-flex justify-content-end mb-3">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <span className="fw-semibold">Total: {filteredData.length}</span>
             <CButton
               color="success"
               size="sm"
