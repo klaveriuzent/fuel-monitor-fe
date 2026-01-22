@@ -451,11 +451,9 @@ const FuelCard = ({ item }) => {
                   },
                   ticks: {
                     color: getStyle('--cui-body-color'),
-                    autoSkip: timeScale !== 'day',
-                    maxTicksLimit: timeScale === 'day' ? 24 : 7,
+                    autoSkip: false, // tampilkan semua label
                     maxRotation: 45,
                     minRotation: 45,
-                    callback: (_, index) => formatAxisLabel(labels[index], timeScale),
                   },
                 },
                 y: {
