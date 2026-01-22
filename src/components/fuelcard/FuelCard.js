@@ -186,11 +186,30 @@ const FuelCard = ({ item }) => {
 
   const formatAxisLabel = (dateValue, scale) => {
     if (!dateValue) return ''
-    // API bucket:
-    // day   -> "YYYY-MM-DD HH:00:00"
-    // week/month -> "YYYY-MM-DD"
-    if (scale === 'day') return String(dateValue).slice(11, 16) // HH:mm
-    return new Date(dateValue).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+
+    const d = new Date(dateValue)
+
+    // DAY → jam
+    if (scale === 'day') {
+      // "YYYY-MM-DD HH:00:00" → HH:mm
+      return String(dateValue).slice(11, 16)
+    }
+
+    if (scale === 'week') {
+      return d.toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: '2-digit',
+      })
+    }
+
+    // MONTH → tanggal saja
+    if (scale === 'month') {
+      return d.toLocaleDateString('id-ID', {
+        day: '2-digit',
+      })
+    }
+
+    return ''
   }
 
   const formatTooltipLabel = (dateValue, scale) => {
