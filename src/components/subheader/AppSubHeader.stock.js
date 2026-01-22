@@ -14,6 +14,8 @@ const AppSubHeaderStock = ({
   setSearch,
   siteFilter,
   setSiteFilter,
+  onExport,
+  isExportDisabled = false,
   columns = [],
   visibleColumnKeys,
   setVisibleColumnKeys,
@@ -193,6 +195,11 @@ const AppSubHeaderStock = ({
             <CButton color="secondary" size="sm" onClick={handleClearFilters}>
               Clear
             </CButton>
+            {onExport && (
+              <CButton color="success" size="sm" onClick={onExport} disabled={isExportDisabled}>
+                Export to Excel
+              </CButton>
+            )}
           </div>
         </CCol>
       </CRow>

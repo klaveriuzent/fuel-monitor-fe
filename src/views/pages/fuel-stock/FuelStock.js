@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Row, Col, Pagination } from 'antd'
+import * as XLSX from 'xlsx'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
@@ -70,16 +71,53 @@ const FuelStock = () => {
 
   const normalizedSearch = search.trim().toLowerCase()
 
-  const filteredData = data.filter((item) => {
-    const matchSearch =
-      normalizedSearch.length === 0 ||
-      item.id_tank.toLowerCase().includes(normalizedSearch) ||
-      item.id_site.toLowerCase().includes(normalizedSearch)
-    const matchSite =
-      filterSite === 'all' || item.id_site.toLowerCase().includes(filterSite.toLowerCase())
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      const matchSearch =
+        normalizedSearch.length === 0 ||
+        item.id_tank.toLowerCase().includes(normalizedSearch) ||
+        item.id_site.toLowerCase().includes(normalizedSearch)
+      const matchSite =
+        filterSite === 'all' || item.id_site.toLowerCase().includes(filterSite.toLowerCase())
 
-    return matchSearch && matchSite
-  })
+      return matchSearch && matchSite
+    })
+  }, [data, filterSite, normalizedSearch])
+
+  const handleExport = useCallback(() => {
+    if (!filteredData.length) return
+
+    const exportData = filteredData.map((item) => ({
+      'ID Tank': item.id_tank,
+      'ID Site': item.id_site,
+      'Aktif Flag': item.aktif_flag,
+      'Volume Oil': item.volume_oil,
+      'Volume Air': item.volume_air,
+      'Max Capacity': item.max_capacity,
+      'Ruang Kosong': item.ruang_kosong,
+      Temperature: item.temperature,
+      'Update Date': item.update_date,
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Fuel Stock')
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const dateStamp = new Date().toISOString().slice(0, 10)
+
+    link.href = url
+    link.setAttribute('download', `fuel-stock-${dateStamp}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  }, [filteredData])
 
   const startIndex = (currentPage - 1) * pageSize
   const paginatedData = filteredData.slice(startIndex, startIndex + pageSize)
@@ -91,6 +129,8 @@ const FuelStock = () => {
         setSearch={handleSearchChange}
         siteFilter={filterSite}
         setSiteFilter={handleSiteFilterChange}
+        onExport={handleExport}
+        isExportDisabled={!filteredData.length}
       />
 
       <Row gutter={[16, 16]}>
