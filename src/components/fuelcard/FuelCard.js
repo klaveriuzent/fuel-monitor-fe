@@ -197,6 +197,7 @@ const FuelCard = ({ item }) => {
 
     if (scale === 'week') {
       return d.toLocaleDateString('id-ID', {
+        timeZone: 'UTC',
         weekday: 'short',
         day: '2-digit',
       })
@@ -205,6 +206,7 @@ const FuelCard = ({ item }) => {
     // MONTH → tanggal saja
     if (scale === 'month') {
       return d.toLocaleDateString('id-ID', {
+        timeZone: 'UTC',
         day: '2-digit',
       })
     }
@@ -426,19 +428,18 @@ const FuelCard = ({ item }) => {
                 tooltip: {
                   mode: 'index',
                   intersect: false,
+                  yAlign: 'center',
                   callbacks: {
+                    title: (items) => {
+                      const idx = items?.[0]?.dataIndex ?? 0
+                      const dateValue = labels[idx]
+                      return `Time: ${formatTooltipLabel(dateValue, timeScale)}`
+                    },
                     label: (context) => {
-                      if (context.datasetIndex !== 0) return null
-                      const idx = context.dataIndex
-                      const fuelValue = fuelData[idx] ?? 0
-                      const waterValue = waterData[idx] ?? 0
-                      const labelDate = labels[idx]
-
-                      return [
-                        `Fuel: ${fuelValue} L`,
-                        `Water: ${waterValue} L`,
-                        `Time: ${formatTooltipLabel(labelDate, timeScale)}`,
-                      ]
+                      const v = context.parsed?.y ?? 0
+                      const label = context.dataset.label
+                      const icon = label === 'Fuel' ? '⛽' : label === 'Water' ? '💧' : ''
+                      return `${icon} ${label}: ${v} L`
                     },
                   },
                 },
