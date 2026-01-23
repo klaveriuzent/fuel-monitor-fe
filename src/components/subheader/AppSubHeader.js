@@ -18,6 +18,8 @@ const AppSubHeader = ({
   setSearch,
   siteFilter,
   setSiteFilter,
+  siteCounts,
+  siteTotalCount,
   dateRange,
   setDateRange,
   columns = [],
@@ -229,16 +231,24 @@ const AppSubHeader = ({
     })
   }
 
+  const shouldShowSiteCounts = typeof siteTotalCount === 'number' || siteCounts
+
+  const formatSiteLabel = (label, count) => {
+    if (!shouldShowSiteCounts) return label
+    const safeCount = typeof count === 'number' ? count : 0
+    return `${label} (${safeCount})`
+  }
+
   return (
     <CCard className="app-subheader mb-3 p-3">
       {/* Filter Row */}
       <CRow className="align-items-center g-2">
         <CCol xs={12} sm={6} md={4}>
           <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
-            <option value="all">All Sites</option>
+            <option value="all">{formatSiteLabel('All Sites', siteTotalCount)}</option>
             {siteOptions.map((site) => (
               <option key={site.id} value={site.id_site}>
-                {site.id_site}
+                {formatSiteLabel(site.id_site, siteCounts?.[site.id_site])}
               </option>
             ))}
           </CFormSelect>

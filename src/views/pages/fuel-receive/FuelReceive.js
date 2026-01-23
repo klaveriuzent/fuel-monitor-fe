@@ -43,8 +43,7 @@ const FuelReceive = () => {
       try {
         setLoading(true)
         setData([])
-        const params = siteFilter !== 'all' ? { id_site: siteFilter } : undefined
-        const res = await axios.get(`${baseURL}tankdeliv`, { params })
+        const res = await axios.get(`${baseURL}tankdeliv`)
         if (res.data && Array.isArray(res.data.data)) {
           const formatted = res.data.data.map((item) => ({
             key: `${item.id_site}-${item.id_tank}-${item.waktu_mulai_delivery}`,
@@ -73,12 +72,13 @@ const FuelReceive = () => {
     }
 
     fetchData()
-  }, [siteFilter])
+  }, [])
 
-  // Filter pencarian + tanggal + site
-  const filteredData = useMemo(() => {
+  const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
+
+  // Filter pencarian + tanggal (tanpa site filter)
+  const filteredBySearchDate = useMemo(() => {
     return data.filter((item) => {
-      const searchValue = search.trim().toLowerCase()
       const matchesSearch = searchValue
         ? [
             item.no_do,
@@ -97,11 +97,6 @@ const FuelReceive = () => {
             .some((field) => String(field).toLowerCase().includes(searchValue))
         : true
 
-      const matchesSite =
-        siteFilter === 'all'
-          ? true
-          : item.id_site && item.id_site.toLowerCase() === siteFilter.toLowerCase()
-
       const [startDate, endDate] = dateRange || []
       const itemDate = dayjs(item.waktu_mulai_delivery)
       const matchesDate = startDate
@@ -110,9 +105,27 @@ const FuelReceive = () => {
           : itemDate.isSame(startDate, 'day') || itemDate.isAfter(startDate.startOf('day'))
         : true
 
-      return matchesSearch && matchesSite && matchesDate
+      return matchesSearch && matchesDate
     })
-  }, [data, dateRange, search, siteFilter])
+  }, [data, dateRange, searchValue])
+
+  const siteCounts = useMemo(() => {
+    return filteredBySearchDate.reduce((acc, item) => {
+      if (!item.id_site) return acc
+      acc[item.id_site] = (acc[item.id_site] || 0) + 1
+      return acc
+    }, {})
+  }, [filteredBySearchDate])
+
+  const siteTotalCount = filteredBySearchDate.length
+
+  // Filter pencarian + tanggal + site
+  const filteredData = useMemo(() => {
+    if (siteFilter === 'all') return filteredBySearchDate
+    return filteredBySearchDate.filter(
+      (item) => item.id_site && item.id_site.toLowerCase() === siteFilter.toLowerCase(),
+    )
+  }, [filteredBySearchDate, siteFilter])
 
   // Export Excel
   const handleExport = () => {
@@ -159,6 +172,8 @@ const FuelReceive = () => {
         setSearch={setSearch}
         siteFilter={siteFilter}
         setSiteFilter={setSiteFilter}
+        siteCounts={siteCounts}
+        siteTotalCount={siteTotalCount}
         dateRange={dateRange}
         setDateRange={setDateRange}
         columns={fuelReceiveColumns}
