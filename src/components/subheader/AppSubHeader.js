@@ -135,6 +135,7 @@ const AppSubHeader = ({
       if (search !== undefined) setSearch(search)
       if (siteFilter !== undefined) setSiteFilter(siteFilter)
       if (quickRange) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQuickRange(quickRange)
         const [start, end] = calculateQuickRange(quickRange)
         setDateRange([start, end])
@@ -190,6 +191,7 @@ const AppSubHeader = ({
   }, [search, siteFilter, quickRange, dateRange, activeColumnKeys, availableColumnKeys, storageKey])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSites()
   }, [fetchSites])
 
@@ -239,6 +241,15 @@ const AppSubHeader = ({
     return `${label} (${safeCount})`
   }
 
+  const getSiteOptionStyle = (count) => {
+    if (!shouldShowSiteCounts) return undefined
+    const safeCount = typeof count === 'number' ? count : 0
+    return {
+      color: safeCount > 0 ? '#198754' : '#dc3545',
+      fontWeight: 'bold',
+    }
+  }
+
   return (
     <CCard className="app-subheader mb-3 p-3">
       {/* Filter Row */}
@@ -247,7 +258,11 @@ const AppSubHeader = ({
           <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
             <option value="all">{formatSiteLabel('All Sites', siteTotalCount)}</option>
             {siteOptions.map((site) => (
-              <option key={site.id} value={site.id_site}>
+              <option
+                key={site.id}
+                value={site.id_site}
+                style={getSiteOptionStyle(siteCounts?.[site.id_site])}
+              >
                 {formatSiteLabel(site.id_site, siteCounts?.[site.id_site])}
               </option>
             ))}
