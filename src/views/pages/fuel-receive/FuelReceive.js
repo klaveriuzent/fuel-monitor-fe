@@ -109,6 +109,7 @@ const FuelReceive = () => {
     } finally {
       setLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseURL])
 
   const fetchSites = useCallback(async () => {
@@ -124,6 +125,7 @@ const FuelReceive = () => {
     } finally {
       setIsLoadingSites(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseURL])
 
   // Fetch data dari API tankdeliv
@@ -315,12 +317,7 @@ const FuelReceive = () => {
             </CButton>
           </div>
           <div className="d-flex justify-content-end align-items-center mb-3">
-            <CButton
-              color="primary"
-              size="sm"
-              className="text-white"
-              onClick={handleOpenModal}
-            >
+            <CButton color="primary" size="sm" className="text-white" onClick={handleOpenModal}>
               Add New Fuel Receive
             </CButton>
           </div>
@@ -354,9 +351,7 @@ const FuelReceive = () => {
                   disabled={isLoadingSites}
                   required
                 >
-                  <option value="">
-                    {isLoadingSites ? 'Loading sites...' : 'Select site'}
-                  </option>
+                  <option value="">{isLoadingSites ? 'Loading sites...' : 'Select site'}</option>
                   {siteOptions.map((site) => (
                     <option key={site} value={site}>
                       {site}
@@ -443,7 +438,12 @@ const FuelReceive = () => {
               </CCol>
               <CCol md={6}>
                 <CFormLabel htmlFor="no_do">Delivery Order Number</CFormLabel>
-                <CFormInput id="no_do" name="no_do" value={formData.no_do} onChange={handleFormChange} />
+                <CFormInput
+                  id="no_do"
+                  name="no_do"
+                  value={formData.no_do}
+                  onChange={handleFormChange}
+                />
               </CCol>
               <CCol md={6}>
                 <CFormLabel htmlFor="no_kendaraan">License Plate</CFormLabel>
@@ -465,7 +465,12 @@ const FuelReceive = () => {
               </CCol>
               <CCol md={6}>
                 <CFormLabel htmlFor="pengirim">Sender</CFormLabel>
-                <CFormInput id="pengirim" name="pengirim" value={formData.pengirim} onChange={handleFormChange} />
+                <CFormInput
+                  id="pengirim"
+                  name="pengirim"
+                  value={formData.pengirim}
+                  onChange={handleFormChange}
+                />
               </CCol>
               <CCol md={6}>
                 <CFormLabel htmlFor="volume_air_awal">Initial Water Volume (L)</CFormLabel>
