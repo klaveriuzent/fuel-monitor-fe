@@ -3,25 +3,11 @@ import axios from 'axios'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import { Table } from 'antd'
-import {
-  CCard,
-  CCardBody,
-  CButton,
-  CModal,
-  CModalHeader,
-  CModalTitle,
-  CModalBody,
-  CModalFooter,
-  CForm,
-  CFormLabel,
-  CFormInput,
-  CFormSelect,
-  CRow,
-  CCol,
-} from '@coreui/react'
+import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import * as XLSX from 'xlsx'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
+import AddFuelReceiveModal from '../../../components/modals/AddFuelReceiveModal'
 import { getColumnKey } from '../../../utils/table'
 import {
   fuelReceiveColumns,
@@ -73,6 +59,8 @@ const FuelReceive = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [siteOptions, setSiteOptions] = useState([])
   const [isLoadingSites, setIsLoadingSites] = useState(false)
+  const [tankOptions, setTankOptions] = useState([])
+  const [isLoadingTanks, setIsLoadingTanks] = useState(false)
 
   const tableColumns = useMemo(
     () => fuelReceiveColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
@@ -128,6 +116,27 @@ const FuelReceive = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseURL])
 
+  const fetchTanks = useCallback(async () => {
+    setIsLoadingTanks(true)
+    try {
+      const { data } = await axios.get(`${baseURL}ms-tank`)
+      const tanks = Array.isArray(data?.data)
+        ? data.data
+            .map((item) => ({
+              idTank: item.id_tank,
+              idSite: item.id_site,
+            }))
+            .filter((item) => item.idTank && item.idSite)
+        : []
+      setTankOptions(tanks)
+    } catch (err) {
+      console.error('Error fetching tank data:', err)
+    } finally {
+      setIsLoadingTanks(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseURL])
+
   // Fetch data dari API tankdeliv
   useEffect(() => {
     fetchData()
@@ -137,9 +146,19 @@ const FuelReceive = () => {
     fetchSites()
   }, [fetchSites])
 
+  useEffect(() => {
+    fetchTanks()
+  }, [fetchTanks])
+
   const handleFormChange = (e) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData((prev) => {
+      const nextState = { ...prev, [name]: value }
+      if (name === 'id_site') {
+        nextState.id_tank = ''
+      }
+      return nextState
+    })
   }
 
   const handleOpenModal = () => {
@@ -192,6 +211,14 @@ const FuelReceive = () => {
 
     return requiredFields.every((field) => String(formData[field] || '').trim())
   }, [formData])
+
+  const availableTankOptions = useMemo(() => {
+    if (!formData.id_site) return []
+    const tanksForSite = tankOptions
+      .filter((tank) => tank.idSite === formData.id_site)
+      .map((tank) => tank.idTank)
+    return [...new Set(tanksForSite)]
+  }, [formData.id_site, tankOptions])
 
   const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
 
@@ -334,222 +361,19 @@ const FuelReceive = () => {
         </CCardBody>
       </CCard>
 
-      <CModal visible={isModalOpen} onClose={handleCloseModal} alignment="center" size="lg">
-        <CModalHeader>
-          <CModalTitle>Add New Fuel Receive</CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <CForm onSubmit={handleSave}>
-            <CRow className="g-3">
-              <CCol md={6}>
-                <CFormLabel htmlFor="id_site">Site ID</CFormLabel>
-                <CFormSelect
-                  id="id_site"
-                  name="id_site"
-                  value={formData.id_site}
-                  onChange={handleFormChange}
-                  disabled={isLoadingSites}
-                  required
-                >
-                  <option value="">{isLoadingSites ? 'Loading sites...' : 'Select site'}</option>
-                  {siteOptions.map((site) => (
-                    <option key={site} value={site}>
-                      {site}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="id_tank">Tank ID</CFormLabel>
-                <CFormInput
-                  id="id_tank"
-                  name="id_tank"
-                  value={formData.id_tank}
-                  onChange={handleFormChange}
-                  placeholder="e.g. TANK-01"
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="waktu_mulai_delivery">Delivery Start</CFormLabel>
-                <CFormInput
-                  type="datetime-local"
-                  id="waktu_mulai_delivery"
-                  name="waktu_mulai_delivery"
-                  value={formData.waktu_mulai_delivery}
-                  onChange={handleFormChange}
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="waktu_selesai_delivery">Delivery End</CFormLabel>
-                <CFormInput
-                  type="datetime-local"
-                  id="waktu_selesai_delivery"
-                  name="waktu_selesai_delivery"
-                  value={formData.waktu_selesai_delivery}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="volume_minyak_awal">Initial Oil Volume (L)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="volume_minyak_awal"
-                  name="volume_minyak_awal"
-                  value={formData.volume_minyak_awal}
-                  onChange={handleFormChange}
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="volume_minyak_akhir">Final Oil Volume (L)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="volume_minyak_akhir"
-                  name="volume_minyak_akhir"
-                  value={formData.volume_minyak_akhir}
-                  onChange={handleFormChange}
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="volume_permintaan">Requested Volume (L)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="volume_permintaan"
-                  name="volume_permintaan"
-                  value={formData.volume_permintaan}
-                  onChange={handleFormChange}
-                  required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="no_invoice">Invoice Number</CFormLabel>
-                <CFormInput
-                  id="no_invoice"
-                  name="no_invoice"
-                  value={formData.no_invoice}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="no_do">Delivery Order Number</CFormLabel>
-                <CFormInput
-                  id="no_do"
-                  name="no_do"
-                  value={formData.no_do}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="no_kendaraan">License Plate</CFormLabel>
-                <CFormInput
-                  id="no_kendaraan"
-                  name="no_kendaraan"
-                  value={formData.no_kendaraan}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="nama_pengemudi">Driver Name</CFormLabel>
-                <CFormInput
-                  id="nama_pengemudi"
-                  name="nama_pengemudi"
-                  value={formData.nama_pengemudi}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="pengirim">Sender</CFormLabel>
-                <CFormInput
-                  id="pengirim"
-                  name="pengirim"
-                  value={formData.pengirim}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="volume_air_awal">Initial Water Volume (L)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="volume_air_awal"
-                  name="volume_air_awal"
-                  value={formData.volume_air_awal}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="volume_air_akhir">Final Water Volume (L)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="volume_air_akhir"
-                  name="volume_air_akhir"
-                  value={formData.volume_air_akhir}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="tinggi_minyak_awal">Initial Oil Height (cm)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="tinggi_minyak_awal"
-                  name="tinggi_minyak_awal"
-                  value={formData.tinggi_minyak_awal}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="tinggi_minyak_akhir">Final Oil Height (cm)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="tinggi_minyak_akhir"
-                  name="tinggi_minyak_akhir"
-                  value={formData.tinggi_minyak_akhir}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="tinggi_air_awal">Initial Water Height (cm)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="tinggi_air_awal"
-                  name="tinggi_air_awal"
-                  value={formData.tinggi_air_awal}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="tinggi_air_akhir">Final Water Height (cm)</CFormLabel>
-                <CFormInput
-                  type="number"
-                  step="any"
-                  id="tinggi_air_akhir"
-                  name="tinggi_air_akhir"
-                  value={formData.tinggi_air_akhir}
-                  onChange={handleFormChange}
-                />
-              </CCol>
-            </CRow>
-          </CForm>
-        </CModalBody>
-        <CModalFooter>
-          <CButton color="secondary" onClick={handleCloseModal} disabled={isSaving}>
-            Cancel
-          </CButton>
-          <CButton color="primary" onClick={handleSave} disabled={!isFormValid || isSaving}>
-            {isSaving ? 'Saving...' : 'Save'}
-          </CButton>
-        </CModalFooter>
-      </CModal>
+      <AddFuelReceiveModal
+        visible={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSave}
+        formData={formData}
+        onFormChange={handleFormChange}
+        isSaving={isSaving}
+        isFormValid={isFormValid}
+        siteOptions={siteOptions}
+        isLoadingSites={isLoadingSites}
+        tankOptions={availableTankOptions}
+        isLoadingTanks={isLoadingTanks}
+      />
     </>
   )
 }
