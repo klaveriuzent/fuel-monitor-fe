@@ -1,3 +1,4 @@
+import { CButton } from '@coreui/react'
 import { Tag } from 'antd'
 
 const parseDateSafe = (value) => {
@@ -187,6 +188,22 @@ export const fuelReceiveColumns = [
           </span>
         </span>
       </div>
+    ),
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    width: 110,
+    fixed: 'right',
+    render: (_, record) => (
+      <CButton
+        color="info"
+        size="sm"
+        className="text-white"
+        onClick={() => console.log('test edit', record)}
+      >
+        Edit
+      </CButton>
     ),
   },
 ]
