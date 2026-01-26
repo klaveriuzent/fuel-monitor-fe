@@ -15,6 +15,7 @@ import {
   CForm,
   CFormLabel,
   CFormInput,
+  CFormSelect,
   CRow,
   CCol,
 } from '@coreui/react'
@@ -41,7 +42,6 @@ const allFuelReceiveColumnKeys = fuelReceiveColumns
 const initialFormData = {
   no: '',
   id_tank: '',
-  id_shift: '',
   volume_minyak_awal: '',
   volume_minyak_akhir: '',
   tinggi_minyak_awal: '',
@@ -58,9 +58,7 @@ const initialFormData = {
   no_kendaraan: '',
   nama_pengemudi: '',
   pengirim: '',
-  delivery_flag: '',
   id_site: '',
-  id_company: '',
 }
 
 const FuelReceive = () => {
@@ -73,6 +71,8 @@ const FuelReceive = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState(initialFormData)
   const [isSaving, setIsSaving] = useState(false)
+  const [siteOptions, setSiteOptions] = useState([])
+  const [isLoadingSites, setIsLoadingSites] = useState(false)
 
   const tableColumns = useMemo(
     () => fuelReceiveColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
@@ -109,12 +109,31 @@ const FuelReceive = () => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [baseURL])
+
+  const fetchSites = useCallback(async () => {
+    setIsLoadingSites(true)
+    try {
+      const { data } = await axios.get(`${baseURL}site`)
+      const sites = Array.isArray(data?.data)
+        ? data.data.map((item) => item.id_site).filter(Boolean)
+        : []
+      setSiteOptions([...new Set(sites)])
+    } catch (err) {
+      console.error('Error fetching site data:', err)
+    } finally {
+      setIsLoadingSites(false)
+    }
+  }, [baseURL])
 
   // Fetch data dari API tankdeliv
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    fetchSites()
+  }, [fetchSites])
 
   const handleFormChange = (e) => {
     const { name, value } = e.target
@@ -149,7 +168,7 @@ const FuelReceive = () => {
 
     try {
       setIsSaving(true)
-      await axios.post(`${baseURL}tankdeliv`, formData)
+      await axios.post(`${baseURL}web/tankdeliv`, formData)
       handleCloseModal()
       fetchData()
     } catch (err) {
@@ -327,14 +346,23 @@ const FuelReceive = () => {
             <CRow className="g-3">
               <CCol md={6}>
                 <CFormLabel htmlFor="id_site">Site ID</CFormLabel>
-                <CFormInput
+                <CFormSelect
                   id="id_site"
                   name="id_site"
                   value={formData.id_site}
                   onChange={handleFormChange}
-                  placeholder="e.g. SITE-001"
+                  disabled={isLoadingSites}
                   required
-                />
+                >
+                  <option value="">
+                    {isLoadingSites ? 'Loading sites...' : 'Select site'}
+                  </option>
+                  {siteOptions.map((site) => (
+                    <option key={site} value={site}>
+                      {site}
+                    </option>
+                  ))}
+                </CFormSelect>
               </CCol>
               <CCol md={6}>
                 <CFormLabel htmlFor="id_tank">Tank ID</CFormLabel>
@@ -402,16 +430,6 @@ const FuelReceive = () => {
                   value={formData.volume_permintaan}
                   onChange={handleFormChange}
                   required
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="id_shift">Shift ID</CFormLabel>
-                <CFormInput
-                  id="id_shift"
-                  name="id_shift"
-                  value={formData.id_shift}
-                  onChange={handleFormChange}
-                  placeholder="Optional"
                 />
               </CCol>
               <CCol md={6}>
@@ -513,26 +531,6 @@ const FuelReceive = () => {
                   name="tinggi_air_akhir"
                   value={formData.tinggi_air_akhir}
                   onChange={handleFormChange}
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="delivery_flag">Delivery Flag</CFormLabel>
-                <CFormInput
-                  id="delivery_flag"
-                  name="delivery_flag"
-                  value={formData.delivery_flag}
-                  onChange={handleFormChange}
-                  placeholder="Optional"
-                />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel htmlFor="id_company">Company ID</CFormLabel>
-                <CFormInput
-                  id="id_company"
-                  name="id_company"
-                  value={formData.id_company}
-                  onChange={handleFormChange}
-                  placeholder="Optional"
                 />
               </CCol>
             </CRow>
