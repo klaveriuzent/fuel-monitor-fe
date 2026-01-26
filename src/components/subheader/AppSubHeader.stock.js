@@ -200,7 +200,7 @@ const AppSubHeaderStock = ({
                 color="success"
                 size="sm"
                 className="text-white"
-                style={{ whiteSpace: 'nowrap' }}
+                style={{ whiteSpace: 'nowrap', minWidth: '154.5px' }}
                 onClick={onExport}
                 disabled={isExportDisabled}
               >

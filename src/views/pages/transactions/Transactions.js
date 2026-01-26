@@ -172,6 +172,7 @@ const Transactions = () => {
               color="success"
               size="sm"
               className="text-white"
+              style={{ minWidth: '154.5px' }}
               onClick={handleExport}
               disabled={!filteredData.length}
             >

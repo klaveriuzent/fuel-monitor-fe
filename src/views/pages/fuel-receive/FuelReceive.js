@@ -190,10 +190,23 @@ const FuelReceive = () => {
               color="success"
               size="sm"
               className="text-white"
+              style={{ minWidth: '154.5px' }}
               onClick={handleExport}
               disabled={!filteredData.length}
             >
               Export to Excel
+            </CButton>
+          </div>
+          <div className="d-flex justify-content-end align-items-center mb-3">
+            <CButton
+              color="primary"
+              size="sm"
+              className="text-white"
+              onClick={() => {
+                console.log('Add New Fuel Receive')
+              }}
+            >
+              Add New Fuel Receive
             </CButton>
           </div>
 
