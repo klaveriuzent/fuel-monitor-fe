@@ -1,9 +1,23 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import { Table } from 'antd'
-import { CCard, CCardBody, CButton } from '@coreui/react'
+import {
+  CCard,
+  CCardBody,
+  CButton,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+  CModalFooter,
+  CForm,
+  CFormLabel,
+  CFormInput,
+  CRow,
+  CCol,
+} from '@coreui/react'
 import { saveAs } from 'file-saver'
 import * as XLSX from 'xlsx'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
@@ -24,6 +38,31 @@ const allFuelReceiveColumnKeys = fuelReceiveColumns
   .map((column) => getColumnKey(column))
   .filter(Boolean)
 
+const initialFormData = {
+  no: '',
+  id_tank: '',
+  id_shift: '',
+  volume_minyak_awal: '',
+  volume_minyak_akhir: '',
+  tinggi_minyak_awal: '',
+  tinggi_minyak_akhir: '',
+  volume_air_awal: '',
+  volume_air_akhir: '',
+  tinggi_air_awal: '',
+  tinggi_air_akhir: '',
+  waktu_mulai_delivery: '',
+  waktu_selesai_delivery: '',
+  volume_permintaan: '',
+  no_do: '',
+  no_invoice: '',
+  no_kendaraan: '',
+  nama_pengemudi: '',
+  pengirim: '',
+  delivery_flag: '',
+  id_site: '',
+  id_company: '',
+}
+
 const FuelReceive = () => {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
@@ -31,48 +70,107 @@ const FuelReceive = () => {
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState([null, null])
   const [visibleColumnKeys, setVisibleColumnKeys] = useState(allFuelReceiveColumnKeys)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [formData, setFormData] = useState(initialFormData)
+  const [isSaving, setIsSaving] = useState(false)
 
   const tableColumns = useMemo(
     () => fuelReceiveColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
     [visibleColumnKeys],
   )
 
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setData([])
+      const res = await axios.get(`${baseURL}tankdeliv`)
+      if (res.data && Array.isArray(res.data.data)) {
+        const formatted = res.data.data.map((item) => ({
+          key: `${item.id_site}-${item.id_tank}-${item.waktu_mulai_delivery}`,
+          waktu_mulai_delivery: item.waktu_mulai_delivery,
+          id_site: item.id_site,
+          id_tank: item.id_tank,
+          volume_permintaan: parseFloat(item.volume_permintaan || 0),
+          no_do: item.no_do,
+          no_invoice: item.no_invoice,
+          no_kendaraan: item.no_kendaraan,
+          nama_pengemudi: item.nama_pengemudi,
+          pengirim: item.pengirim,
+          total_deliv: parseFloat(item.total_deliv || 0),
+          total_permintaan: parseFloat(item.total_permintaan || 0),
+          total_selisih: parseFloat(item.total_selisih || 0),
+          persentase_selisih: parseFloat(item.persentase_selisih || 0),
+        }))
+
+        setData(formatted)
+      }
+    } catch (err) {
+      console.error('Error fetching tank delivery data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   // Fetch data dari API tankdeliv
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setData([])
-        const res = await axios.get(`${baseURL}tankdeliv`)
-        if (res.data && Array.isArray(res.data.data)) {
-          const formatted = res.data.data.map((item) => ({
-            key: `${item.id_site}-${item.id_tank}-${item.waktu_mulai_delivery}`,
-            waktu_mulai_delivery: item.waktu_mulai_delivery,
-            id_site: item.id_site,
-            id_tank: item.id_tank,
-            volume_permintaan: parseFloat(item.volume_permintaan || 0),
-            no_do: item.no_do,
-            no_invoice: item.no_invoice,
-            no_kendaraan: item.no_kendaraan,
-            nama_pengemudi: item.nama_pengemudi,
-            pengirim: item.pengirim,
-            total_deliv: parseFloat(item.total_deliv || 0),
-            total_permintaan: parseFloat(item.total_permintaan || 0),
-            total_selisih: parseFloat(item.total_selisih || 0),
-            persentase_selisih: parseFloat(item.persentase_selisih || 0),
-          }))
-
-          setData(formatted)
-        }
-      } catch (err) {
-        console.error('Error fetching tank delivery data:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
-  }, [])
+  }, [fetchData])
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleOpenModal = () => {
+    setFormData(initialFormData)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setFormData(initialFormData)
+  }
+
+  const handleSave = async (e) => {
+    e?.preventDefault()
+    if (isSaving) return
+
+    const requiredFields = [
+      'id_site',
+      'id_tank',
+      'waktu_mulai_delivery',
+      'volume_minyak_awal',
+      'volume_minyak_akhir',
+      'volume_permintaan',
+    ]
+
+    const isValid = requiredFields.every((field) => String(formData[field] || '').trim())
+    if (!isValid) return
+
+    try {
+      setIsSaving(true)
+      await axios.post(`${baseURL}tankdeliv`, formData)
+      handleCloseModal()
+      fetchData()
+    } catch (err) {
+      console.error('Error saving tank delivery data:', err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const isFormValid = useMemo(() => {
+    const requiredFields = [
+      'id_site',
+      'id_tank',
+      'waktu_mulai_delivery',
+      'volume_minyak_awal',
+      'volume_minyak_akhir',
+      'volume_permintaan',
+    ]
+
+    return requiredFields.every((field) => String(formData[field] || '').trim())
+  }, [formData])
 
   const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
 
@@ -202,9 +300,7 @@ const FuelReceive = () => {
               color="primary"
               size="sm"
               className="text-white"
-              onClick={() => {
-                console.log('Add New Fuel Receive')
-              }}
+              onClick={handleOpenModal}
             >
               Add New Fuel Receive
             </CButton>
@@ -221,6 +317,236 @@ const FuelReceive = () => {
           />
         </CCardBody>
       </CCard>
+
+      <CModal visible={isModalOpen} onClose={handleCloseModal} alignment="center" size="lg">
+        <CModalHeader>
+          <CModalTitle>Add New Fuel Receive</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CForm onSubmit={handleSave}>
+            <CRow className="g-3">
+              <CCol md={6}>
+                <CFormLabel htmlFor="id_site">Site ID</CFormLabel>
+                <CFormInput
+                  id="id_site"
+                  name="id_site"
+                  value={formData.id_site}
+                  onChange={handleFormChange}
+                  placeholder="e.g. SITE-001"
+                  required
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="id_tank">Tank ID</CFormLabel>
+                <CFormInput
+                  id="id_tank"
+                  name="id_tank"
+                  value={formData.id_tank}
+                  onChange={handleFormChange}
+                  placeholder="e.g. TANK-01"
+                  required
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="waktu_mulai_delivery">Delivery Start</CFormLabel>
+                <CFormInput
+                  type="datetime-local"
+                  id="waktu_mulai_delivery"
+                  name="waktu_mulai_delivery"
+                  value={formData.waktu_mulai_delivery}
+                  onChange={handleFormChange}
+                  required
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="waktu_selesai_delivery">Delivery End</CFormLabel>
+                <CFormInput
+                  type="datetime-local"
+                  id="waktu_selesai_delivery"
+                  name="waktu_selesai_delivery"
+                  value={formData.waktu_selesai_delivery}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="volume_minyak_awal">Initial Oil Volume (L)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="volume_minyak_awal"
+                  name="volume_minyak_awal"
+                  value={formData.volume_minyak_awal}
+                  onChange={handleFormChange}
+                  required
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="volume_minyak_akhir">Final Oil Volume (L)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="volume_minyak_akhir"
+                  name="volume_minyak_akhir"
+                  value={formData.volume_minyak_akhir}
+                  onChange={handleFormChange}
+                  required
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="volume_permintaan">Requested Volume (L)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="volume_permintaan"
+                  name="volume_permintaan"
+                  value={formData.volume_permintaan}
+                  onChange={handleFormChange}
+                  required
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="id_shift">Shift ID</CFormLabel>
+                <CFormInput
+                  id="id_shift"
+                  name="id_shift"
+                  value={formData.id_shift}
+                  onChange={handleFormChange}
+                  placeholder="Optional"
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="no_invoice">Invoice Number</CFormLabel>
+                <CFormInput
+                  id="no_invoice"
+                  name="no_invoice"
+                  value={formData.no_invoice}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="no_do">Delivery Order Number</CFormLabel>
+                <CFormInput id="no_do" name="no_do" value={formData.no_do} onChange={handleFormChange} />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="no_kendaraan">License Plate</CFormLabel>
+                <CFormInput
+                  id="no_kendaraan"
+                  name="no_kendaraan"
+                  value={formData.no_kendaraan}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="nama_pengemudi">Driver Name</CFormLabel>
+                <CFormInput
+                  id="nama_pengemudi"
+                  name="nama_pengemudi"
+                  value={formData.nama_pengemudi}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="pengirim">Sender</CFormLabel>
+                <CFormInput id="pengirim" name="pengirim" value={formData.pengirim} onChange={handleFormChange} />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="volume_air_awal">Initial Water Volume (L)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="volume_air_awal"
+                  name="volume_air_awal"
+                  value={formData.volume_air_awal}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="volume_air_akhir">Final Water Volume (L)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="volume_air_akhir"
+                  name="volume_air_akhir"
+                  value={formData.volume_air_akhir}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="tinggi_minyak_awal">Initial Oil Height (cm)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="tinggi_minyak_awal"
+                  name="tinggi_minyak_awal"
+                  value={formData.tinggi_minyak_awal}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="tinggi_minyak_akhir">Final Oil Height (cm)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="tinggi_minyak_akhir"
+                  name="tinggi_minyak_akhir"
+                  value={formData.tinggi_minyak_akhir}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="tinggi_air_awal">Initial Water Height (cm)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="tinggi_air_awal"
+                  name="tinggi_air_awal"
+                  value={formData.tinggi_air_awal}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="tinggi_air_akhir">Final Water Height (cm)</CFormLabel>
+                <CFormInput
+                  type="number"
+                  step="any"
+                  id="tinggi_air_akhir"
+                  name="tinggi_air_akhir"
+                  value={formData.tinggi_air_akhir}
+                  onChange={handleFormChange}
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="delivery_flag">Delivery Flag</CFormLabel>
+                <CFormInput
+                  id="delivery_flag"
+                  name="delivery_flag"
+                  value={formData.delivery_flag}
+                  onChange={handleFormChange}
+                  placeholder="Optional"
+                />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel htmlFor="id_company">Company ID</CFormLabel>
+                <CFormInput
+                  id="id_company"
+                  name="id_company"
+                  value={formData.id_company}
+                  onChange={handleFormChange}
+                  placeholder="Optional"
+                />
+              </CCol>
+            </CRow>
+          </CForm>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={handleCloseModal} disabled={isSaving}>
+            Cancel
+          </CButton>
+          <CButton color="primary" onClick={handleSave} disabled={!isFormValid || isSaving}>
+            {isSaving ? 'Saving...' : 'Save'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </>
   )
 }
