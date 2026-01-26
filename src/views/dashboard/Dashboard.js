@@ -1,24 +1,14 @@
 import { useState } from 'react'
 import classNames from 'classnames'
+import { Watermark } from 'antd'
 
-import {
-  CButton,
-  CButtonGroup,
-  CCard,
-  CCardBody,
-  CCardFooter,
-  CCardHeader,
-  CCol,
-  CProgress,
-  CRow,
-} from '@coreui/react'
+import { CCard, CCardBody, CCardFooter, CCol, CProgress, CRow } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
   cibFacebook,
   cibGoogle,
   cibLinkedin,
   cibTwitter,
-  cilCloudDownload,
   cilUser,
   cilUserFemale,
 } from '@coreui/icons'
@@ -192,146 +182,148 @@ const Dashboard = () => {
 
   return (
     <>
-      <AppSubHeaderDashboard
-        search={search}
-        setSearch={setSearch}
-        siteFilter={siteFilter}
-        setSiteFilter={setSiteFilter}
-        dateRange={dateRange}
-        setDateRange={setDateRange}
-        storageKey="appSubHeaderFilters:dashboard"
-      />
-      <WidgetsDropdown
-        className="mb-4"
-        fuelStockData={fuelStockData}
-        fuelReceiveData={fuelReceiveData}
-        transaksiData={transaksiData}
-      />
-      <CCard className="mb-4">
-        <CCardBody>
-          <CRow>
-            <CCol sm={5}>
-              <h4 id="traffic" className="card-title mb-0">
-                Traffic
-              </h4>
-            </CCol>
-          </CRow>
-          <MainChart />
-        </CCardBody>
-        <CCardFooter>
-          <CRow
-            xs={{ cols: 1, gutter: 4 }}
-            sm={{ cols: 2 }}
-            lg={{ cols: 4 }}
-            xl={{ cols: 5 }}
-            className="mb-2 text-center"
-          >
-            {progressExample.map((item, index, items) => (
-              <CCol
-                className={classNames({
-                  'd-none d-xl-block': index + 1 === items.length,
-                })}
-                key={index}
-              >
-                <div className="text-body-secondary">{item.title}</div>
-                <div className="fw-semibold text-truncate">
-                  {item.value} ({item.percent}%)
-                </div>
-                <CProgress thin className="mt-2" color={item.color} value={item.percent} />
+      <Watermark content="UNDER DEVELOPMENT">
+        <AppSubHeaderDashboard
+          search={search}
+          setSearch={setSearch}
+          siteFilter={siteFilter}
+          setSiteFilter={setSiteFilter}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          storageKey="appSubHeaderFilters:dashboard"
+        />
+        <WidgetsDropdown
+          className="mb-4"
+          fuelStockData={fuelStockData}
+          fuelReceiveData={fuelReceiveData}
+          transaksiData={transaksiData}
+        />
+        <CCard className="mb-4">
+          <CCardBody>
+            <CRow>
+              <CCol sm={5}>
+                <h4 id="traffic" className="card-title mb-0">
+                  Traffic
+                </h4>
               </CCol>
-            ))}
-          </CRow>
-        </CCardFooter>
-      </CCard>
-      <CRow>
-        <CCol xs>
-          <CCard className="mb-4">
-            <CCardBody>
-              <CRow>
-                <CCol xs={12} md={6} xl={6}>
-                  <CRow>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-info py-1 px-3">
-                        <div className="text-body-secondary text-truncate small">New Clients</div>
-                        <div className="fs-5 fw-semibold">9,123</div>
-                      </div>
-                    </CCol>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-danger py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">
-                          Recurring Clients
+            </CRow>
+            <MainChart />
+          </CCardBody>
+          <CCardFooter>
+            <CRow
+              xs={{ cols: 1, gutter: 4 }}
+              sm={{ cols: 2 }}
+              lg={{ cols: 4 }}
+              xl={{ cols: 5 }}
+              className="mb-2 text-center"
+            >
+              {progressExample.map((item, index, items) => (
+                <CCol
+                  className={classNames({
+                    'd-none d-xl-block': index + 1 === items.length,
+                  })}
+                  key={index}
+                >
+                  <div className="text-body-secondary">{item.title}</div>
+                  <div className="fw-semibold text-truncate">
+                    {item.value} ({item.percent}%)
+                  </div>
+                  <CProgress thin className="mt-2" color={item.color} value={item.percent} />
+                </CCol>
+              ))}
+            </CRow>
+          </CCardFooter>
+        </CCard>
+        <CRow>
+          <CCol xs>
+            <CCard className="mb-4">
+              <CCardBody>
+                <CRow>
+                  <CCol xs={12} md={6} xl={6}>
+                    <CRow>
+                      <CCol xs={6}>
+                        <div className="border-start border-start-4 border-start-info py-1 px-3">
+                          <div className="text-body-secondary text-truncate small">New Clients</div>
+                          <div className="fs-5 fw-semibold">9,123</div>
                         </div>
-                        <div className="fs-5 fw-semibold">22,643</div>
+                      </CCol>
+                      <CCol xs={6}>
+                        <div className="border-start border-start-4 border-start-danger py-1 px-3 mb-3">
+                          <div className="text-body-secondary text-truncate small">
+                            Recurring Clients
+                          </div>
+                          <div className="fs-5 fw-semibold">22,643</div>
+                        </div>
+                      </CCol>
+                    </CRow>
+                    <hr className="mt-0" />
+                    {progressGroupExample1.map((item, index) => (
+                      <div className="progress-group mb-4" key={index}>
+                        <div className="progress-group-prepend">
+                          <span className="text-body-secondary small">{item.title}</span>
+                        </div>
+                        <div className="progress-group-bars">
+                          <CProgress thin color="info" value={item.value1} />
+                          <CProgress thin color="danger" value={item.value2} />
+                        </div>
                       </div>
-                    </CCol>
-                  </CRow>
-                  <hr className="mt-0" />
-                  {progressGroupExample1.map((item, index) => (
-                    <div className="progress-group mb-4" key={index}>
-                      <div className="progress-group-prepend">
-                        <span className="text-body-secondary small">{item.title}</span>
-                      </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="info" value={item.value1} />
-                        <CProgress thin color="danger" value={item.value2} />
-                      </div>
-                    </div>
-                  ))}
-                </CCol>
-                <CCol xs={12} md={6} xl={6}>
-                  <CRow>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-warning py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">Pageviews</div>
-                        <div className="fs-5 fw-semibold">78,623</div>
-                      </div>
-                    </CCol>
-                    <CCol xs={6}>
-                      <div className="border-start border-start-4 border-start-success py-1 px-3 mb-3">
-                        <div className="text-body-secondary text-truncate small">Organic</div>
-                        <div className="fs-5 fw-semibold">49,123</div>
-                      </div>
-                    </CCol>
-                  </CRow>
+                    ))}
+                  </CCol>
+                  <CCol xs={12} md={6} xl={6}>
+                    <CRow>
+                      <CCol xs={6}>
+                        <div className="border-start border-start-4 border-start-warning py-1 px-3 mb-3">
+                          <div className="text-body-secondary text-truncate small">Pageviews</div>
+                          <div className="fs-5 fw-semibold">78,623</div>
+                        </div>
+                      </CCol>
+                      <CCol xs={6}>
+                        <div className="border-start border-start-4 border-start-success py-1 px-3 mb-3">
+                          <div className="text-body-secondary text-truncate small">Organic</div>
+                          <div className="fs-5 fw-semibold">49,123</div>
+                        </div>
+                      </CCol>
+                    </CRow>
 
-                  <hr className="mt-0" />
+                    <hr className="mt-0" />
 
-                  {progressGroupExample2.map((item, index) => (
-                    <div className="progress-group mb-4" key={index}>
-                      <div className="progress-group-header">
-                        <CIcon className="me-2" icon={item.icon} size="lg" />
-                        <span>{item.title}</span>
-                        <span className="ms-auto fw-semibold">{item.value}%</span>
+                    {progressGroupExample2.map((item, index) => (
+                      <div className="progress-group mb-4" key={index}>
+                        <div className="progress-group-header">
+                          <CIcon className="me-2" icon={item.icon} size="lg" />
+                          <span>{item.title}</span>
+                          <span className="ms-auto fw-semibold">{item.value}%</span>
+                        </div>
+                        <div className="progress-group-bars">
+                          <CProgress thin color="warning" value={item.value} />
+                        </div>
                       </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="warning" value={item.value} />
-                      </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  <div className="mb-5"></div>
+                    <div className="mb-5"></div>
 
-                  {progressGroupExample3.map((item, index) => (
-                    <div className="progress-group" key={index}>
-                      <div className="progress-group-header">
-                        <CIcon className="me-2" icon={item.icon} size="lg" />
-                        <span>{item.title}</span>
-                        <span className="ms-auto fw-semibold">
-                          {item.value}{' '}
-                          <span className="text-body-secondary small">({item.percent}%)</span>
-                        </span>
+                    {progressGroupExample3.map((item, index) => (
+                      <div className="progress-group" key={index}>
+                        <div className="progress-group-header">
+                          <CIcon className="me-2" icon={item.icon} size="lg" />
+                          <span>{item.title}</span>
+                          <span className="ms-auto fw-semibold">
+                            {item.value}{' '}
+                            <span className="text-body-secondary small">({item.percent}%)</span>
+                          </span>
+                        </div>
+                        <div className="progress-group-bars">
+                          <CProgress thin color="success" value={item.percent} />
+                        </div>
                       </div>
-                      <div className="progress-group-bars">
-                        <CProgress thin color="success" value={item.percent} />
-                      </div>
-                    </div>
-                  ))}
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+                    ))}
+                  </CCol>
+                </CRow>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      </Watermark>
     </>
   )
 }
