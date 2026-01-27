@@ -240,6 +240,22 @@ const FuelCard = ({ item }) => {
     return cap > 0 ? cap : undefined
   }, [item.max_capacity])
 
+  const isStandby = () => {
+    if (item.aktif_flag !== '1' || !item.update_date) return false
+
+    const lastUpdate = new Date(item.update_date).getTime()
+    const now = Date.now()
+    const diffMinutes = (now - lastUpdate) / 1000 / 60
+
+    return diffMinutes > 5
+  }
+
+  const badgeStatus = isStandby()
+    ? { text: 'Standby', color: 'orange' }
+    : item.aktif_flag === '1'
+      ? { text: 'Online', color: 'green' }
+      : { text: 'Offline', color: 'red' }
+
   useEffect(() => {
     if (!isModalVisible) return undefined
 
@@ -307,10 +323,7 @@ const FuelCard = ({ item }) => {
   }, [baseURL, isModalVisible, item.id_site, item.id_tank, timeScale])
 
   return (
-    <Badge.Ribbon
-      text={item.aktif_flag === '1' ? 'Online' : 'Offline'}
-      color={item.aktif_flag === '1' ? 'green' : 'red'}
-    >
+    <Badge.Ribbon text={badgeStatus.text} color={badgeStatus.color}>
       <CCard className="fuel-card shadow-sm h-full">
         <CCardBody className="fuel-card__body">
           <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
