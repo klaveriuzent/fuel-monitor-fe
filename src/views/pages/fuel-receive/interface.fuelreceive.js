@@ -1,7 +1,7 @@
 import { CButton } from '@coreui/react'
 import { Tag } from 'antd'
 
-const parseDateSafe = (value) => {
+export const parseDateSafe = (value) => {
   if (!value) return null
 
   // sudah Date object
@@ -105,7 +105,7 @@ export const formatPercentage = (value) =>
 const formatValueOrDash = (value, formatter = (val) => val) =>
   value || value === 0 ? formatter(value) : '-'
 
-export const fuelReceiveColumns = [
+export const buildFuelReceiveColumns = (onEdit = () => {}) => [
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },
   { title: 'Tank', dataIndex: 'id_tank', key: 'id_tank' },
   {
@@ -200,7 +200,7 @@ export const fuelReceiveColumns = [
         color="info"
         size="sm"
         className="text-white"
-        onClick={() => console.log('test edit', record)}
+        onClick={() => onEdit(record)}
       >
         Edit
       </CButton>

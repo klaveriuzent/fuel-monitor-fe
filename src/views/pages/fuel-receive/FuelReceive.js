@@ -10,10 +10,11 @@ import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import AddFuelReceiveModal from '../../../components/modals/AddFuelReceiveModal'
 import { getColumnKey } from '../../../utils/table'
 import {
-  fuelReceiveColumns,
+  buildFuelReceiveColumns,
   formatDateTime,
   formatDecimal,
   formatPercentage,
+  parseDateSafe,
 } from './interface.fuelreceive'
 import '../tableDarkMode.scss'
 
@@ -21,7 +22,7 @@ dayjs.extend(isBetween)
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
-const allFuelReceiveColumnKeys = fuelReceiveColumns
+const allFuelReceiveColumnKeys = buildFuelReceiveColumns()
   .map((column) => getColumnKey(column))
   .filter(Boolean)
 
@@ -56,15 +57,56 @@ const FuelReceive = () => {
   const [visibleColumnKeys, setVisibleColumnKeys] = useState(allFuelReceiveColumnKeys)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState(initialFormData)
+  const [modalTitle, setModalTitle] = useState('Add New Fuel Receive')
   const [isSaving, setIsSaving] = useState(false)
   const [siteOptions, setSiteOptions] = useState([])
   const [isLoadingSites, setIsLoadingSites] = useState(false)
   const [tankOptions, setTankOptions] = useState([])
   const [isLoadingTanks, setIsLoadingTanks] = useState(false)
 
+  const handleEdit = useCallback(
+    (record) => {
+      const formatDateTimeLocal = (value) => {
+        const parsed = parseDateSafe(value)
+        if (!parsed) return ''
+        return dayjs(parsed).format('YYYY-MM-DDTHH:mm')
+      }
+
+      const nextFormData = {
+        ...initialFormData,
+        no: record?.no ?? '',
+        id_tank: record?.id_tank ?? '',
+        volume_minyak_awal: record?.volume_minyak_awal ?? '',
+        volume_minyak_akhir: record?.volume_minyak_akhir ?? '',
+        tinggi_minyak_awal: record?.tinggi_minyak_awal ?? '',
+        tinggi_minyak_akhir: record?.tinggi_minyak_akhir ?? '',
+        volume_air_awal: record?.volume_air_awal ?? '',
+        volume_air_akhir: record?.volume_air_akhir ?? '',
+        tinggi_air_awal: record?.tinggi_air_awal ?? '',
+        tinggi_air_akhir: record?.tinggi_air_akhir ?? '',
+        waktu_mulai_delivery: formatDateTimeLocal(record?.waktu_mulai_delivery),
+        waktu_selesai_delivery: formatDateTimeLocal(record?.waktu_selesai_delivery),
+        volume_permintaan: record?.volume_permintaan ?? '',
+        no_do: record?.no_do ?? '',
+        no_invoice: record?.no_invoice ?? '',
+        no_kendaraan: record?.no_kendaraan ?? '',
+        nama_pengemudi: record?.nama_pengemudi ?? '',
+        pengirim: record?.pengirim ?? '',
+        id_site: record?.id_site ?? '',
+      }
+
+      setFormData(nextFormData)
+      setModalTitle('Edit Item Fuel Receive')
+      setIsModalOpen(true)
+    },
+    [setFormData],
+  )
+
+  const allColumns = useMemo(() => buildFuelReceiveColumns(handleEdit), [handleEdit])
+
   const tableColumns = useMemo(
-    () => fuelReceiveColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
-    [visibleColumnKeys],
+    () => allColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
+    [allColumns, visibleColumnKeys],
   )
 
   const fetchData = useCallback(async () => {
@@ -75,9 +117,19 @@ const FuelReceive = () => {
       if (res.data && Array.isArray(res.data.data)) {
         const formatted = res.data.data.map((item) => ({
           key: `${item.id_site}-${item.id_tank}-${item.waktu_mulai_delivery}`,
+          no: item.no,
           waktu_mulai_delivery: item.waktu_mulai_delivery,
+          waktu_selesai_delivery: item.waktu_selesai_delivery,
           id_site: item.id_site,
           id_tank: item.id_tank,
+          volume_minyak_awal: item.volume_minyak_awal,
+          volume_minyak_akhir: item.volume_minyak_akhir,
+          tinggi_minyak_awal: item.tinggi_minyak_awal,
+          tinggi_minyak_akhir: item.tinggi_minyak_akhir,
+          volume_air_awal: item.volume_air_awal,
+          volume_air_akhir: item.volume_air_akhir,
+          tinggi_air_awal: item.tinggi_air_awal,
+          tinggi_air_akhir: item.tinggi_air_akhir,
           volume_permintaan: parseFloat(item.volume_permintaan || 0),
           no_do: item.no_do,
           no_invoice: item.no_invoice,
@@ -163,12 +215,14 @@ const FuelReceive = () => {
 
   const handleOpenModal = () => {
     setFormData(initialFormData)
+    setModalTitle('Add New Fuel Receive')
     setIsModalOpen(true)
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setFormData(initialFormData)
+    setModalTitle('Add New Fuel Receive')
   }
 
   const handleSave = async (e) => {
@@ -322,7 +376,7 @@ const FuelReceive = () => {
         siteTotalCount={siteTotalCount}
         dateRange={dateRange}
         setDateRange={setDateRange}
-        columns={fuelReceiveColumns}
+        columns={allColumns}
         visibleColumnKeys={visibleColumnKeys}
         setVisibleColumnKeys={setVisibleColumnKeys}
         storageKey="appSubHeaderFilters:fuelReceive"
@@ -369,6 +423,7 @@ const FuelReceive = () => {
         onFormChange={handleFormChange}
         isSaving={isSaving}
         isFormValid={isFormValid}
+        title={modalTitle}
         siteOptions={siteOptions}
         isLoadingSites={isLoadingSites}
         tankOptions={availableTankOptions}
