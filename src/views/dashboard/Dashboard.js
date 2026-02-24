@@ -17,6 +17,8 @@ import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
 import AppSubHeaderDashboard from '../../components/subheader/AppSubHeader.dashboard'
 
+dayjs.extend(isBetween)
+
 const Dashboard = () => {
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
@@ -152,10 +154,12 @@ const Dashboard = () => {
 
   const siteTotalCount =
     siteFilter === 'all'
-      ? transaksiData.length
-      : transaksiData.filter(
+      ? filteredBySearchDate
+      : filteredBySearchDate.filter(
           (item) => item.site && item.site.toLowerCase() === siteFilter.toLowerCase(),
-        ).length
+        )
+
+  const totalTransactions = filteredTransactions.length
 
   const dashboardIdeas = useMemo(
     () => [
