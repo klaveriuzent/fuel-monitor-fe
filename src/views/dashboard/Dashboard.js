@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Watermark } from 'antd'
+import dayjs from 'dayjs'
+import isBetween from 'dayjs/plugin/isBetween'
 
 import {
   CBadge,
@@ -15,6 +17,8 @@ import {
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
 import AppSubHeaderDashboard from '../../components/subheader/AppSubHeader.dashboard'
+
+dayjs.extend(isBetween)
 
 const Dashboard = () => {
   const [search, setSearch] = useState('')
@@ -149,12 +153,34 @@ const Dashboard = () => {
     },
   ]
 
-  const totalTransactions =
+  const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
+
+  const filteredBySearchDate = transaksiData.filter((item) => {
+    const matchesText = searchValue
+      ? [item.site, item.id_card, item.username, item.license_plate, item.odometer, item.volume]
+          .filter((field) => field !== undefined && field !== null)
+          .some((field) => field.toString().toLowerCase().includes(searchValue))
+      : true
+
+    const [startDate, endDate] = dateRange || []
+    const itemDate = dayjs(item.date)
+    const matchesDate = startDate
+      ? endDate
+        ? itemDate.isBetween(startDate.startOf('day'), endDate.endOf('day'), null, '[]')
+        : itemDate.isSame(startDate, 'day') || itemDate.isAfter(startDate.startOf('day'))
+      : true
+
+    return matchesText && matchesDate
+  })
+
+  const filteredTransactions =
     siteFilter === 'all'
-      ? transaksiData.length
-      : transaksiData.filter(
+      ? filteredBySearchDate
+      : filteredBySearchDate.filter(
           (item) => item.site && item.site.toLowerCase() === siteFilter.toLowerCase(),
-        ).length
+        )
+
+  const totalTransactions = filteredTransactions.length
 
   const dashboardIdeas = useMemo(
     () => [
