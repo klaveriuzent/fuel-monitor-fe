@@ -149,7 +149,7 @@ const Dashboard = () => {
     },
   ]
 
-  const totalTransactions =
+  const siteTotalCount =
     siteFilter === 'all'
       ? transaksiData.length
       : transaksiData.filter(
@@ -205,7 +205,7 @@ const Dashboard = () => {
           className="mb-4"
           fuelReceiveData={fuelReceiveData}
           transaksiData={transaksiData}
-          totalTransactions={totalTransactions}
+          siteTotalCount={siteTotalCount}
         />
         <CCard className="mb-4">
           <CCardBody>
