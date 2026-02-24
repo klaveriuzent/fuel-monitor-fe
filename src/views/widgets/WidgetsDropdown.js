@@ -17,9 +17,9 @@ import { cilOptions } from '@coreui/icons'
 
 const WidgetsDropdown = ({
   className,
-  fuelStockData = [],
   fuelReceiveData = [],
   transaksiData = [],
+  totalTransactions = transaksiData.length,
 }) => {
   const widgetChartRef1 = useRef(null)
   const widgetChartRef2 = useRef(null)
@@ -47,8 +47,8 @@ const WidgetsDropdown = ({
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="primary"
-          value={`${fuelStockData.length} records`}
-          title="Total Stock"
+          value={`${totalTransactions} records`}
+          title="Total Transactions"
           action={
             <CDropdown alignment="end">
               <CDropdownToggle color="transparent" caret={false} className="text-white p-0">
@@ -367,9 +367,9 @@ const WidgetsDropdown = ({
 
 WidgetsDropdown.propTypes = {
   className: PropTypes.string,
-  fuelStockData: PropTypes.array,
   fuelReceiveData: PropTypes.array,
   transaksiData: PropTypes.array,
+  totalTransactions: PropTypes.number,
 }
 
 export default WidgetsDropdown
