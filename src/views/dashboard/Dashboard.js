@@ -150,32 +150,12 @@ const Dashboard = () => {
     },
   ]
 
-  const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
-
-  const filteredTransactions = transaksiData.filter((item) => {
-    const matchesText = searchValue
-      ? [item.site, item.id_card, item.username, item.license_plate, item.odometer, item.volume]
-          .filter((field) => field !== undefined && field !== null)
-          .some((field) => field.toString().toLowerCase().includes(searchValue))
-      : true
-
-    const [startDate, endDate] = dateRange || []
-    const itemDate = dayjs(item.date)
-    const matchesDate = startDate
-      ? endDate
-        ? itemDate.isBetween(startDate.startOf('day'), endDate.endOf('day'), null, '[]')
-        : itemDate.isSame(startDate, 'day') || itemDate.isAfter(startDate.startOf('day'))
-      : true
-
-    const matchesSite =
-      siteFilter === 'all'
-        ? true
-        : item.site && item.site.toLowerCase() === siteFilter.toLowerCase()
-
-    return matchesText && matchesDate && matchesSite
-  })
-
-  const siteTotalCount = filteredTransactions.length
+  const siteTotalCount =
+    siteFilter === 'all'
+      ? transaksiData.length
+      : transaksiData.filter(
+          (item) => item.site && item.site.toLowerCase() === siteFilter.toLowerCase(),
+        ).length
 
   const dashboardIdeas = useMemo(
     () => [
