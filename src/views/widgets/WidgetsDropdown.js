@@ -19,7 +19,7 @@ const WidgetsDropdown = ({
   className,
   fuelReceiveData = [],
   transaksiData = [],
-  totalTransactions = transaksiData.length,
+  siteTotalCount = transaksiData.length,
 }) => {
   const widgetChartRef1 = useRef(null)
   const widgetChartRef2 = useRef(null)
@@ -47,7 +47,7 @@ const WidgetsDropdown = ({
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="primary"
-          value={`${totalTransactions} records`}
+          value={`${siteTotalCount} records`}
           title="Total Transactions"
           action={
             <CDropdown alignment="end">
@@ -369,7 +369,7 @@ WidgetsDropdown.propTypes = {
   className: PropTypes.string,
   fuelReceiveData: PropTypes.array,
   transaksiData: PropTypes.array,
-  totalTransactions: PropTypes.number,
+  siteTotalCount: PropTypes.number,
 }
 
 export default WidgetsDropdown

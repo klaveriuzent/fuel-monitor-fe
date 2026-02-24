@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Watermark } from 'antd'
+import dayjs from 'dayjs'
 
 import {
   CBadge,
@@ -149,12 +150,32 @@ const Dashboard = () => {
     },
   ]
 
-  const totalTransactions =
-    siteFilter === 'all'
-      ? transaksiData.length
-      : transaksiData.filter(
-          (item) => item.site && item.site.toLowerCase() === siteFilter.toLowerCase(),
-        ).length
+  const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
+
+  const filteredTransactions = transaksiData.filter((item) => {
+    const matchesText = searchValue
+      ? [item.site, item.id_card, item.username, item.license_plate, item.odometer, item.volume]
+          .filter((field) => field !== undefined && field !== null)
+          .some((field) => field.toString().toLowerCase().includes(searchValue))
+      : true
+
+    const [startDate, endDate] = dateRange || []
+    const itemDate = dayjs(item.date)
+    const matchesDate = startDate
+      ? endDate
+        ? itemDate.isBetween(startDate.startOf('day'), endDate.endOf('day'), null, '[]')
+        : itemDate.isSame(startDate, 'day') || itemDate.isAfter(startDate.startOf('day'))
+      : true
+
+    const matchesSite =
+      siteFilter === 'all'
+        ? true
+        : item.site && item.site.toLowerCase() === siteFilter.toLowerCase()
+
+    return matchesText && matchesDate && matchesSite
+  })
+
+  const siteTotalCount = filteredTransactions.length
 
   const dashboardIdeas = useMemo(
     () => [
@@ -205,7 +226,7 @@ const Dashboard = () => {
           className="mb-4"
           fuelReceiveData={fuelReceiveData}
           transaksiData={transaksiData}
-          totalTransactions={totalTransactions}
+          siteTotalCount={siteTotalCount}
         />
         <CCard className="mb-4">
           <CCardBody>
