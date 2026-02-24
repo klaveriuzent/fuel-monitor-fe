@@ -4,6 +4,12 @@
   --fuel-card-text: #1f2937;
   --fuel-card-scale-text: #374151;
   --fuel-card-toggle-icon-inactive: #9ca3af;
+  --fuel-card-temp-bg: #fef2f2;
+  --fuel-card-temp-border: #fecaca;
+  --fuel-card-temp-text: #dc2626;
+  --fuel-card-temp-bg: rgba(239, 68, 68, 0.15);
+  --fuel-card-temp-border: #ef4444;
+  --fuel-card-temp-text: #fca5a5;
   --fuel-card-fuel-active-bg: #fff3e0;
   --fuel-card-fuel-active-border: #fbbf24;
   --fuel-card-fuel-active-icon: #f59e0b;
@@ -183,6 +189,19 @@
 
 .tank-visual__gridline--edge {
   opacity: 0.5;
+}
+
+.tank-with-scale__temperature {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--fuel-card-temp-border);
+  border-radius: 4px;
+  background: var(--fuel-card-temp-bg);
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px;
 }
 
 .tank-visual__water {
