@@ -1,77 +1,66 @@
 import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 
-import {
-  CRow,
-  CCol,
-  CDropdown,
-  CDropdownMenu,
-  CDropdownItem,
-  CDropdownToggle,
-  CWidgetStatsA,
-} from '@coreui/react'
+import { CRow, CCol, CWidgetStatsA } from '@coreui/react'
 import { getStyle } from '@coreui/utils'
 import { CChartBar, CChartLine } from '@coreui/react-chartjs'
-import CIcon from '@coreui/icons-react'
-import { cilOptions } from '@coreui/icons'
 
 const WidgetsDropdown = ({
   className,
   fuelReceiveData = [],
   transaksiData = [],
-  siteTotalCount = transaksiData.length,
+  stockData = [],
 }) => {
   const widgetChartRef1 = useRef(null)
   const widgetChartRef2 = useRef(null)
+  const widgetChartRef3 = useRef(null)
 
+  /* ─── hitung total ─────────────────────────────────────── */
+  const totalTransactions = transaksiData.length
+  const totalFuelReceived = fuelReceiveData.length
+
+  const onlineStock = stockData.filter((s) => s.status?.toLowerCase() === 'online').length
+  const standbyStock = stockData.filter((s) =>
+    ['standby', 'offline'].includes((s.status || '').toLowerCase()),
+  ).length
+
+  /* ─── color-scheme listener ─────────────────────────────── */
   useEffect(() => {
-    document.documentElement.addEventListener('ColorSchemeChange', () => {
+    const handler = () => {
       if (widgetChartRef1.current) {
-        setTimeout(() => {
-          widgetChartRef1.current.data.datasets[0].pointBackgroundColor = getStyle('--cui-primary')
-          widgetChartRef1.current.update()
-        })
+        widgetChartRef1.current.data.datasets[0].pointBackgroundColor = getStyle('--cui-primary')
+        widgetChartRef1.current.update()
       }
-
       if (widgetChartRef2.current) {
-        setTimeout(() => {
-          widgetChartRef2.current.data.datasets[0].pointBackgroundColor = getStyle('--cui-info')
-          widgetChartRef2.current.update()
-        })
+        widgetChartRef2.current.data.datasets[0].pointBackgroundColor = getStyle('--cui-info')
+        widgetChartRef2.current.update()
       }
-    })
-  }, [widgetChartRef1, widgetChartRef2])
+      if (widgetChartRef3.current) {
+        widgetChartRef3.current.data.datasets[0].pointBackgroundColor = getStyle('--cui-warning')
+        widgetChartRef3.current.update()
+      }
+    }
+    document.documentElement.addEventListener('ColorSchemeChange', handler)
+    return () => document.documentElement.removeEventListener('ColorSchemeChange', handler)
+  }, [])
 
   return (
     <CRow className={className} xs={{ gutter: 4 }}>
+      {/* TOTAL TRANSACTIONS */}
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="primary"
-          value={`${siteTotalCount} records`}
+          value={`${totalTransactions} records`}
           title="Total Transactions"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" caret={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
-          }
           chart={
             <CChartLine
               ref={widgetChartRef1}
               className="mt-3 mx-3"
               style={{ height: '70px' }}
               data={{
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
                 datasets: [
                   {
-                    label: 'My First dataset',
                     backgroundColor: 'transparent',
                     borderColor: 'rgba(255,255,255,.55)',
                     pointBackgroundColor: getStyle('--cui-primary'),
@@ -80,81 +69,34 @@ const WidgetsDropdown = ({
                 ],
               }}
               options={{
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
+                plugins: { legend: { display: false } },
                 maintainAspectRatio: false,
                 scales: {
-                  x: {
-                    border: {
-                      display: false,
-                    },
-                    grid: {
-                      display: false,
-                      drawBorder: false,
-                    },
-                    ticks: {
-                      display: false,
-                    },
-                  },
-                  y: {
-                    min: 30,
-                    max: 89,
-                    display: false,
-                    grid: {
-                      display: false,
-                    },
-                    ticks: {
-                      display: false,
-                    },
-                  },
+                  x: { grid: { display: false }, ticks: { display: false } },
+                  y: { display: false },
                 },
-                elements: {
-                  line: {
-                    borderWidth: 1,
-                    tension: 0.4,
-                  },
-                  point: {
-                    radius: 4,
-                    hitRadius: 10,
-                    hoverRadius: 4,
-                  },
-                },
+                elements: { line: { borderWidth: 1, tension: 0.4 }, point: { radius: 4 } },
               }}
             />
           }
         />
       </CCol>
+
+      {/* FUEL RECEIVED */}
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="info"
-          value={`${fuelReceiveData.length} records`}
+          value={`${totalFuelReceived} records`}
           title="Fuel Received"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" caret={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
-          }
           chart={
             <CChartLine
               ref={widgetChartRef2}
               className="mt-3 mx-3"
               style={{ height: '70px' }}
               data={{
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
                 datasets: [
                   {
-                    label: 'My First dataset',
                     backgroundColor: 'transparent',
                     borderColor: 'rgba(255,255,255,.55)',
                     pointBackgroundColor: getStyle('--cui-info'),
@@ -163,161 +105,52 @@ const WidgetsDropdown = ({
                 ],
               }}
               options={{
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
+                plugins: { legend: { display: false } },
                 maintainAspectRatio: false,
                 scales: {
-                  x: {
-                    border: {
-                      display: false,
-                    },
-                    grid: {
-                      display: false,
-                      drawBorder: false,
-                    },
-                    ticks: {
-                      display: false,
-                    },
-                  },
-                  y: {
-                    min: -9,
-                    max: 39,
-                    display: false,
-                    grid: {
-                      display: false,
-                    },
-                    ticks: {
-                      display: false,
-                    },
-                  },
+                  x: { grid: { display: false }, ticks: { display: false } },
+                  y: { display: false },
                 },
-                elements: {
-                  line: {
-                    borderWidth: 1,
-                  },
-                  point: {
-                    radius: 4,
-                    hitRadius: 10,
-                    hoverRadius: 4,
-                  },
-                },
+                elements: { line: { borderWidth: 1 }, point: { radius: 4 } },
               }}
             />
           }
         />
       </CCol>
+
+      {/* FUEL STOCK (online & standby) */}
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="warning"
-          value={`${transaksiData.length} records`}
-          title="Fuel Dispensed (Transaction)"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" caret={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
+          title="Fuel Stock"
+          value={
+            <>
+              <span className="fw-bold">{onlineStock}</span>
+              <span className="small ms-1">online</span>
+              <br />
+              <span className="fw-bold">{standbyStock}</span>
+              <span className="small ms-1">standby</span>
+            </>
           }
-          chart={
-            <CChartLine
-              className="mt-3"
-              style={{ height: '70px' }}
-              data={{
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-                datasets: [
-                  {
-                    label: 'My First dataset',
-                    backgroundColor: 'rgba(255,255,255,.2)',
-                    borderColor: 'rgba(255,255,255,.55)',
-                    data: [78, 81, 80, 45, 34, 12, 40],
-                    fill: true,
-                  },
-                ],
-              }}
-              options={{
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
-                maintainAspectRatio: false,
-                scales: {
-                  x: {
-                    display: false,
-                  },
-                  y: {
-                    display: false,
-                  },
-                },
-                elements: {
-                  line: {
-                    borderWidth: 2,
-                    tension: 0.4,
-                  },
-                  point: {
-                    radius: 0,
-                    hitRadius: 10,
-                    hoverRadius: 4,
-                  },
-                },
-              }}
-            />
-          }
+          /* dummy chart agar tinggi konsisten */
+          chart={<div style={{ height: '51.79px' }} />}
         />
       </CCol>
+
+      {/* TANK EMPTY SPACE (dummy) */}
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="danger"
           value="..."
           title="Tank Empty Space"
-          action={
-            <CDropdown alignment="end">
-              <CDropdownToggle color="transparent" caret={false} className="text-white p-0">
-                <CIcon icon={cilOptions} />
-              </CDropdownToggle>
-              <CDropdownMenu>
-                <CDropdownItem>Action</CDropdownItem>
-                <CDropdownItem>Another action</CDropdownItem>
-                <CDropdownItem>Something else here...</CDropdownItem>
-                <CDropdownItem disabled>Disabled action</CDropdownItem>
-              </CDropdownMenu>
-            </CDropdown>
-          }
           chart={
             <CChartBar
               className="mt-3 mx-3"
               style={{ height: '70px' }}
               data={{
-                labels: [
-                  'January',
-                  'February',
-                  'March',
-                  'April',
-                  'May',
-                  'June',
-                  'July',
-                  'August',
-                  'September',
-                  'October',
-                  'November',
-                  'December',
-                  'January',
-                  'February',
-                  'March',
-                  'April',
-                ],
+                labels: Array.from({ length: 16 }, (_, i) => `M${i + 1}`),
                 datasets: [
                   {
-                    label: 'My First dataset',
                     backgroundColor: 'rgba(255,255,255,.2)',
                     borderColor: 'rgba(255,255,255,.55)',
                     data: [78, 81, 80, 45, 34, 12, 40, 85, 65, 23, 12, 98, 34, 84, 67, 82],
@@ -327,34 +160,10 @@ const WidgetsDropdown = ({
               }}
               options={{
                 maintainAspectRatio: false,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                  x: {
-                    grid: {
-                      display: false,
-                      drawTicks: false,
-                    },
-                    ticks: {
-                      display: false,
-                    },
-                  },
-                  y: {
-                    border: {
-                      display: false,
-                    },
-                    grid: {
-                      display: false,
-                      drawBorder: false,
-                      drawTicks: false,
-                    },
-                    ticks: {
-                      display: false,
-                    },
-                  },
+                  x: { grid: { display: false }, ticks: { display: false } },
+                  y: { display: false },
                 },
               }}
             />
@@ -369,7 +178,7 @@ WidgetsDropdown.propTypes = {
   className: PropTypes.string,
   fuelReceiveData: PropTypes.array,
   transaksiData: PropTypes.array,
-  siteTotalCount: PropTypes.number,
+  stockData: PropTypes.array,
 }
 
 export default WidgetsDropdown

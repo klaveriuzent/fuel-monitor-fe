@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+import axios from 'axios'
 import { Watermark } from 'antd'
 import dayjs from 'dayjs'
+import isBetween from 'dayjs/plugin/isBetween'
 
 import {
   CBadge,
@@ -17,150 +19,135 @@ import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
 import AppSubHeaderDashboard from '../../components/subheader/AppSubHeader.dashboard'
 
+const baseURL = import.meta.env.VITE_API_BASE_URL
 dayjs.extend(isBetween)
 
 const Dashboard = () => {
+  /* ───── state ───── */
+  const [transaksiData, setTransaksiData] = useState([])
+  const [fuelReceiveData, setFuelReceiveData] = useState([])
+  const [loadingTrans, setLoadingTrans] = useState(false)
+  const [loadingReceive, setLoadingReceive] = useState(false)
+
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState([null, null])
 
-  // ===========================
-  // 1. Data Transaksi
-  // ===========================
-  const transaksiData = [
-    {
-      site: 'Depot Jakarta',
-      date: '2025-10-28 08:25:12',
-      id_card: 'ID00123',
-      username: 'operator_jkt1',
-      license_plate: 'B 1234 XY',
-      odometer: 34500,
-      volume: 55.2,
-    },
-    {
-      site: 'Depot Jakarta',
-      date: '2025-10-28 09:42:33',
-      id_card: 'ID00456',
-      username: 'operator_jkt2',
-      license_plate: 'B 7890 AB',
-      odometer: 50120,
-      volume: 63.4,
-    },
-    {
-      site: 'Depot Surabaya',
-      date: '2025-10-28 10:15:07',
-      id_card: 'ID00999',
-      username: 'operator_sby1',
-      license_plate: 'L 4567 ZZ',
-      odometer: 77200,
-      volume: 48.5,
-    },
-    {
-      site: 'Depot Medan',
-      date: '2025-10-27 17:45:50',
-      id_card: 'ID00888',
-      username: 'operator_mdn',
-      license_plate: 'BK 1122 DD',
-      odometer: 129000,
-      volume: 70.8,
-    },
-  ]
+  /* ───── fetch transaksi ───── */
+  useEffect(() => {
+    const fetchTransaksi = async () => {
+      try {
+        setLoadingTrans(true)
+        const { data } = await axios.get(`${baseURL}transaksi`)
+        if (Array.isArray(data?.data)) {
+          setTransaksiData(
+            data.data.map((it, i) => ({
+              key: i,
+              site: it.id_site,
+              date: it.waktu,
+              username: it.username,
+              license_plate: it.plat,
+              volume: parseFloat(it.volume),
+            })),
+          )
+        }
+      } catch (err) {
+        console.error('Error fetch transaksi', err)
+      } finally {
+        setLoadingTrans(false)
+      }
+    }
+    fetchTransaksi()
+  }, [])
 
-  // ===========================
-  // 2. Data Fuel Receive
-  // ===========================
-  const fuelReceiveData = [
-    {
-      site: 'Depot Jakarta',
-      date: '2025-10-28 07:30:00',
-      no_invoice: 'INV-20251028-001',
-      no_do: 'DO-00123',
-      volume_permintaan: 5000,
-      vendor: 'PT Pertamina Patra Niaga',
-      license_plate: 'B 9999 FO',
-      driver: 'Slamet Riyadi',
-    },
-    {
-      site: 'Depot Surabaya',
-      date: '2025-10-27 06:45:00',
-      no_invoice: 'INV-20251027-002',
-      no_do: 'DO-00456',
-      volume_permintaan: 4500,
-      vendor: 'PT Shell Indonesia',
-      license_plate: 'L 9988 ZZ',
-      driver: 'Bambang Setiawan',
-    },
-    {
-      site: 'Depot Medan',
-      date: '2025-10-26 09:00:00',
-      no_invoice: 'INV-20251026-003',
-      no_do: 'DO-00789',
-      volume_permintaan: 6000,
-      vendor: 'PT Total Energies',
-      license_plate: 'BK 3344 CC',
-      driver: 'Andi Saputra',
-    },
-  ]
+  /* ───── fetch fuel receive ───── */
+  useEffect(() => {
+    const fetchReceive = async () => {
+      try {
+        setLoadingReceive(true)
+        const { data } = await axios.get(`${baseURL}tankdeliv`)
+        if (Array.isArray(data?.data)) {
+          setFuelReceiveData(
+            data.data.map((it, i) => ({
+              key: i,
+              site: it.id_site,
+              date: it.waktu_mulai_delivery,
+              volume: parseFloat(it.volume_permintaan || 0),
+            })),
+          )
+        }
+      } catch (err) {
+        console.error('Error fetch fuel receive', err)
+      } finally {
+        setLoadingReceive(false)
+      }
+    }
+    fetchReceive()
+  }, [])
 
-  // ===========================
-  // 3. Data Fuel Stock
-  // ===========================
-  const fuelStockData = [
-    {
-      id_tank: 'TK-JKT-01',
-      site: 'Depot Jakarta',
-      status: 'Online',
-      volume_oil: 4200,
-      volume_water: 50,
-      max_capacity: 8000,
-      temperature: 29.1,
-      ruang_kosong: 3750,
-      last_update: '2025-10-28 10:00:00',
-    },
-    {
-      id_tank: 'TK-JKT-02',
-      site: 'Depot Jakarta',
-      status: 'Offline',
-      volume_oil: 0,
-      volume_water: 0,
-      max_capacity: 8000,
-      temperature: null,
-      ruang_kosong: 8000,
-      last_update: '2025-10-27 14:30:00',
-    },
-    {
-      id_tank: 'TK-SBY-01',
-      site: 'Depot Surabaya',
-      status: 'Online',
-      volume_oil: 3900,
-      volume_water: 60,
-      max_capacity: 7000,
-      temperature: 30.5,
-      ruang_kosong: 3040,
-      last_update: '2025-10-28 09:50:00',
-    },
-    {
-      id_tank: 'TK-MDN-01',
-      site: 'Depot Medan',
-      status: 'Online',
-      volume_oil: 5200,
-      volume_water: 45,
-      max_capacity: 9000,
-      temperature: 31.2,
-      ruang_kosong: 3755,
-      last_update: '2025-10-28 09:10:00',
-    },
-  ]
+  /* ───── filtering helper ───── */
+  const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
 
-  const siteTotalCount =
-    siteFilter === 'all'
-      ? filteredBySearchDate
-      : filteredBySearchDate.filter(
-          (item) => item.site && item.site.toLowerCase() === siteFilter.toLowerCase(),
-        )
+  /* transaksi filter: text + date */
+  const filteredTransaksiTextDate = useMemo(() => {
+    return transaksiData.filter((it) => {
+      const matchText = searchValue
+        ? [it.site, it.username, it.license_plate]
+            .filter(Boolean)
+            .some((f) => f.toLowerCase().includes(searchValue))
+        : true
 
-  const totalTransactions = filteredTransactions.length
+      const [start, end] = dateRange || []
+      const d = dayjs(it.date)
+      const matchDate = start
+        ? end
+          ? d.isBetween(start.startOf('day'), end.endOf('day'), null, '[]')
+          : d.isSame(start, 'day') || d.isAfter(start.startOf('day'))
+        : true
 
+      return matchText && matchDate
+    })
+  }, [transaksiData, searchValue, dateRange])
+
+  /* transaksi filter: + site */
+  const filteredTransaksi = useMemo(() => {
+    if (siteFilter === 'all') return filteredTransaksiTextDate
+    return filteredTransaksiTextDate.filter(
+      (it) => it.site && it.site.toLowerCase() === siteFilter.toLowerCase(),
+    )
+  }, [filteredTransaksiTextDate, siteFilter])
+
+  /* fuel receive filter: text + date + site */
+  const filteredFuelReceive = useMemo(() => {
+    return fuelReceiveData.filter((it) => {
+      const matchText = searchValue ? it.site?.toLowerCase().includes(searchValue) : true
+
+      const matchSite =
+        siteFilter === 'all' ? true : it.site && it.site.toLowerCase() === siteFilter.toLowerCase()
+
+      const [start, end] = dateRange || []
+      const d = dayjs(it.date)
+      const matchDate = start
+        ? end
+          ? d.isBetween(start.startOf('day'), end.endOf('day'), null, '[]')
+          : d.isSame(start, 'day') || d.isAfter(start.startOf('day'))
+        : true
+
+      return matchText && matchSite && matchDate
+    })
+  }, [fuelReceiveData, searchValue, siteFilter, dateRange])
+
+  /* count per-site & total */
+  const siteTotalCount = filteredTransaksi.length
+  const siteCounts = useMemo(() => {
+    return filteredTransaksi.reduce((acc, it) => {
+      if (!it.site) return acc
+      acc[it.site] = (acc[it.site] || 0) + 1
+      return acc
+    }, {})
+  }, [filteredTransaksi])
+
+  /* dashboard idea static */
   const dashboardIdeas = useMemo(
     () => [
       {
@@ -194,6 +181,7 @@ const Dashboard = () => {
     [],
   )
 
+  /* ───── render ───── */
   return (
     <>
       <Watermark content="UNDER DEVELOPMENT">
@@ -205,17 +193,20 @@ const Dashboard = () => {
           dateRange={dateRange}
           setDateRange={setDateRange}
           storageKey="appSubHeaderFilters:dashboard"
-        />
-        <WidgetsDropdown
-          className="mb-4"
-          fuelReceiveData={fuelReceiveData}
-          transaksiData={transaksiData}
+          siteCounts={siteCounts}
           siteTotalCount={siteTotalCount}
         />
+
+        <WidgetsDropdown
+          className="mb-4"
+          transaksiData={filteredTransaksi}
+          fuelReceiveData={filteredFuelReceive}
+        />
+
         <CCard className="mb-4">
           <CCardBody>
             <h4 className="card-title mb-3">Consumption Trend</h4>
-            <MainChart />
+            <MainChart data={filteredTransaksi} loading={loadingTrans} />
           </CCardBody>
         </CCard>
 
@@ -228,15 +219,15 @@ const Dashboard = () => {
           </CCardHeader>
           <CCardBody>
             <CRow>
-              {dashboardIdeas.map((section) => (
-                <CCol md={4} key={section.title}>
+              {dashboardIdeas.map((s) => (
+                <CCol md={4} key={s.title}>
                   <h6 className="fw-semibold d-flex justify-content-between align-items-center">
-                    {section.title}
-                    <CBadge color="secondary">{section.priority}</CBadge>
+                    {s.title}
+                    <CBadge color="secondary">{s.priority}</CBadge>
                   </h6>
                   <CListGroup className="mb-3">
-                    {section.items.map((item) => (
-                      <CListGroupItem key={item}>{item}</CListGroupItem>
+                    {s.items.map((it) => (
+                      <CListGroupItem key={it}>{it}</CListGroupItem>
                     ))}
                   </CListGroup>
                 </CCol>
