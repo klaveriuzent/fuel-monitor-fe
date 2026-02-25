@@ -20,7 +20,7 @@
     "@coreui/react-chartjs": "^3.0.0",
     "@coreui/utils": "^2.0.2",
     "@popperjs/core": "^2.11.8",
-    "antd": "^6.3.0",
+    "antd": "^6.3.1",
     "axios": "^1.13.5",
     "chart.js": "^4.5.1",
     "classnames": "^2.5.1",
