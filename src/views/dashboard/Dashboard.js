@@ -3,7 +3,6 @@ import axios from 'axios'
 import { Watermark } from 'antd'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
-
 import {
   CBadge,
   CCard,
@@ -23,7 +22,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL
 dayjs.extend(isBetween)
 
 const Dashboard = () => {
-  /* ───── state ───── */
+  /* state */
   const [transaksiData, setTransaksiData] = useState([])
   const [fuelReceiveData, setFuelReceiveData] = useState([])
   const [tankData, setTankData] = useState([])
@@ -36,7 +35,7 @@ const Dashboard = () => {
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState([null, null])
 
-  /* ───── fetch transaksi ───── */
+  /* fetch transaksi */
   useEffect(() => {
     const fetchTransaksi = async () => {
       try {
@@ -63,7 +62,7 @@ const Dashboard = () => {
     fetchTransaksi()
   }, [])
 
-  /* ───── fetch fuel receive ───── */
+  /* fetch fuel receive */
   useEffect(() => {
     const fetchReceive = async () => {
       try {
@@ -88,12 +87,13 @@ const Dashboard = () => {
     fetchReceive()
   }, [])
 
-  /* ───── fetch ms-tank ───── */
+  /* potongan fetch ms-tank saja yang diubah */
   useEffect(() => {
     const fetchTank = async () => {
       try {
         setLoadingTank(true)
         const { data } = await axios.get(`${baseURL}ms-tank`)
+        console.log('RAW ms-tank response', data) // ⇐ log mentah
         if (Array.isArray(data?.data)) {
           setTankData(data.data)
         }
@@ -106,10 +106,9 @@ const Dashboard = () => {
     fetchTank()
   }, [])
 
-  /* ───── filtering helper ───── */
+  /* helpers */
   const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
 
-  /* transaksi filter: text + date */
   const filteredTransaksiTextDate = useMemo(() => {
     return transaksiData.filter((it) => {
       const matchText = searchValue
@@ -130,7 +129,6 @@ const Dashboard = () => {
     })
   }, [transaksiData, searchValue, dateRange])
 
-  /* transaksi filter: + site */
   const filteredTransaksi = useMemo(() => {
     if (siteFilter === 'all') return filteredTransaksiTextDate
     return filteredTransaksiTextDate.filter(
@@ -138,11 +136,9 @@ const Dashboard = () => {
     )
   }, [filteredTransaksiTextDate, siteFilter])
 
-  /* fuel receive filter: text + date + site */
   const filteredFuelReceive = useMemo(() => {
     return fuelReceiveData.filter((it) => {
       const matchText = searchValue ? it.site?.toLowerCase().includes(searchValue) : true
-
       const matchSite =
         siteFilter === 'all' ? true : it.site && it.site.toLowerCase() === siteFilter.toLowerCase()
 
@@ -158,7 +154,6 @@ const Dashboard = () => {
     })
   }, [fuelReceiveData, searchValue, siteFilter, dateRange])
 
-  /* count per-site & total */
   const siteTotalCount = filteredTransaksi.length
   const siteCounts = useMemo(() => {
     return filteredTransaksi.reduce((acc, it) => {
@@ -168,7 +163,6 @@ const Dashboard = () => {
     }, {})
   }, [filteredTransaksi])
 
-  /* dashboard idea static */
   const dashboardIdeas = useMemo(
     () => [
       {
@@ -202,7 +196,7 @@ const Dashboard = () => {
     [],
   )
 
-  /* ───── render ───── */
+  /* render */
   return (
     <>
       <AppSubHeaderDashboard

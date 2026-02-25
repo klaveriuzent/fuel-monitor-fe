@@ -1,20 +1,44 @@
 import React, { useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
-
 import { CRow, CCol, CWidgetStatsA } from '@coreui/react'
-import { getStyle } from '@coreui/utils'
 import { CChartLine } from '@coreui/react-chartjs'
+import { getStyle } from '@coreui/utils'
 
-/* ─── helper status ───────────────────────────────────────── */
-const getTankStatus = (t) => {
-  const aktif = String(t.aktif_flag) === '1'
-  const hasUpdate = Boolean(t.update_date)
-  if (!aktif || !hasUpdate) return 'offline'
-
-  const diffMin = (Date.now() - new Date(t.update_date).getTime()) / 60000
-  return diffMin > 5 ? 'standby' : 'online'
+/* ── generic detector ------------------------------------ */
+// ambil nilai flag aktif (cari key mengandung 'aktif' / 'active')
+const extractAktifFlag = (item) => {
+  for (const [k, v] of Object.entries(item)) {
+    const key = k.toLowerCase()
+    if (key.includes('aktif') && !key.includes('update')) return v
+    if (key.includes('active')) return v
+  }
+  return undefined
 }
 
+// ambil timestamp update (cari key mengandung 'update' / 'timestamp')
+const extractUpdateTime = (item) => {
+  for (const [k, v] of Object.entries(item)) {
+    const key = k.toLowerCase()
+    if (key.includes('update') || key.includes('timestamp')) return v
+  }
+  return null
+}
+
+const isAktif = (flag) => ['1', 1, true, 'y', 'yes', 'on'].includes(flag)
+
+const isStandby = (item) => {
+  const upd = extractUpdateTime(item)
+  if (!isAktif(extractAktifFlag(item)) || !upd) return false
+  const diffMin = (Date.now() - new Date(upd).getTime()) / 60000
+  return diffMin > 5
+}
+
+const getTankStatus = (item) => {
+  if (!isAktif(extractAktifFlag(item))) return { key: 'offline' }
+  return isStandby(item) ? { key: 'standby' } : { key: 'online' }
+}
+
+/* ── component ------------------------------------------- */
 const WidgetsDropdown = ({
   className,
   fuelReceiveData = [],
@@ -25,28 +49,29 @@ const WidgetsDropdown = ({
   const widgetChartRef2 = useRef(null)
   const widgetChartRef3 = useRef(null)
 
-  /* ─── total record transaksi & receive ─────────────────── */
+  /* debug raw data */
+  useEffect(() => {
+    console.log('<<< STOCK DATA RECEIVED >>>', stockData)
+  }, [stockData])
+
+  /* totals */
   const totalTransactions = transaksiData.length
   const totalFuelReceived = fuelReceiveData.length
 
-  /* ─── hitung status tank sekali tiap stockData berubah ── */
+  /* count online / standby */
   const { onlineStock, standbyStock } = useMemo(() => {
     let online = 0
     let standby = 0
-    stockData.forEach((s) => {
-      const st = getTankStatus(s)
+    stockData.forEach((t) => {
+      const st = getTankStatus(t).key
       if (st === 'online') online += 1
       else if (st === 'standby') standby += 1
     })
+    console.log('Recalculate stock:', { online, standby })
     return { onlineStock: online, standbyStock: standby }
   }, [stockData])
 
-  /* ─── debug log (opsional) ─────────────────────────────── */
-  useEffect(() => {
-    console.log('Stock data:', stockData.length, stockData)
-  }, [stockData])
-
-  /* ─── update warna chart saat theme berubah ────────────── */
+  /* sync chart colour on theme change */
   useEffect(() => {
     const handler = () => {
       if (widgetChartRef1.current) {
@@ -66,7 +91,7 @@ const WidgetsDropdown = ({
     return () => document.documentElement.removeEventListener('ColorSchemeChange', handler)
   }, [])
 
-  /* ─── render ───────────────────────────────────────────── */
+  /* render */
   return (
     <CRow className={className} xs={{ gutter: 4 }}>
       {/* TOTAL TRANSACTIONS */}
