@@ -26,8 +26,11 @@ const Dashboard = () => {
   /* ───── state ───── */
   const [transaksiData, setTransaksiData] = useState([])
   const [fuelReceiveData, setFuelReceiveData] = useState([])
+  const [tankData, setTankData] = useState([])
+
   const [loadingTrans, setLoadingTrans] = useState(false)
   const [loadingReceive, setLoadingReceive] = useState(false)
+  const [loadingTank, setLoadingTank] = useState(false)
 
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
@@ -83,6 +86,24 @@ const Dashboard = () => {
       }
     }
     fetchReceive()
+  }, [])
+
+  /* ───── fetch ms-tank ───── */
+  useEffect(() => {
+    const fetchTank = async () => {
+      try {
+        setLoadingTank(true)
+        const { data } = await axios.get(`${baseURL}ms-tank`)
+        if (Array.isArray(data?.data)) {
+          setTankData(data.data)
+        }
+      } catch (err) {
+        console.error('Error fetch ms-tank', err)
+      } finally {
+        setLoadingTank(false)
+      }
+    }
+    fetchTank()
   }, [])
 
   /* ───── filtering helper ───── */
@@ -200,6 +221,7 @@ const Dashboard = () => {
         className="mb-4"
         transaksiData={filteredTransaksi}
         fuelReceiveData={filteredFuelReceive}
+        stockData={tankData}
       />
 
       <Watermark content="UNDER DEVELOPMENT">

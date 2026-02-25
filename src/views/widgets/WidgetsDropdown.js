@@ -1,9 +1,19 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
 
 import { CRow, CCol, CWidgetStatsA } from '@coreui/react'
 import { getStyle } from '@coreui/utils'
-import { CChartBar, CChartLine } from '@coreui/react-chartjs'
+import { CChartLine } from '@coreui/react-chartjs'
+
+/* ─── helper status ───────────────────────────────────────── */
+const getTankStatus = (t) => {
+  const aktif = String(t.aktif_flag) === '1'
+  const hasUpdate = Boolean(t.update_date)
+  if (!aktif || !hasUpdate) return 'offline'
+
+  const diffMin = (Date.now() - new Date(t.update_date).getTime()) / 60000
+  return diffMin > 5 ? 'standby' : 'online'
+}
 
 const WidgetsDropdown = ({
   className,
@@ -15,16 +25,28 @@ const WidgetsDropdown = ({
   const widgetChartRef2 = useRef(null)
   const widgetChartRef3 = useRef(null)
 
-  /* ─── hitung total ─────────────────────────────────────── */
+  /* ─── total record transaksi & receive ─────────────────── */
   const totalTransactions = transaksiData.length
   const totalFuelReceived = fuelReceiveData.length
 
-  const onlineStock = stockData.filter((s) => s.status?.toLowerCase() === 'online').length
-  const standbyStock = stockData.filter((s) =>
-    ['standby', 'offline'].includes((s.status || '').toLowerCase()),
-  ).length
+  /* ─── hitung status tank sekali tiap stockData berubah ── */
+  const { onlineStock, standbyStock } = useMemo(() => {
+    let online = 0
+    let standby = 0
+    stockData.forEach((s) => {
+      const st = getTankStatus(s)
+      if (st === 'online') online += 1
+      else if (st === 'standby') standby += 1
+    })
+    return { onlineStock: online, standbyStock: standby }
+  }, [stockData])
 
-  /* ─── color-scheme listener ─────────────────────────────── */
+  /* ─── debug log (opsional) ─────────────────────────────── */
+  useEffect(() => {
+    console.log('Stock data:', stockData.length, stockData)
+  }, [stockData])
+
+  /* ─── update warna chart saat theme berubah ────────────── */
   useEffect(() => {
     const handler = () => {
       if (widgetChartRef1.current) {
@@ -44,6 +66,7 @@ const WidgetsDropdown = ({
     return () => document.documentElement.removeEventListener('ColorSchemeChange', handler)
   }, [])
 
+  /* ─── render ───────────────────────────────────────────── */
   return (
     <CRow className={className} xs={{ gutter: 4 }}>
       {/* TOTAL TRANSACTIONS */}
@@ -118,7 +141,7 @@ const WidgetsDropdown = ({
         />
       </CCol>
 
-      {/* FUEL STOCK (online & standby) */}
+      {/* FUEL STOCK */}
       <CCol sm={12} xl={4} xxl={6}>
         <div className="card shadow-sm border-0 h-100">
           <div className="card-body">
@@ -132,11 +155,11 @@ const WidgetsDropdown = ({
                 <div className="text-success small fw-semibold">Online</div>
               </div>
 
-              <div className="border-start" style={{ height: '45px' }}></div>
+              <div className="border-start" style={{ height: '45px' }} />
 
               <div>
                 <div className="fs-3 fw-bold text-secondary">{standbyStock}</div>
-                <div className="text-muted small">Standby</div>
+                <div className="text-muted small">Stand-by</div>
               </div>
             </div>
           </div>
