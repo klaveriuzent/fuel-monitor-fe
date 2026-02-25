@@ -4,55 +4,79 @@ import { CRow, CCol, CWidgetStatsA } from '@coreui/react'
 import { CChartLine } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
 
-/* ── generic detector ------------------------------------ */
-// ambil nilai flag aktif (cari key mengandung 'aktif' / 'active')
-const extractAktifFlag = (item) => {
-  for (const [k, v] of Object.entries(item)) {
-    const key = k.toLowerCase()
-    if (key.includes('aktif') && !key.includes('update')) return v
-    if (key.includes('active')) return v
-  }
-  return undefined
+// normalize active flag
+const isAktif = (flag) => {
+  if (flag === true) return true
+  if (flag === false || flag == null) return false
+
+  const s = String(flag).trim().toLowerCase()
+  return ['1', 'true', 'y', 'yes', 'on', 'aktif', 'active'].includes(s)
 }
 
-// ambil timestamp update (cari key mengandung 'update' / 'timestamp')
-const extractUpdateTime = (item) => {
-  for (const [k, v] of Object.entries(item)) {
-    const key = k.toLowerCase()
-    if (key.includes('update') || key.includes('timestamp')) return v
+// safe date parse supporting common formats
+const parseDateSafe = (value) => {
+  if (!value) return null
+  if (value instanceof Date) {
+    const t = value.getTime()
+    return Number.isFinite(t) ? t : null
   }
+
+  const raw = String(value).trim()
+
+  // ISO first
+  let t = Date.parse(raw)
+  if (Number.isFinite(t)) return t
+
+  // "YYYY-MM-DD HH:mm:ss" → ISO-like
+  t = Date.parse(raw.replace(' ', 'T'))
+  if (Number.isFinite(t)) return t
+
+  // "DD/MM/YYYY HH:mm:ss" or "DD-MM-YYYY HH:mm:ss"
+  const m = raw.match(
+    /^([0-9]{2})[\/-]([0-9]{2})[\/-]([0-9]{4})(?:[ T]([0-9]{2}):([0-9]{2})(?::([0-9]{2}))?)?$/,
+  )
+  if (m) {
+    const [, dd, mm, yyyy, HH = '00', MI = '00', SS = '00'] = m
+    const dt = new Date(
+      Number(yyyy),
+      Number(mm) - 1,
+      Number(dd),
+      Number(HH),
+      Number(MI),
+      Number(SS),
+    )
+    const ms = dt.getTime()
+    return Number.isFinite(ms) ? ms : null
+  }
+
   return null
 }
 
-const isAktif = (flag) => ['1', 1, true, 'y', 'yes', 'on'].includes(flag)
+// decide tank status from last_tank_data
+const getTankStatus = (item, standbyThresholdMin = 5) => {
+  const last = item?.last_tank_data?.[0]
+  if (!last) return { key: 'offline' }
 
-const isStandby = (item) => {
-  const upd = extractUpdateTime(item)
-  if (!isAktif(extractAktifFlag(item)) || !upd) return false
-  const diffMin = (Date.now() - new Date(upd).getTime()) / 60000
-  return diffMin > 5
-}
+  if (!isAktif(last.aktif_flag)) return { key: 'offline' }
 
-const getTankStatus = (item) => {
-  if (!isAktif(extractAktifFlag(item))) return { key: 'offline' }
-  return isStandby(item) ? { key: 'standby' } : { key: 'online' }
+  const updMs = parseDateSafe(last.update_date)
+  if (!updMs) return { key: 'standby' }
+
+  const diffMin = (Date.now() - updMs) / 60000
+  return diffMin > standbyThresholdMin ? { key: 'standby' } : { key: 'online' }
 }
 
 /* ── component ------------------------------------------- */
+
 const WidgetsDropdown = ({
   className,
   fuelReceiveData = [],
   transaksiData = [],
-  stockData = [],
+  stockData = [], // pastikan ini array: response.data
 }) => {
   const widgetChartRef1 = useRef(null)
   const widgetChartRef2 = useRef(null)
   const widgetChartRef3 = useRef(null)
-
-  /* debug raw data */
-  useEffect(() => {
-    console.log('<<< STOCK DATA RECEIVED >>>', stockData)
-  }, [stockData])
 
   /* totals */
   const totalTransactions = transaksiData.length
@@ -67,7 +91,6 @@ const WidgetsDropdown = ({
       if (st === 'online') online += 1
       else if (st === 'standby') standby += 1
     })
-    console.log('Recalculate stock:', { online, standby })
     return { onlineStock: online, standbyStock: standby }
   }, [stockData])
 

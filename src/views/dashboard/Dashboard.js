@@ -93,7 +93,6 @@ const Dashboard = () => {
       try {
         setLoadingTank(true)
         const { data } = await axios.get(`${baseURL}ms-tank`)
-        console.log('RAW ms-tank response', data) // ⇐ log mentah
         if (Array.isArray(data?.data)) {
           setTankData(data.data)
         }
