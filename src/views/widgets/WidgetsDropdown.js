@@ -119,56 +119,28 @@ const WidgetsDropdown = ({
       </CCol>
 
       {/* FUEL STOCK (online & standby) */}
-      <CCol sm={6} xl={4} xxl={3}>
-        <CWidgetStatsA
-          color="warning"
-          title="Fuel Stock"
-          value={
-            <>
-              <span className="fw-bold">{onlineStock}</span>
-              <span className="small ms-1">online</span>
-              <br />
-              <span className="fw-bold">{standbyStock}</span>
-              <span className="small ms-1">standby</span>
-            </>
-          }
-          /* dummy chart agar tinggi konsisten */
-          chart={<div style={{ height: '51.79px' }} />}
-        />
-      </CCol>
+      <CCol sm={12} xl={4} xxl={6}>
+        <div className="card shadow-sm border-0 h-100">
+          <div className="card-body">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h6 className="mb-0 fw-semibold">Fuel Stock</h6>
+            </div>
 
-      {/* TANK EMPTY SPACE (dummy) */}
-      <CCol sm={6} xl={4} xxl={3}>
-        <CWidgetStatsA
-          color="danger"
-          value="..."
-          title="Tank Empty Space"
-          chart={
-            <CChartBar
-              className="mt-3 mx-3"
-              style={{ height: '70px' }}
-              data={{
-                labels: Array.from({ length: 16 }, (_, i) => `M${i + 1}`),
-                datasets: [
-                  {
-                    backgroundColor: 'rgba(255,255,255,.2)',
-                    borderColor: 'rgba(255,255,255,.55)',
-                    data: [78, 81, 80, 45, 34, 12, 40, 85, 65, 23, 12, 98, 34, 84, 67, 82],
-                    barPercentage: 0.6,
-                  },
-                ],
-              }}
-              options={{
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                  x: { grid: { display: false }, ticks: { display: false } },
-                  y: { display: false },
-                },
-              }}
-            />
-          }
-        />
+            <div className="d-flex justify-content-around align-items-center text-center">
+              <div>
+                <div className="fs-3 fw-bold text-success">{onlineStock}</div>
+                <div className="text-success small fw-semibold">Online</div>
+              </div>
+
+              <div className="border-start" style={{ height: '45px' }}></div>
+
+              <div>
+                <div className="fs-3 fw-bold text-secondary">{standbyStock}</div>
+                <div className="text-muted small">Standby</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </CCol>
     </CRow>
   )

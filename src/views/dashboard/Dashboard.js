@@ -184,25 +184,25 @@ const Dashboard = () => {
   /* ───── render ───── */
   return (
     <>
+      <AppSubHeaderDashboard
+        search={search}
+        setSearch={setSearch}
+        siteFilter={siteFilter}
+        setSiteFilter={setSiteFilter}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        storageKey="appSubHeaderFilters:dashboard"
+        siteCounts={siteCounts}
+        siteTotalCount={siteTotalCount}
+      />
+
+      <WidgetsDropdown
+        className="mb-4"
+        transaksiData={filteredTransaksi}
+        fuelReceiveData={filteredFuelReceive}
+      />
+
       <Watermark content="UNDER DEVELOPMENT">
-        <AppSubHeaderDashboard
-          search={search}
-          setSearch={setSearch}
-          siteFilter={siteFilter}
-          setSiteFilter={setSiteFilter}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          storageKey="appSubHeaderFilters:dashboard"
-          siteCounts={siteCounts}
-          siteTotalCount={siteTotalCount}
-        />
-
-        <WidgetsDropdown
-          className="mb-4"
-          transaksiData={filteredTransaksi}
-          fuelReceiveData={filteredFuelReceive}
-        />
-
         <CCard className="mb-4">
           <CCardBody>
             <h4 className="card-title mb-3">Consumption Trend</h4>
