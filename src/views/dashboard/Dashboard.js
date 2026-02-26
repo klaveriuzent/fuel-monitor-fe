@@ -217,14 +217,14 @@ const Dashboard = () => {
         stockData={tankData}
       />
 
-      <Watermark content="UNDER DEVELOPMENT">
-        <CCard className="mb-4">
-          <CCardBody>
-            <h4 className="card-title mb-3">Consumption Trend</h4>
-            <MainChart data={filteredTransaksi} loading={loadingTrans} />
-          </CCardBody>
-        </CCard>
+      <CCard className="mb-4">
+        <CCardBody>
+          <h4 className="card-title mb-3">Consumption Trend</h4>
+          <MainChart data={filteredTransaksi} loading={loadingTrans} />
+        </CCardBody>
+      </CCard>
 
+      <Watermark content="UNDER DEVELOPMENT">
         <CCard className="mb-4">
           <CCardHeader>
             Rekomendasi Struktur Dashboard{' '}

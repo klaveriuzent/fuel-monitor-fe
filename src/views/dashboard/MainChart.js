@@ -26,6 +26,7 @@ const MainChart = () => {
     })
   }, [chartRef])
 
+  // eslint-disable-next-line react-hooks/purity
   const random = () => Math.round(Math.random() * 100)
 
   return (

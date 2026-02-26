@@ -67,6 +67,7 @@ const AppSubHeaderDashboard = ({
       if (search !== undefined) setSearch(search)
       if (siteFilter !== undefined) setSiteFilter(siteFilter)
       if (quickRange) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setQuickRange(quickRange)
         const [start, end] = calculateQuickRange(quickRange)
         setDateRange([start, end])
@@ -91,6 +92,7 @@ const AppSubHeaderDashboard = ({
   }, [search, siteFilter, quickRange, dateRange, storageKey])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSites()
   }, [fetchSites])
 
@@ -120,7 +122,7 @@ const AppSubHeaderDashboard = ({
     <CCard className="app-subheader mb-3 p-3">
       {/* Filter Row */}
       <CRow className="align-items-center g-2">
-        <CCol xs={12} sm={6} md={4}>
+        <CCol xs={12} sm={12} md={12}>
           <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
             <option value="all">All Sites</option>
             {siteOptions.map((site) => (
@@ -131,7 +133,7 @@ const AppSubHeaderDashboard = ({
           </CFormSelect>
         </CCol>
 
-        <CCol xs={12} sm={12} md={8}>
+        {/* <CCol xs={12} sm={12} md={8}>
           <div className="app-subheader__search d-flex align-items-center gap-2">
             <CFormInput
               type="text"
@@ -145,7 +147,7 @@ const AppSubHeaderDashboard = ({
               Clear
             </CButton>
           </div>
-        </CCol>
+        </CCol> */}
       </CRow>
 
       {/* Quick Range */}
