@@ -107,7 +107,7 @@ const formatValueOrDash = (value, formatter = (val) => val) =>
 
 export const buildFuelReceiveColumns = (onEdit = () => {}) => [
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },
-  { title: 'Tank', dataIndex: 'id_tank', key: 'id_tank' },
+  { title: 'Tank', dataIndex: 'id_tank', key: 'id_tank', align: 'center' },
   {
     title: 'Date',
     dataIndex: 'waktu_mulai_delivery',
@@ -196,12 +196,7 @@ export const buildFuelReceiveColumns = (onEdit = () => {}) => [
     width: 110,
     fixed: 'right',
     render: (_, record) => (
-      <CButton
-        color="info"
-        size="sm"
-        className="text-white"
-        onClick={() => onEdit(record)}
-      >
+      <CButton color="info" size="sm" className="text-white" onClick={() => onEdit(record)}>
         Edit
       </CButton>
     ),

@@ -35,15 +35,33 @@ const MainChart = () => {
         ref={chartRef}
         style={{ height: '300px', marginTop: '40px' }}
         data={{
-          labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+          labels: [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+          ],
           datasets: [
             {
-              label: 'My First dataset',
+              label: 'Jumlah Transaksi',
               backgroundColor: `rgba(${getStyle('--cui-info-rgb')}, .1)`,
               borderColor: getStyle('--cui-info'),
               pointHoverBackgroundColor: getStyle('--cui-info'),
               borderWidth: 2,
               data: [
+                random(50, 200),
+                random(50, 200),
+                random(50, 200),
+                random(50, 200),
+                random(50, 200),
                 random(50, 200),
                 random(50, 200),
                 random(50, 200),
@@ -68,16 +86,12 @@ const MainChart = () => {
                 random(50, 200),
                 random(50, 200),
                 random(50, 200),
+                random(50, 200),
+                random(50, 200),
+                random(50, 200),
+                random(50, 200),
+                random(50, 200),
               ],
-            },
-            {
-              label: 'My Third dataset',
-              backgroundColor: 'transparent',
-              borderColor: getStyle('--cui-danger'),
-              pointHoverBackgroundColor: getStyle('--cui-danger'),
-              borderWidth: 1,
-              borderDash: [8, 5],
-              data: [65, 65, 65, 65, 65, 65, 65],
             },
           ],
         }}

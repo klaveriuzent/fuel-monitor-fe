@@ -196,7 +196,7 @@ const WidgetsDropdown = ({
         <div className="card shadow-sm border-0 h-100">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h6 className="mb-0 fw-semibold">Fuel Stock</h6>
+              <h6 className="mb-0 fw-semibold">Machine</h6>
             </div>
 
             <div className="d-flex justify-content-around align-items-center text-center">
