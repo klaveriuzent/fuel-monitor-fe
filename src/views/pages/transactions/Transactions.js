@@ -125,7 +125,7 @@ const Transactions = () => {
       'License Plate': item.plat || '-',
       Odometer: Number(item.odometer).toLocaleString('id-ID'),
       'Volume (L)': formatDecimal(item.volume),
-      'Unit Price (IDR)': formatCurrency(item.unit_price),
+      'Unit Price (IDR)': formatDecimal(item.unit_price),
     }))
 
     const workbook = new ExcelJS.Workbook()

@@ -9,13 +9,7 @@ import ExcelJS from 'exceljs'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import AddFuelReceiveModal from '../../../components/modals/AddFuelReceiveModal'
 import { getColumnKey } from '../../../utils/table'
-import {
-  buildFuelReceiveColumns,
-  formatDateTime,
-  formatDecimal,
-  formatPercentage,
-  parseDateSafe,
-} from './interface.fuelreceive'
+import { buildFuelReceiveColumns, formatDecimal, parseDateSafe } from './interface.fuelreceive'
 import '../tableDarkMode.scss'
 
 dayjs.extend(isBetween)
@@ -332,14 +326,15 @@ const FuelReceive = () => {
     const exportData = filteredData.map((item) => ({
       Site: item.id_site,
       Tank: item.id_tank,
-      Date: formatDateTime(item.waktu_mulai_delivery),
-      'No. Invoice': item.no_invoice,
+      //Date: formatDateTime(item.waktu_mulai_delivery),
+      Date: item.waktu_mulai_delivery,
+      'No. PO': item.no_invoice,
       'No. DO': item.no_do,
       'Requested Volume (L)': formatDecimal(item.volume_permintaan),
       'Delivered Volume (L)': formatDecimal(item.total_deliv),
       'Requested Total (L)': formatDecimal(item.total_permintaan),
       'Variance (L)': formatDecimal(item.total_selisih),
-      'Variance (%)': formatPercentage(item.persentase_selisih),
+      'Variance (%)': formatDecimal(item.persentase_selisih),
       'License Plate': item.no_kendaraan,
       Driver: item.nama_pengemudi,
       Sender: item.pengirim,
