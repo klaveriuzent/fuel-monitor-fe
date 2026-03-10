@@ -5,7 +5,7 @@ import isBetween from 'dayjs/plugin/isBetween'
 import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import {
   transactionColumns,
   formatCurrency,
@@ -116,7 +116,7 @@ const Transactions = () => {
   }, [filteredBySearchDate, siteFilter])
 
   // Export Excel (tetap sama)
-  const handleExport = () => {
+  const handleExport = async () => {
     const exportData = filteredData.map((item) => ({
       Site: item.id_site,
       Date: formatDateTime(item.waktu),
@@ -128,10 +128,18 @@ const Transactions = () => {
       'Unit Price (IDR)': formatCurrency(item.unit_price),
     }))
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions')
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('Transactions')
+    const headers = Object.keys(exportData[0] || {})
+
+    worksheet.columns = headers.map((header) => ({
+      header,
+      key: header,
+    }))
+
+    worksheet.addRows(exportData)
+
+    const excelBuffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([excelBuffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
     })

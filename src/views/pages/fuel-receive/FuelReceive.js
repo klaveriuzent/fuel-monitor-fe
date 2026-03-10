@@ -5,7 +5,7 @@ import isBetween from 'dayjs/plugin/isBetween'
 import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import AddFuelReceiveModal from '../../../components/modals/AddFuelReceiveModal'
 import { getColumnKey } from '../../../utils/table'
@@ -328,7 +328,7 @@ const FuelReceive = () => {
   }, [filteredBySearchDate, siteFilter])
 
   // Export Excel
-  const handleExport = () => {
+  const handleExport = async () => {
     const exportData = filteredData.map((item) => ({
       Site: item.id_site,
       Tank: item.id_tank,
@@ -345,10 +345,18 @@ const FuelReceive = () => {
       Sender: item.pengirim,
     }))
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'FuelReceive')
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('FuelReceive')
+    const headers = Object.keys(exportData[0] || {})
+
+    worksheet.columns = headers.map((header) => ({
+      header,
+      key: header,
+    }))
+
+    worksheet.addRows(exportData)
+
+    const excelBuffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([excelBuffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
     })
