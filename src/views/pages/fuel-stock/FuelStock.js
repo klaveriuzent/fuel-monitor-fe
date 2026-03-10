@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Row, Col, Pagination } from 'antd'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
@@ -92,7 +92,7 @@ const FuelStock = () => {
       })
   }, [data, filterSite, normalizedSearch])
 
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback(async () => {
     if (!filteredData.length) return
 
     const exportData = filteredData.map((item) => ({
@@ -107,11 +107,18 @@ const FuelStock = () => {
       'Update Date': item.update_date,
     }))
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData)
-    const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Fuel Stock')
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('Fuel Stock')
+    const headers = Object.keys(exportData[0])
 
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+    worksheet.columns = headers.map((header) => ({
+      header,
+      key: header,
+    }))
+
+    worksheet.addRows(exportData)
+
+    const excelBuffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([excelBuffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
     })
