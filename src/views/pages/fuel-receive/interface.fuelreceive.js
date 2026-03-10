@@ -76,18 +76,30 @@ export const formatDateTime = (value) => {
   const date = parseDateSafe(value)
   if (!date) return '-'
 
-  return date
-    .toLocaleString('id-ID', {
+  const datePart = date.toLocaleDateString('id-ID', {
+    timeZone: 'UTC',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+
+  const timePart = date
+    .toLocaleTimeString('id-ID', {
       timeZone: 'UTC',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
       hourCycle: 'h23',
     })
     .replace(/\./g, ':')
+
+  return (
+    <>
+      {datePart}
+      <br />
+      {timePart}
+    </>
+  )
 }
 
 export const formatDecimal = (value) =>
@@ -126,7 +138,7 @@ export const buildFuelReceiveColumns = (onEdit = () => {}) => [
     render: (_, record) => (
       <div className="d-flex flex-column gap-2 p-2">
         <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. Invoice</Tag>{' '}
+          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. PO</Tag>{' '}
           <span style={{ fontSize: '12px', color: '#555' }}>{record?.no_invoice ?? '-'}</span>
         </span>
         <span>
@@ -190,15 +202,16 @@ export const buildFuelReceiveColumns = (onEdit = () => {}) => [
       </div>
     ),
   },
-  {
-    title: 'Action',
-    key: 'action',
-    width: 110,
-    fixed: 'right',
-    render: (_, record) => (
-      <CButton color="info" size="sm" className="text-white" onClick={() => onEdit(record)}>
-        Edit
-      </CButton>
-    ),
-  },
+  // SAAT INI TIDAK ADA ACTION, JADI SAYA KOMEN AJA DULU, NANTI BISA DITAMBAHKAN KEMBALI
+  // {
+  //   title: 'Action',
+  //   key: 'action',
+  //   width: 110,
+  //   fixed: 'right',
+  //   render: (_, record) => (
+  //     <CButton color="info" size="sm" className="text-white" onClick={() => onEdit(record)}>
+  //       Edit
+  //     </CButton>
+  //   ),
+  // },
 ]
