@@ -224,32 +224,6 @@ const Dashboard = () => {
             <MainChart data={filteredTransaksi} loading={loadingTrans} />
           </CCardBody>
         </CCard>
-
-        <CCard className="mb-4">
-          <CCardHeader>
-            Rekomendasi Struktur Dashboard{' '}
-            <CBadge color="info" className="ms-2">
-              Dummy Blueprint
-            </CBadge>
-          </CCardHeader>
-          <CCardBody>
-            <CRow>
-              {dashboardIdeas.map((s) => (
-                <CCol md={4} key={s.title}>
-                  <h6 className="fw-semibold d-flex justify-content-between align-items-center">
-                    {s.title}
-                    <CBadge color="secondary">{s.priority}</CBadge>
-                  </h6>
-                  <CListGroup className="mb-3">
-                    {s.items.map((it) => (
-                      <CListGroupItem key={it}>{it}</CListGroupItem>
-                    ))}
-                  </CListGroup>
-                </CCol>
-              ))}
-            </CRow>
-          </CCardBody>
-        </CCard>
       </Watermark>
     </>
   )
