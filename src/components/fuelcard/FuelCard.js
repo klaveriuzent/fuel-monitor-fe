@@ -47,14 +47,41 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
         Total: {totalLiters.toLocaleString()}L / {safeCapacity.toLocaleString()}L (
         {totalHeight.toFixed(1)}%)
       </div>
+
       {showFuel && (
-        <div style={{ marginTop: '4px' }}>
-          ⛽ Fuel: {fuel.toLocaleString()}L ({fuelPercent.toFixed(1)}%)
+        <div
+          style={{
+            marginTop: '4px',
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>⛽ Fuel</span>
+          <span>
+            {Number(fuel).toLocaleString('id-ID', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{' '}
+            L ({fuelPercent.toFixed(1)}%)
+          </span>
         </div>
       )}
+
       {showWater && (
-        <div>
-          💧 Water: {water.toLocaleString()}L ({waterPercent.toFixed(1)}%)
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>💧 Water</span>
+          <span>
+            {Number(water).toLocaleString('id-ID', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}{' '}
+            L ({waterPercent.toFixed(1)}%)
+          </span>
         </div>
       )}
     </div>
@@ -184,36 +211,6 @@ const FuelCard = ({ item }) => {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
-  const formatAxisLabel = (dateValue, scale) => {
-    if (!dateValue) return ''
-
-    const d = new Date(dateValue)
-
-    // DAY → jam
-    if (scale === 'day') {
-      // "YYYY-MM-DD HH:00:00" → HH:mm
-      return String(dateValue).slice(11, 16)
-    }
-
-    if (scale === 'week') {
-      return d.toLocaleDateString('id-ID', {
-        timeZone: 'UTC',
-        weekday: 'short',
-        day: '2-digit',
-      })
-    }
-
-    // MONTH → tanggal saja
-    if (scale === 'month') {
-      return d.toLocaleDateString('id-ID', {
-        timeZone: 'UTC',
-        day: '2-digit',
-      })
-    }
-
-    return ''
-  }
-
   const formatTooltipLabel = (dateValue, scale) => {
     if (!dateValue) return ''
     if (scale === 'day') {
@@ -234,11 +231,6 @@ const FuelCard = ({ item }) => {
       day: '2-digit',
     })
   }
-
-  const chartMax = useMemo(() => {
-    const cap = toNumber(item.max_capacity)
-    return cap > 0 ? cap : undefined
-  }, [item.max_capacity])
 
   const isStandby = () => {
     if (item.aktif_flag !== '1' || !item.update_date) return false
@@ -329,7 +321,7 @@ const FuelCard = ({ item }) => {
           <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
           <CCardText className="fuel-card__details">
             <b>Site:</b> {item.id_site} <br />
-            <b>Capacity:</b> {item.max_capacity} L
+            <b>Tank Capacity:</b> {Number(item.max_capacity).toLocaleString('id-ID')} L
           </CCardText>
 
           <TankWithScale
@@ -340,26 +332,64 @@ const FuelCard = ({ item }) => {
           />
 
           <CCardText className="fuel-card__summary">
-            <b>Fuel:</b> {item.volume_oil} L
-            <br />
-            <b>Water:</b> {item.volume_air} L
-            <br />
-            <b>Empty Space:</b> {item.ruang_kosong} L
-            <br />
-            <small>
-              Last Updated:{' '}
-              {item.update_date
-                ? new Date(item.update_date).toLocaleString('en-GB', {
-                    timeZone: 'UTC',
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                  })
-                : '-'}
-            </small>
+            <table>
+              <tr>
+                <td style={{ width: '90px' }}>
+                  <b>Fuel</b>
+                </td>
+                <td style={{ width: '90px' }}>
+                  {Number(item.volume_oil).toLocaleString('id-ID', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{' '}
+                  L
+                </td>
+              </tr>
+              <tr>
+                <td style={{ width: '90px' }}>
+                  <b>Water</b>
+                </td>
+                <td style={{ width: '90px' }}>
+                  {Number(item.volume_air).toLocaleString('id-ID', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{' '}
+                  L
+                </td>
+              </tr>
+              <tr>
+                <td style={{ width: '90px' }}>
+                  <b>Empty Space</b>
+                </td>
+                <td style={{ width: '90px' }}>
+                  {Number(item.ruang_kosong).toLocaleString('id-ID', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{' '}
+                  L
+                </td>
+              </tr>
+              <tr>
+                <td style={{ width: '90px' }}>
+                  <small>Last Updated</small>
+                </td>
+                <td style={{ width: '90px' }}>
+                  <small>
+                    {item.update_date
+                      ? new Date(item.update_date).toLocaleString('en-GB', {
+                          timeZone: 'UTC',
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                        })
+                      : '-'}
+                  </small>
+                </td>
+              </tr>
+            </table>
           </CCardText>
 
           <CButton
@@ -452,7 +482,11 @@ const FuelCard = ({ item }) => {
                       const v = context.parsed?.y ?? 0
                       const label = context.dataset.label
                       const icon = label === 'Fuel' ? '⛽' : label === 'Water' ? '💧' : ''
-                      return `${icon} ${label}: ${v} L`
+                      // return `${icon} ${label}: ${v} L`
+                      return `${icon} ${label}: ${Number(v).toLocaleString('id-ID', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })} L`
                     },
                   },
                 },

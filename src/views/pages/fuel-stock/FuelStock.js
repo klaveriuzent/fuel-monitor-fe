@@ -72,16 +72,24 @@ const FuelStock = () => {
   const normalizedSearch = search.trim().toLowerCase()
 
   const filteredData = useMemo(() => {
-    return data.filter((item) => {
-      const matchSearch =
-        normalizedSearch.length === 0 ||
-        item.id_tank.toLowerCase().includes(normalizedSearch) ||
-        item.id_site.toLowerCase().includes(normalizedSearch)
-      const matchSite =
-        filterSite === 'all' || item.id_site.toLowerCase().includes(filterSite.toLowerCase())
+    return data
+      .filter((item) => {
+        const matchSearch =
+          normalizedSearch.length === 0 ||
+          item.id_tank.toLowerCase().includes(normalizedSearch) ||
+          item.id_site.toLowerCase().includes(normalizedSearch)
 
-      return matchSearch && matchSite
-    })
+        const matchSite =
+          filterSite === 'all' || item.id_site.toLowerCase().includes(filterSite.toLowerCase())
+
+        return matchSearch && matchSite
+      })
+      .sort((a, b) => {
+        if (a.id_site !== b.id_site) {
+          return a.id_site.localeCompare(b.id_site)
+        }
+        return a.id_tank.localeCompare(b.id_tank, undefined, { numeric: true })
+      })
   }, [data, filterSite, normalizedSearch])
 
   const handleExport = useCallback(() => {
