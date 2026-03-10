@@ -45,13 +45,6 @@ export const transactionColumns = [
   { title: 'ID Card', dataIndex: 'id_card', key: 'id_card', align: 'center' },
   { title: 'Username', dataIndex: 'username', key: 'username', align: 'center' },
   {
-    title: 'License Plate',
-    dataIndex: 'plat',
-    key: 'plat',
-    align: 'center',
-    render: (value) => value || '-',
-  },
-  {
     title: 'Odometer',
     dataIndex: 'odometer',
     key: 'odometer',

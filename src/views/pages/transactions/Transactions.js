@@ -6,12 +6,7 @@ import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
-import {
-  transactionColumns,
-  formatCurrency,
-  formatDateTime,
-  formatDecimal,
-} from './interface.transactions'
+import { transactionColumns, formatDateTime, formatDecimal } from './interface.transactions'
 import '../tableDarkMode.scss'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import { getColumnKey } from '../../../utils/table'
@@ -50,7 +45,6 @@ const Transactions = () => {
             id_card: item.id_card,
             odometer: Number(item.odometer),
             id_site: item.id_site,
-            plat: item.plat,
             username: item.username,
             waktu: item.waktu,
             volume: parseFloat(item.volume),
@@ -73,15 +67,7 @@ const Transactions = () => {
   const filteredBySearchDate = useMemo(() => {
     return data.filter((item) => {
       const matchesText = searchValue
-        ? [
-            item.id_site,
-            item.id_card,
-            item.plat,
-            item.username,
-            item.odometer,
-            item.volume,
-            item.unit_price,
-          ]
+        ? [item.id_site, item.id_card, item.username, item.odometer, item.volume, item.unit_price]
             .filter((field) => field !== undefined && field !== null)
             .some((field) => field.toString().toLowerCase().includes(searchValue))
         : true
@@ -122,7 +108,6 @@ const Transactions = () => {
       Date: formatDateTime(item.waktu),
       'ID Card': item.id_card,
       Username: item.username,
-      'License Plate': item.plat || '-',
       Odometer: Number(item.odometer).toLocaleString('id-ID'),
       'Volume (L)': formatDecimal(item.volume),
       'Unit Price (IDR)': formatDecimal(item.unit_price),
