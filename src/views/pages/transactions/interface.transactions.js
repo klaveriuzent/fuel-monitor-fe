@@ -42,7 +42,7 @@ export const transactionColumns = [
     sortDirections: ['ascend', 'descend'],
     render: formatDateTime,
   },
-  { title: 'No. Unit', dataIndex: 'id_card', key: 'id_card', align: 'center' },
+  { title: 'No. Unit', dataIndex: 'id_card', key: 'id_card', align: 'right' },
   { title: 'Username', dataIndex: 'username', key: 'username', align: 'center' },
   {
     title: 'Odometer',
@@ -77,7 +77,7 @@ export const transactionColumns = [
     render: () => '-',
   },
   {
-    title: 'Unit Price (IDR)',
+    title: 'Unit Price',
     dataIndex: 'unit_price',
     key: 'unit_price',
     align: 'right',
