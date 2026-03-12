@@ -14,7 +14,7 @@ export const mapFuelStockData = (apiData) => {
             aktif_flag: tankData.aktif_flag ?? '',
             volume_oil: tankData.volume_oil ?? '',
             volume_air: tankData.volume_air ?? '',
-            max_capacity: tankData.max_capacity ?? '',
+            max_capacity: item.total_liter ?? tankData.max_capacity ?? '',
             ruang_kosong: tankData.ruang_kosong ?? '',
             temperature: tankData.temperature ?? '',
             update_date: tankData.update_date ?? '',
