@@ -40,7 +40,7 @@ const mapSiteData = (item) => ({
   updateDate: item.update_date,
 })
 
-const MasterSites = () => {
+const DataProperties = () => {
   const [visible, setVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [formData, setFormData] = useState({})
@@ -314,4 +314,4 @@ const MasterSites = () => {
   )
 }
 
-export default MasterSites
+export default DataProperties
