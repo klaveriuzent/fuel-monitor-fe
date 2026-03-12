@@ -283,8 +283,8 @@ const FuelCard = ({ item }) => {
         const sorted = [...filtered].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
 
         const nextLabels = sorted.map((e) => e.tanggal)
-        const nextFuelData = sorted.map((e) => toNumber(e.tinggi_oil))
-        const nextWaterData = sorted.map((e) => toNumber(e.tinggi_air))
+        const nextFuelData = sorted.map((e) => toNumber(e.volume_oil ?? e.tinggi_oil))
+        const nextWaterData = sorted.map((e) => toNumber(e.volume_air ?? e.tinggi_air))
 
         if (isMounted) {
           setLabels(nextLabels)
