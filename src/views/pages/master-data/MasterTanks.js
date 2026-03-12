@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { Row, Col, Pagination, Tag } from 'antd'
+import { Table, Tag } from 'antd'
 import {
   CCard,
   CCardBody,
-  CCardTitle,
-  CCardText,
   CFormInput,
   CFormSelect,
   CButton,
@@ -23,6 +21,7 @@ import {
 } from '@coreui/react'
 import axios from 'axios'
 import './masterData.scss'
+import '../tableDarkMode.scss'
 
 const mapTankData = (item) => ({
   key: item.id,
@@ -44,12 +43,9 @@ const MasterTanks = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const [dataSource, setDataSource] = useState([])
   const [loading, setLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
   const filterGroup = useSelector((state) => state.filterGroup)
-
-  const pageSize = 8
 
   const fetchTanks = useCallback(async () => {
     setLoading(true)
@@ -84,9 +80,6 @@ const MasterTanks = () => {
     return matchesText && matchesStatus
   })
 
-  const startIndex = (currentPage - 1) * pageSize
-  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize)
-
   const handleEdit = (record) => {
     setSelectedRecord(record)
     setFormData(record)
@@ -120,7 +113,6 @@ const MasterTanks = () => {
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
-                setCurrentPage(1)
               }}
               size="sm"
             />
@@ -132,7 +124,6 @@ const MasterTanks = () => {
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value)
-                setCurrentPage(1)
               }}
             >
               <option value="all">All Status</option>
@@ -148,7 +139,6 @@ const MasterTanks = () => {
               onClick={() => {
                 setSearch('')
                 setStatusFilter('all')
-                setCurrentPage(1)
               }}
             >
               Clear
@@ -163,101 +153,97 @@ const MasterTanks = () => {
         </CRow>
       </CCard>
 
-      {/* Pagination Top */}
-      <div className="master-data-pagination">
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredData.length}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-          responsive
-          simple
-        />
-      </div>
+      <CCard className="mb-3">
+        <CCardBody>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <span className="fw-semibold">Total: {filteredData.length}</span>
+          </div>
 
-      {/* Cards Section */}
-      <Row gutter={[16, 16]}>
-        {paginatedData.map((tank) => {
-          const statusClass = tank.active
-            ? 'master-data-status-tag master-data-status-tag--active'
-            : 'master-data-status-tag master-data-status-tag--offline'
+          <Table
+            dataSource={filteredData}
+            loading={loading}
+            className="app-data-table"
+            bordered
+            pagination={{ pageSize: 8, showSizeChanger: false }}
+            scroll={{ x: 'max-content' }}
+            locale={{ emptyText: 'No tanks found' }}
+            columns={[
+              {
+                title: 'Tank ID',
+                dataIndex: 'idTank',
+                key: 'idTank',
+                width: 120,
+              },
+              {
+                title: 'Site ID',
+                dataIndex: 'idSite',
+                key: 'idSite',
+                width: 120,
+              },
+              {
+                title: 'Type',
+                dataIndex: 'type',
+                key: 'type',
+                width: 140,
+              },
+              {
+                title: 'Grade',
+                dataIndex: 'grade',
+                key: 'grade',
+                width: 140,
+              },
+              {
+                title: 'Company',
+                dataIndex: 'company',
+                key: 'company',
+                width: 180,
+              },
+              {
+                title: 'Last Update',
+                key: 'lastUpdate',
+                width: 190,
+                render: (_, record) => record.lastData?.update_date || '-',
+              },
+              {
+                title: 'Volume Oil (L)',
+                key: 'volumeOil',
+                width: 130,
+                render: (_, record) => record.lastData?.volume_oil || '-',
+              },
+              {
+                title: 'Temperature (°C)',
+                key: 'temperature',
+                width: 130,
+                render: (_, record) => record.lastData?.temperature || '-',
+              },
+              {
+                title: 'Status',
+                key: 'active',
+                dataIndex: 'active',
+                width: 110,
+                render: (active) => {
+                  const statusClass = active
+                    ? 'master-data-status-tag master-data-status-tag--active'
+                    : 'master-data-status-tag master-data-status-tag--offline'
 
-          return (
-            <Col key={tank.key} xs={24} sm={12} md={8} lg={6}>
-              <CCard className="shadow-sm master-data-card">
-                <CCardBody className="master-data-card__body">
-                  {/* Status */}
-                  <div className="master-data-card__status">
-                    <Tag className={statusClass}>{tank.active ? 'Active' : 'Offline'}</Tag>
-                  </div>
-
-                  {/* Konten utama */}
-                  <div>
-                    <CCardTitle className="master-data-card__title">
-                      Tank {tank.idTank} - {tank.idSite}
-                    </CCardTitle>
-
-                    <CCardText className="master-data-card__text">
-                      <b>Type:</b> {tank.type}
-                    </CCardText>
-                    <CCardText className="master-data-card__text">
-                      <b>Grade:</b> {tank.grade}
-                    </CCardText>
-                    <CCardText className="master-data-card__text">
-                      <b>Company:</b> {tank.company}
-                    </CCardText>
-
-                    {tank.lastData && (
-                      <CCardText className="master-data-card__meta text-body-secondary">
-                        <b>Last Update:</b>{' '}
-                        {new Date(tank.lastData.update_date)
-                          .toISOString()
-                          .replace('T', ' ')
-                          .replace('Z', '')}{' '}
-                        <br />
-                        <b>Volume Oil:</b> {tank.lastData.volume_oil} L <br />
-                        <b>Temperature:</b> {tank.lastData.temperature} °C
-                      </CCardText>
-                    )}
-                  </div>
-
-                  {/* Tombol konsisten di bawah */}
-                  <div className="master-data-card__actions">
-                    <CButton size="sm" color="primary" onClick={() => handleEdit(tank)}>
-                      Edit
-                    </CButton>
-                  </div>
-                </CCardBody>
-              </CCard>
-            </Col>
-          )
-        })}
-
-        {loading && (
-          <Col xs={24} className="text-center">
-            <CSpinner />
-          </Col>
-        )}
-        {!loading && filteredData.length === 0 && (
-          <Col xs={24} className="text-center">
-            <p>No tanks found</p>
-          </Col>
-        )}
-      </Row>
-
-      {/* Pagination Bottom */}
-      <div className="master-data-pagination">
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredData.length}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-          responsive
-          simple
-        />
-      </div>
+                  return <Tag className={statusClass}>{active ? 'Active' : 'Offline'}</Tag>
+                },
+              },
+              {
+                title: 'Action',
+                key: 'action',
+                width: 90,
+                fixed: 'right',
+                render: (_, record) => (
+                  <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
+                    Edit
+                  </CButton>
+                ),
+              },
+            ]}
+          />
+        </CCardBody>
+      </CCard>
 
       {/* Modal Edit */}
       <CModal visible={visible} onClose={() => setVisible(false)} alignment="center">
