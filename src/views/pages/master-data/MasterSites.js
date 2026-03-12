@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { Row, Col, Pagination, Tag } from 'antd'
+import { Table, Tag } from 'antd'
 import {
   CCard,
   CCardBody,
-  CCardTitle,
-  CCardText,
   CFormInput,
   CFormSelect,
   CButton,
@@ -23,6 +21,7 @@ import {
 } from '@coreui/react'
 import axios from 'axios'
 import './masterData.scss'
+import '../tableDarkMode.scss'
 
 const mapSiteData = (item) => ({
   key: item.id,
@@ -49,12 +48,9 @@ const MasterSites = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const [dataSource, setDataSource] = useState([])
   const [loading, setLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
   const filterGroup = useSelector((state) => state.filterGroup)
-
-  const pageSize = 8
 
   const fetchSites = useCallback(async () => {
     setLoading(true)
@@ -88,8 +84,6 @@ const MasterSites = () => {
     return matchesText && matchesStatus
   })
 
-  const startIndex = (currentPage - 1) * pageSize
-  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize)
 
   const handleEdit = (record) => {
     setSelectedRecord(record)
@@ -124,7 +118,6 @@ const MasterSites = () => {
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
-                setCurrentPage(1)
               }}
               size="sm"
             />
@@ -136,7 +129,6 @@ const MasterSites = () => {
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value)
-                setCurrentPage(1)
               }}
             >
               <option value="all">All Status</option>
@@ -152,7 +144,6 @@ const MasterSites = () => {
               onClick={() => {
                 setSearch('')
                 setStatusFilter('all')
-                setCurrentPage(1)
               }}
             >
               Clear
@@ -167,96 +158,96 @@ const MasterSites = () => {
         </CRow>
       </CCard>
 
-      {/* Pagination Top */}
-      <div className="master-data-pagination">
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredData.length}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-          responsive
-          simple
-        />
-      </div>
+      <CCard className="mb-3">
+        <CCardBody>
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <span className="fw-semibold">Total: {filteredData.length}</span>
+          </div>
+          <Table
+            dataSource={filteredData}
+            loading={loading}
+            className="app-data-table"
+            bordered
+            pagination={{ pageSize: 8, showSizeChanger: false }}
+            scroll={{ x: 'max-content' }}
+            locale={{ emptyText: 'No sites found' }}
+            columns={[
+              {
+                title: 'ID Site',
+                dataIndex: 'idSite',
+                key: 'idSite',
+                width: 120,
+              },
+              {
+                title: 'BACode',
+                dataIndex: 'bacode',
+                key: 'bacode',
+                width: 120,
+              },
+              {
+                title: 'Area',
+                dataIndex: 'area',
+                key: 'area',
+                width: 150,
+              },
+              {
+                title: 'City',
+                dataIndex: 'locationCity',
+                key: 'locationCity',
+                width: 150,
+              },
+              {
+                title: 'Address',
+                dataIndex: 'locationAddress',
+                key: 'locationAddress',
+                width: 240,
+              },
+              {
+                title: 'Coordinates',
+                dataIndex: 'coordinates',
+                key: 'coordinates',
+                width: 180,
+              },
+              {
+                title: 'Status',
+                key: 'active',
+                dataIndex: 'active',
+                width: 110,
+                render: (active) => {
+                  const statusClass = active
+                    ? 'master-data-status-tag master-data-status-tag--active'
+                    : 'master-data-status-tag master-data-status-tag--offline'
 
-      {/* Cards Section */}
-      <Row gutter={[16, 16]}>
-        {paginatedData.map((site) => {
-          const statusClass = site.active
-            ? 'master-data-status-tag master-data-status-tag--active'
-            : 'master-data-status-tag master-data-status-tag--offline'
-
-          return (
-            <Col key={site.key} xs={24} sm={12} md={8} lg={6}>
-              <CCard className="shadow-sm master-data-card">
-                <CCardBody className="master-data-card__body">
-                  {/* Status */}
-                  <div className="master-data-card__status">
-                    <Tag className={statusClass}>{site.active ? 'Active' : 'Offline'}</Tag>
-                  </div>
-
-                  {/* Konten utama */}
-                  <div>
-                    <CCardTitle className="master-data-card__title">
-                      {site.idSite} - {site.bacode}
-                    </CCardTitle>
-
-                    <CCardText className="master-data-card__text">
-                      <b>Area:</b> {site.area}
-                    </CCardText>
-                    <CCardText className="master-data-card__text">
-                      <b>City:</b> {site.locationCity}
-                    </CCardText>
-                    <CCardText className="master-data-card__text">
-                      <b>Address:</b> {site.locationAddress}
-                    </CCardText>
-                    <CCardText className="master-data-card__text">
-                      <b>Coordinates:</b> {site.coordinates}
-                    </CCardText>
-
-                    <CCardText className="master-data-card__meta text-body-secondary">
-                      <b>Created:</b> {site.userCreate} ({site.dateCreate}) <br />
-                      <b>Updated:</b> {site.updateBy} ({site.updateDate})
-                    </CCardText>
-                  </div>
-
-                  {/* Tombol konsisten di bawah */}
-                  <div className="master-data-card__actions">
-                    <CButton size="sm" color="primary" onClick={() => handleEdit(site)}>
-                      Edit
-                    </CButton>
-                  </div>
-                </CCardBody>
-              </CCard>
-            </Col>
-          )
-        })}
-
-        {loading && (
-          <Col xs={24} className="text-center">
-            <CSpinner />
-          </Col>
-        )}
-        {!loading && filteredData.length === 0 && (
-          <Col xs={24} className="text-center">
-            <p>No sites found</p>
-          </Col>
-        )}
-      </Row>
-
-      {/* Pagination Bottom */}
-      <div className="master-data-pagination">
-        <Pagination
-          current={currentPage}
-          pageSize={pageSize}
-          total={filteredData.length}
-          onChange={(page) => setCurrentPage(page)}
-          showSizeChanger={false}
-          responsive
-          simple
-        />
-      </div>
+                  return <Tag className={statusClass}>{active ? 'Active' : 'Offline'}</Tag>
+                },
+              },
+              {
+                title: 'Created',
+                key: 'created',
+                width: 220,
+                render: (_, record) => `${record.userCreate || '-'} (${record.dateCreate || '-'})`,
+              },
+              {
+                title: 'Updated',
+                key: 'updated',
+                width: 220,
+                render: (_, record) => `${record.updateBy || '-'} (${record.updateDate || '-'})`,
+              },
+              {
+                title: 'Action',
+                key: 'action',
+                width: 90,
+                fixed: 'right',
+                render: (_, record) => (
+                  <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
+                    Edit
+                  </CButton>
+                ),
+              },
+            ]}
+          />
+        </CCardBody>
+      </CCard>
 
       {/* Modal Edit */}
       <CModal visible={visible} onClose={() => setVisible(false)} alignment="center">
