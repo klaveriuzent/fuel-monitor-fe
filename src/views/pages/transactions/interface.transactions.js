@@ -42,7 +42,7 @@ export const transactionColumns = [
     sortDirections: ['ascend', 'descend'],
     render: formatDateTime,
   },
-  { title: 'ID Card', dataIndex: 'id_card', key: 'id_card', align: 'center' },
+  { title: 'No. Unit', dataIndex: 'id_card', key: 'id_card', align: 'center' },
   { title: 'Username', dataIndex: 'username', key: 'username', align: 'center' },
   {
     title: 'Odometer',

@@ -106,7 +106,7 @@ const Transactions = () => {
     const exportData = filteredData.map((item) => ({
       Site: item.id_site,
       Date: formatDateTime(item.waktu),
-      'ID Card': item.id_card,
+      'No. Unit': item.id_card,
       Username: item.username,
       Odometer: Number(item.odometer).toLocaleString('id-ID'),
       'Volume (L)': formatDecimal(item.volume),
