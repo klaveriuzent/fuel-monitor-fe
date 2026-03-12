@@ -84,7 +84,6 @@ const MasterSites = () => {
     return matchesText && matchesStatus
   })
 
-
   const handleEdit = (record) => {
     setSelectedRecord(record)
     setFormData(record)

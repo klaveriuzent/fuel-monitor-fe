@@ -12,6 +12,7 @@ const FuelStock = React.lazy(() => import('./views/pages/fuel-stock/FuelStock'))
 // Master Data
 const MasterSites = React.lazy(() => import('./views/pages/master-data/MasterSites'))
 const MasterTanks = React.lazy(() => import('./views/pages/master-data/MasterTanks'))
+const DataProperties = React.lazy(() => import('./views/pages/master-data/DataProperties'))
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -67,6 +68,7 @@ const routes = [
   { path: '/fuel-receive', name: 'Fuel Receive', element: FuelReceive },
   { path: '/fuel-stock', name: 'Fuel Stock', element: FuelStock },
   { path: '/master-sites', name: 'Master Sites', element: MasterSites },
+  { path: '/data-properties', name: 'Data Properties', element: DataProperties },
   { path: '/master-tanks', name: 'Master Tanks', element: MasterTanks },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },
