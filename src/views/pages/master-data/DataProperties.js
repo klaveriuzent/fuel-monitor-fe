@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { Table, Tag } from 'antd'
+import { Table } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -182,6 +182,7 @@ const DataProperties = () => {
                 dataIndex: 'bacode',
                 key: 'bacode',
                 width: 120,
+                align: 'center',
               },
               {
                 title: 'Area',
@@ -190,47 +191,32 @@ const DataProperties = () => {
                 width: 150,
               },
               {
-                title: 'City',
-                dataIndex: 'locationCity',
-                key: 'locationCity',
-                width: 150,
+                title: 'Tank 1',
+                key: 'tank1',
+                width: 100,
+                align: 'center',
+                render: () => '-',
               },
               {
-                title: 'Address',
-                dataIndex: 'locationAddress',
-                key: 'locationAddress',
-                width: 240,
+                title: 'Tank 2',
+                key: 'tank2',
+                width: 100,
+                align: 'center',
+                render: () => '-',
               },
               {
-                title: 'Coordinates',
-                dataIndex: 'coordinates',
-                key: 'coordinates',
-                width: 180,
+                title: 'Tank 3',
+                key: 'tank3',
+                width: 100,
+                align: 'center',
+                render: () => '-',
               },
               {
-                title: 'Status',
-                key: 'active',
-                dataIndex: 'active',
-                width: 110,
-                render: (active) => {
-                  const statusClass = active
-                    ? 'master-data-status-tag master-data-status-tag--active'
-                    : 'master-data-status-tag master-data-status-tag--offline'
-
-                  return <Tag className={statusClass}>{active ? 'Active' : 'Offline'}</Tag>
-                },
-              },
-              {
-                title: 'Created',
-                key: 'created',
-                width: 220,
-                render: (_, record) => `${record.userCreate || '-'} (${record.dateCreate || '-'})`,
-              },
-              {
-                title: 'Updated',
-                key: 'updated',
-                width: 220,
-                render: (_, record) => `${record.updateBy || '-'} (${record.updateDate || '-'})`,
+                title: 'Tank 4',
+                key: 'tank4',
+                width: 100,
+                align: 'center',
+                render: () => '-',
               },
               {
                 title: 'Action',
