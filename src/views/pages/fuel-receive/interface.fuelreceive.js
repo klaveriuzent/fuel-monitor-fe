@@ -1,4 +1,4 @@
-import { CButton } from '@coreui/react'
+//import { CButton } from '@coreui/react'
 import { Tag } from 'antd'
 
 export const parseDateSafe = (value) => {
@@ -139,15 +139,19 @@ export const buildFuelReceiveColumns = (onEdit = () => {}) => [
       <div className="d-flex flex-column gap-2 p-2">
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. PO</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>{record?.no_invoice ?? '-'}</span>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
+            {record?.no_invoice ?? '-'}
+          </span>
         </span>
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. DO</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>{record?.no_do ?? '-'}</span>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
+            {record?.no_do ?? '-'}
+          </span>
         </span>
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Volume Permintaan (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
             {formatValueOrDash(record?.volume_permintaan, formatDecimal)}
           </span>
         </span>
@@ -164,11 +168,15 @@ export const buildFuelReceiveColumns = (onEdit = () => {}) => [
         </span>
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>License Plate</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>{record?.no_kendaraan ?? '-'}</span>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
+            {record?.no_kendaraan ?? '-'}
+          </span>
         </span>
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Driver</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>{record?.nama_pengemudi ?? '-'}</span>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
+            {record?.nama_pengemudi ?? '-'}
+          </span>
         </span>
       </div>
     ),
@@ -180,21 +188,21 @@ export const buildFuelReceiveColumns = (onEdit = () => {}) => [
       <div className="d-flex flex-column gap-2 p-2">
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Delivery (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
             {formatValueOrDash(record?.total_deliv, formatDecimal)}
           </span>
         </span>
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Permintaan (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
             {formatValueOrDash(record?.total_permintaan, formatDecimal)}
           </span>
         </span>
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Selisih (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: '#555' }}>
+          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
             {formatValueOrDash(record?.total_selisih, formatDecimal)}{' '}
-            <small style={{ color: '#777' }}>
+            <small style={{ color: 'var(--cui-body-color)' }}>
               ({formatValueOrDash(record?.persentase_selisih, formatPercentage)})
             </small>
           </span>
