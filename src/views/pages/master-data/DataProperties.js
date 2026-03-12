@@ -20,6 +20,8 @@ import {
   CFormCheck,
 } from '@coreui/react'
 import axios from 'axios'
+import { saveAs } from 'file-saver'
+import ExcelJS from 'exceljs'
 import './masterData.scss'
 import '../tableDarkMode.scss'
 
@@ -105,6 +107,39 @@ const DataProperties = () => {
     }
   }
 
+  const handleExport = async () => {
+    const exportData = filteredData.map((item) => ({
+      'ID Site': item.idSite || '-',
+      BACode: item.bacode || '-',
+      Area: item.area || '-',
+      'Tank 1': '-',
+      'Tank 2': '-',
+      'Tank 3': '-',
+      'Tank 4': '-',
+      'Tank 5': '-',
+      'Site Capacity': '-',
+      Status: item.active ? 'Active' : 'Offline',
+    }))
+
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('DataProperties')
+    const headers = Object.keys(exportData[0] || {})
+
+    worksheet.columns = headers.map((header) => ({
+      header,
+      key: header,
+    }))
+
+    worksheet.addRows(exportData)
+
+    const excelBuffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    })
+
+    saveAs(blob, 'data-properties.xlsx')
+  }
+
   return (
     <div className="master-data-page">
       {/* Filter Section */}
@@ -161,6 +196,16 @@ const DataProperties = () => {
         <CCardBody>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <span className="fw-semibold">Total: {filteredData.length}</span>
+            <CButton
+              color="success"
+              size="sm"
+              className="text-white"
+              style={{ minWidth: '154.5px' }}
+              onClick={handleExport}
+              disabled={!filteredData.length}
+            >
+              Export to Excel
+            </CButton>
           </div>
           <Table
             dataSource={filteredData}
@@ -215,6 +260,20 @@ const DataProperties = () => {
                 title: 'Tank 4',
                 key: 'tank4',
                 width: 100,
+                align: 'center',
+                render: () => '-',
+              },
+              {
+                title: 'Tank 5',
+                key: 'tank5',
+                width: 100,
+                align: 'center',
+                render: () => '-',
+              },
+              {
+                title: 'Site Capacity',
+                key: 'siteCapacity',
+                width: 130,
                 align: 'center',
                 render: () => '-',
               },
