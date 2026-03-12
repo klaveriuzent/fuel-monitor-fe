@@ -200,6 +200,21 @@ TankWithScale.propTypes = {
   temperature: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 }
 
+const getNiceStep = (capacity, targetTicks = 4) => {
+  if (!capacity) return 1000
+
+  const roughStep = capacity / targetTicks
+  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)))
+  const residual = roughStep / magnitude
+
+  let niceResidual
+  if (residual >= 5) niceResidual = 5
+  else if (residual >= 2) niceResidual = 2
+  else niceResidual = 1
+
+  return niceResidual * magnitude
+}
+
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [timeScale, setTimeScale] = useState('day')
@@ -241,6 +256,10 @@ const FuelCard = ({ item }) => {
 
     return diffMinutes > 5
   }
+
+  const capacity = Number(item.max_capacity) || 0
+  const max = Math.ceil(capacity / 1000) * 1000
+  const step = max / 4
 
   const badgeStatus = isStandby()
     ? { text: 'Standby', color: 'orange' }
@@ -511,9 +530,9 @@ const FuelCard = ({ item }) => {
                 },
                 y: {
                   min: 0,
-                  max: 20000,
+                  max: max,
                   ticks: {
-                    stepSize: 4000,
+                    stepSize: step,
                     color: getStyle('--cui-body-color'),
                     callback: (value) => `${value} L`,
                   },
