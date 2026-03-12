@@ -64,7 +64,7 @@ const _nav = [
     component: CNavItem,
     name: 'Data Properties',
     to: '/data-properties',
-    icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
+    icon: <CIcon icon={cilInbox} customClassName="nav-icon" />,
   },
   {
     component: CNavItem,
