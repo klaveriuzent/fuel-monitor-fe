@@ -331,66 +331,71 @@ const FuelCard = ({ item }) => {
             temperature={item.temperature}
           />
 
-          <CCardText className="fuel-card__summary">
+          <div className="fuel-card__summary">
             <table>
-              <tr>
-                <td style={{ width: '90px' }}>
-                  <b>Fuel</b>
-                </td>
-                <td style={{ width: '90px' }}>
-                  {Number(item.volume_oil).toLocaleString('id-ID', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{' '}
-                  L
-                </td>
-              </tr>
-              <tr>
-                <td style={{ width: '90px' }}>
-                  <b>Water</b>
-                </td>
-                <td style={{ width: '90px' }}>
-                  {Number(item.volume_air).toLocaleString('id-ID', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{' '}
-                  L
-                </td>
-              </tr>
-              <tr>
-                <td style={{ width: '90px' }}>
-                  <b>Empty Space</b>
-                </td>
-                <td style={{ width: '90px' }}>
-                  {Number(item.ruang_kosong).toLocaleString('id-ID', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{' '}
-                  L
-                </td>
-              </tr>
-              <tr>
-                <td style={{ width: '90px' }}>
-                  <small>Last Updated</small>
-                </td>
-                <td style={{ width: '90px' }}>
-                  <small>
-                    {item.update_date
-                      ? new Date(item.update_date).toLocaleString('en-GB', {
-                          timeZone: 'UTC',
-                          year: 'numeric',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                        })
-                      : '-'}
-                  </small>
-                </td>
-              </tr>
+              <tbody>
+                <tr>
+                  <td style={{ width: '90px' }}>
+                    <b>Fuel</b>
+                  </td>
+                  <td style={{ width: '90px' }}>
+                    {Number(item.volume_oil).toLocaleString('id-ID', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{' '}
+                    L
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style={{ width: '90px' }}>
+                    <b>Water</b>
+                  </td>
+                  <td style={{ width: '90px' }}>
+                    {Number(item.volume_air).toLocaleString('id-ID', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{' '}
+                    L
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style={{ width: '90px' }}>
+                    <b>Empty Space</b>
+                  </td>
+                  <td style={{ width: '90px' }}>
+                    {Number(item.ruang_kosong).toLocaleString('id-ID', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{' '}
+                    L
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style={{ width: '90px' }}>
+                    <small>Last Updated</small>
+                  </td>
+                  <td style={{ width: '90px' }}>
+                    <small>
+                      {item.update_date
+                        ? new Date(item.update_date).toLocaleString('en-GB', {
+                            timeZone: 'UTC',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })
+                        : '-'}
+                    </small>
+                  </td>
+                </tr>
+              </tbody>
             </table>
-          </CCardText>
+          </div>
 
           <CButton
             color="primary"
