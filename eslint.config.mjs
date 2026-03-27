@@ -10,7 +10,7 @@ export default [
     ...eslintPluginReact.configs.flat['jsx-runtime'],
     files: ['src/**/*.{js,jsx}'],
     plugins: {
-      eslintPluginReact,
+      react: eslintPluginReact,
       'react-hooks': eslintPluginReactHooks,
     },
     languageOptions: {
