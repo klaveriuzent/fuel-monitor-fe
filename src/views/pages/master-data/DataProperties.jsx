@@ -233,7 +233,8 @@ const DataProperties = () => {
                 title: 'Area',
                 dataIndex: 'area',
                 key: 'area',
-                width: 150,
+                width: 80,
+                align: 'center',
               },
               {
                 title: 'Tank 1',
@@ -271,16 +272,17 @@ const DataProperties = () => {
                 render: () => '-',
               },
               {
-                title: 'Site Capacity',
+                title: 'Site Capacity (L)',
                 key: 'siteCapacity',
-                width: 130,
+                width: 140,
+                fixed: 'right',
                 align: 'center',
                 render: () => '-',
               },
               {
                 title: 'Action',
                 key: 'action',
-                width: 90,
+                width: 60,
                 fixed: 'right',
                 render: (_, record) => (
                   <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
