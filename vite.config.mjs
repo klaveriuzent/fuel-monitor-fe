@@ -16,19 +16,19 @@ export default defineConfig(() => {
         ],
       },
     },
-    esbuild: {
-      loader: 'jsx',
-      include: /src\/.*\.jsx?$/,
-      exclude: [],
-    },
-    optimizeDeps: {
-      force: true,
-      esbuildOptions: {
-        loader: {
-          '.js': 'jsx',
-        },
-      },
-    },
+    // esbuild: {
+    //   loader: 'jsx',
+    //   include: /src\/.*\.jsx?$/,
+    //   exclude: [],
+    // },
+    // optimizeDeps: {
+    //   force: true,
+    //   esbuildOptions: {
+    //     loader: {
+    //       '.js': 'jsx',
+    //     },
+    //   },
+    // },
     plugins: [react()],
     resolve: {
       alias: [
