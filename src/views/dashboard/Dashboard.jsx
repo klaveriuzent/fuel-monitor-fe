@@ -3,16 +3,7 @@ import axios from 'axios'
 import { Watermark } from 'antd'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
-import {
-  CBadge,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CListGroup,
-  CListGroupItem,
-  CRow,
-} from '@coreui/react'
+import { CCard, CCardBody } from '@coreui/react'
 
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
@@ -28,8 +19,6 @@ const Dashboard = () => {
   const [tankData, setTankData] = useState([])
 
   const [loadingTrans, setLoadingTrans] = useState(false)
-  const [loadingReceive, setLoadingReceive] = useState(false)
-  const [loadingTank, setLoadingTank] = useState(false)
 
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
@@ -66,7 +55,6 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchReceive = async () => {
       try {
-        setLoadingReceive(true)
         const { data } = await axios.get(`${baseURL}tankdeliv`)
         if (Array.isArray(data?.data)) {
           setFuelReceiveData(
@@ -80,8 +68,6 @@ const Dashboard = () => {
         }
       } catch (err) {
         console.error('Error fetch fuel receive', err)
-      } finally {
-        setLoadingReceive(false)
       }
     }
     fetchReceive()
@@ -91,15 +77,12 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTank = async () => {
       try {
-        setLoadingTank(true)
         const { data } = await axios.get(`${baseURL}ms-tank`)
         if (Array.isArray(data?.data)) {
           setTankData(data.data)
         }
       } catch (err) {
         console.error('Error fetch ms-tank', err)
-      } finally {
-        setLoadingTank(false)
       }
     }
     fetchTank()
@@ -161,39 +144,6 @@ const Dashboard = () => {
       return acc
     }, {})
   }, [filteredTransaksi])
-
-  const dashboardIdeas = useMemo(
-    () => [
-      {
-        title: 'Operational Snapshot',
-        priority: 'Now',
-        items: [
-          'Ringkasan transaksi harian per site + total liter keluar',
-          'Tank critical level (<20%) dengan status warna merah/kuning/hijau',
-          'Jumlah tank offline atau tidak update >15 menit',
-        ],
-      },
-      {
-        title: 'Logistics & Receiving',
-        priority: 'Next',
-        items: [
-          'Jadwal truk masuk hari ini vs realisasi kedatangan',
-          'Lead time bongkar per vendor dan deviasi volume invoice vs actual',
-          'Riwayat mismatch DO / invoice / volume receive',
-        ],
-      },
-      {
-        title: 'Control & Insight',
-        priority: 'Later',
-        items: [
-          'Anomali konsumsi (spike per kendaraan/operator/site)',
-          'Forecast stok habis (days to empty) berbasis rata-rata konsumsi',
-          'Top 10 kendaraan dengan konsumsi tertinggi + trend mingguan',
-        ],
-      },
-    ],
-    [],
-  )
 
   /* render */
   return (

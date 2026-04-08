@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { Table, Tag } from 'antd'
+import { Table, Tag, Collapse } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -22,8 +22,26 @@ import {
 import axios from 'axios'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
+import { getColumnKey } from '../../../utils/table'
 import './masterData.scss'
 import '../tableDarkMode.scss'
+import '../../../components/subheader/AppSubHeader.scss'
+
+const DEFAULT_TANK_COUNT = 5
+const TANK_COUNT_OPTIONS = [1, 2, 3, 4, 5]
+const DATA_PROPERTIES_COLUMN_OPTIONS = [
+  { key: 'idSite', label: 'ID Site' },
+  { key: 'bacode', label: 'BACode' },
+  { key: 'area', label: 'Area' },
+  { key: 'tank1', label: 'Tank 1' },
+  { key: 'tank2', label: 'Tank 2' },
+  { key: 'tank3', label: 'Tank 3' },
+  { key: 'tank4', label: 'Tank 4' },
+  { key: 'tank5', label: 'Tank 5' },
+  { key: 'siteCapacity', label: 'Site Capacity (L)' },
+  { key: 'action', label: 'Action' },
+]
+const { CheckableTag } = Tag
 
 const mapSiteData = (item) => ({
   key: item.id,
@@ -47,9 +65,6 @@ const renderTankTags = () => (
     <div>
       <Tag>Capacity</Tag>0
     </div>
-    <div>
-      <Tag>Status</Tag>-
-    </div>
   </div>
 )
 
@@ -58,9 +73,14 @@ const DataProperties = () => {
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [formData, setFormData] = useState({})
   const [search, setSearch] = useState('')
+  const [tankCountFilter, setTankCountFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState(
+    DATA_PROPERTIES_COLUMN_OPTIONS.map((column) => column.key),
+  )
   const [dataSource, setDataSource] = useState([])
   const [areaOptions, setAreaOptions] = useState([])
+  const [tankCountLookup, setTankCountLookup] = useState({ bySite: {}, byBacode: {} })
   const [loading, setLoading] = useState(false)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -75,7 +95,6 @@ const DataProperties = () => {
       }
       const { data } = await axios.get(url)
       const transformedData = data.data.map(mapSiteData)
-      console.log('Fetched sites:', transformedData)
       setDataSource(transformedData)
     } catch (error) {
       console.error('Error fetching sites:', error)
@@ -97,21 +116,177 @@ const DataProperties = () => {
     }
   }, [baseURL])
 
+  const fetchTankCounts = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${baseURL}ms-tank`)
+      const rows = Array.isArray(data?.data) ? data.data : []
+
+      const nextLookup = rows.reduce(
+        (acc, item) => {
+          const siteKey = String(item?.id_site || '')
+            .trim()
+            .toLowerCase()
+          const bacodeKey = String(item?.id_location || '')
+            .trim()
+            .toLowerCase()
+
+          if (siteKey) {
+            acc.bySite[siteKey] = (acc.bySite[siteKey] || 0) + 1
+          }
+          if (bacodeKey) {
+            acc.byBacode[bacodeKey] = (acc.byBacode[bacodeKey] || 0) + 1
+          }
+          return acc
+        },
+        { bySite: {}, byBacode: {} },
+      )
+
+      setTankCountLookup(nextLookup)
+    } catch (error) {
+      console.error('Error fetching tank counts:', error)
+    }
+  }, [baseURL])
+
   useEffect(() => {
     fetchSites()
     fetchLocationAreas()
-  }, [fetchSites, fetchLocationAreas])
+    fetchTankCounts()
+  }, [fetchSites, fetchLocationAreas, fetchTankCounts])
+
+  const getTankCount = useCallback(
+    (item) => {
+      const siteKey = String(item?.idSite || '')
+        .trim()
+        .toLowerCase()
+      const bacodeKey = String(item?.bacode || '')
+        .trim()
+        .toLowerCase()
+
+      return (
+        tankCountLookup.bySite[siteKey] ?? tankCountLookup.byBacode[bacodeKey] ?? DEFAULT_TANK_COUNT
+      )
+    },
+    [tankCountLookup],
+  )
+
+  const tankCountOptions = useMemo(() => TANK_COUNT_OPTIONS, [])
+
+  const allColumns = [
+    {
+      title: 'ID Site',
+      dataIndex: 'idSite',
+      key: 'idSite',
+      width: 120,
+      render: (_, record) => (
+        <div className="d-flex flex-column align-items-start gap-1">
+          <Tag color={record.active ? 'green' : 'default'}>
+            {record.active ? 'Active' : 'Offline'}
+          </Tag>
+          <span>{record.idSite || '-'}</span>
+        </div>
+      ),
+    },
+    {
+      title: 'BACode',
+      dataIndex: 'bacode',
+      key: 'bacode',
+      width: 120,
+      align: 'center',
+    },
+    {
+      title: 'Area',
+      dataIndex: 'area',
+      key: 'area',
+      width: 80,
+      align: 'center',
+    },
+    {
+      title: 'Tank 1',
+      key: 'tank1',
+      width: 100,
+      align: 'center',
+      render: renderTankTags,
+    },
+    {
+      title: 'Tank 2',
+      key: 'tank2',
+      width: 100,
+      align: 'center',
+      render: renderTankTags,
+    },
+    {
+      title: 'Tank 3',
+      key: 'tank3',
+      width: 100,
+      align: 'center',
+      render: renderTankTags,
+    },
+    {
+      title: 'Tank 4',
+      key: 'tank4',
+      width: 100,
+      align: 'center',
+      render: renderTankTags,
+    },
+    {
+      title: 'Tank 5',
+      key: 'tank5',
+      width: 100,
+      align: 'center',
+      render: renderTankTags,
+    },
+    {
+      title: 'Site Capacity (L)',
+      key: 'siteCapacity',
+      width: 140,
+      fixed: 'right',
+      align: 'center',
+      render: () => '-',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      width: 60,
+      fixed: 'right',
+      render: (_, record) => (
+        <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
+          Edit
+        </CButton>
+      ),
+    },
+  ]
+
+  const tableColumns = allColumns.filter((column) =>
+    visibleColumnKeys.includes(getColumnKey(column)),
+  )
 
   const filteredData = dataSource.filter((item) => {
     const query = search.toLowerCase()
-    const matchesText =
-      item.idSite.toLowerCase().includes(query) ||
-      item.bacode.toLowerCase().includes(query) ||
-      item.area.toLowerCase().includes(query)
+    const idSite = String(item.idSite || '').toLowerCase()
+    const bacode = String(item.bacode || '').toLowerCase()
+    const matchesText = idSite.includes(query) || bacode.includes(query)
+    const matchesTankCount =
+      tankCountFilter === 'all' ? true : getTankCount(item) === Number(tankCountFilter)
     const matchesStatus =
       statusFilter === 'all' ? true : statusFilter === 'active' ? item.active : !item.active
-    return matchesText && matchesStatus
+
+    return matchesText && matchesTankCount && matchesStatus
   })
+
+  const handleRefresh = () => {
+    fetchSites()
+    fetchTankCounts()
+  }
+
+  const handleColumnToggle = (columnKey) => {
+    setVisibleColumnKeys((prev = []) => {
+      const isActive = prev.includes(columnKey)
+      const updated = isActive ? prev.filter((key) => key !== columnKey) : [...prev, columnKey]
+      return DATA_PROPERTIES_COLUMN_OPTIONS.map((column) => column.key).filter((key) =>
+        updated.includes(key),
+      )
+    })
+  }
 
   const handleEdit = (record) => {
     setSelectedRecord(record)
@@ -172,50 +347,114 @@ const DataProperties = () => {
       {/* Filter Section */}
       <CCard className="master-data-filter-card mb-3">
         <CRow className="align-items-center g-2">
-          <CCol xs={12} sm={5} md={4}>
-            <CFormInput
-              type="text"
-              placeholder="Search by ID Site / BACode / Area..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-              }}
-              size="sm"
-            />
-          </CCol>
+          <CCol xs={12}>
+            <div className="d-flex align-items-center gap-2 w-100 flex-nowrap">
+              <CFormInput
+                type="text"
+                placeholder="Search by ID Site / BACode..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                }}
+                size="sm"
+                style={{ minWidth: 0, flex: '1 1 auto' }}
+              />
 
-          <CCol xs={12} sm={4} md={3}>
-            <CFormSelect
-              size="sm"
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value)
-              }}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="offline">Offline</option>
-            </CFormSelect>
-          </CCol>
+              <CFormSelect
+                size="sm"
+                value={tankCountFilter}
+                onChange={(e) => {
+                  setTankCountFilter(e.target.value)
+                }}
+                style={{ width: '170px', flex: '0 0 auto' }}
+              >
+                <option value="all">All Tank Count</option>
+                {tankCountOptions.map((count) => (
+                  <option key={count} value={count}>
+                    {count} Tank
+                  </option>
+                ))}
+              </CFormSelect>
 
-          <CCol xs="auto">
-            <CButton
-              color="secondary"
-              size="sm"
-              onClick={() => {
-                setSearch('')
-                setStatusFilter('all')
-              }}
-            >
-              Clear
-            </CButton>
-          </CCol>
+              <CFormSelect
+                size="sm"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value)
+                }}
+                style={{ width: '150px', flex: '0 0 auto' }}
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="offline">Offline</option>
+              </CFormSelect>
 
-          <CCol xs="auto">
-            <CButton color="info" size="sm" onClick={fetchSites} disabled={loading}>
-              {loading ? <CSpinner size="sm" /> : 'Refresh'}
-            </CButton>
+              <CButton
+                color="secondary"
+                size="sm"
+                style={{ flex: '0 0 auto' }}
+                onClick={() => {
+                  setSearch('')
+                  setTankCountFilter('all')
+                  setStatusFilter('all')
+                  setVisibleColumnKeys(DATA_PROPERTIES_COLUMN_OPTIONS.map((column) => column.key))
+                }}
+              >
+                Clear
+              </CButton>
+
+              <CButton
+                color="info"
+                size="sm"
+                style={{ flex: '0 0 auto' }}
+                onClick={handleRefresh}
+                disabled={loading}
+              >
+                {loading ? <CSpinner size="sm" /> : 'Refresh'}
+              </CButton>
+            </div>
           </CCol>
+        </CRow>
+
+        <CRow className="mt-3">
+          <Collapse
+            ghost
+            size="small"
+            expandIconPlacement="end"
+            items={[
+              {
+                key: '1',
+                label: (
+                  <span className="app-subheader__advanced-title text-secondary fw-semibold">
+                    Advanced Filter
+                  </span>
+                ),
+                children: (
+                  <>
+                    <div className="app-subheader__range-label mb-1 text-secondary fw-semibold">
+                      Select Column
+                    </div>
+
+                    <div className="app-subheader__column-tags">
+                      {DATA_PROPERTIES_COLUMN_OPTIONS.map((column) => {
+                        const isActive = visibleColumnKeys.includes(column.key)
+                        return (
+                          <CheckableTag
+                            key={column.key}
+                            checked={isActive}
+                            onChange={() => handleColumnToggle(column.key)}
+                            className={`app-subheader__column-tag${isActive ? ' is-active' : ''}`}
+                          >
+                            {column.label}
+                          </CheckableTag>
+                        )
+                      })}
+                    </div>
+                  </>
+                ),
+              },
+            ]}
+          />
         </CRow>
       </CCard>
 
@@ -242,82 +481,7 @@ const DataProperties = () => {
             pagination={{ pageSize: 8, showSizeChanger: false }}
             scroll={{ x: 'max-content' }}
             locale={{ emptyText: 'No sites found' }}
-            columns={[
-              {
-                title: 'ID Site',
-                dataIndex: 'idSite',
-                key: 'idSite',
-                width: 120,
-              },
-              {
-                title: 'BACode',
-                dataIndex: 'bacode',
-                key: 'bacode',
-                width: 120,
-                align: 'center',
-              },
-              {
-                title: 'Area',
-                dataIndex: 'area',
-                key: 'area',
-                width: 80,
-                align: 'center',
-              },
-              {
-                title: 'Tank 1',
-                key: 'tank1',
-                width: 100,
-                align: 'center',
-                render: renderTankTags,
-              },
-              {
-                title: 'Tank 2',
-                key: 'tank2',
-                width: 100,
-                align: 'center',
-                render: renderTankTags,
-              },
-              {
-                title: 'Tank 3',
-                key: 'tank3',
-                width: 100,
-                align: 'center',
-                render: renderTankTags,
-              },
-              {
-                title: 'Tank 4',
-                key: 'tank4',
-                width: 100,
-                align: 'center',
-                render: renderTankTags,
-              },
-              {
-                title: 'Tank 5',
-                key: 'tank5',
-                width: 100,
-                align: 'center',
-                render: renderTankTags,
-              },
-              {
-                title: 'Site Capacity (L)',
-                key: 'siteCapacity',
-                width: 140,
-                fixed: 'right',
-                align: 'center',
-                render: () => '-',
-              },
-              {
-                title: 'Action',
-                key: 'action',
-                width: 60,
-                fixed: 'right',
-                render: (_, record) => (
-                  <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
-                    Edit
-                  </CButton>
-                ),
-              },
-            ]}
+            columns={tableColumns}
           />
         </CCardBody>
       </CCard>
