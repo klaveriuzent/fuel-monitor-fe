@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { Table } from 'antd'
+import { Table, Tag } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -42,6 +42,17 @@ const mapSiteData = (item) => ({
   updateDate: item.update_date,
 })
 
+const renderTankTags = () => (
+  <div className="d-flex flex-column gap-1">
+    <div>
+      <Tag>Capacity</Tag>0
+    </div>
+    <div>
+      <Tag>Status</Tag>-
+    </div>
+  </div>
+)
+
 const DataProperties = () => {
   const [visible, setVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
@@ -49,6 +60,7 @@ const DataProperties = () => {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [dataSource, setDataSource] = useState([])
+  const [areaOptions, setAreaOptions] = useState([])
   const [loading, setLoading] = useState(false)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -63,6 +75,7 @@ const DataProperties = () => {
       }
       const { data } = await axios.get(url)
       const transformedData = data.data.map(mapSiteData)
+      console.log('Fetched sites:', transformedData)
       setDataSource(transformedData)
     } catch (error) {
       console.error('Error fetching sites:', error)
@@ -71,9 +84,23 @@ const DataProperties = () => {
     }
   }, [baseURL, filterGroup])
 
+  const fetchLocationAreas = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${baseURL}location`)
+      const areas = (data?.data || [])
+        .map((item) => item.location_area)
+        .filter((area) => typeof area === 'string' && area.trim() !== '')
+      const uniqueAreas = [...new Set(areas)]
+      setAreaOptions(uniqueAreas)
+    } catch (error) {
+      console.error('Error fetching locations:', error)
+    }
+  }, [baseURL])
+
   useEffect(() => {
     fetchSites()
-  }, [fetchSites])
+    fetchLocationAreas()
+  }, [fetchSites, fetchLocationAreas])
 
   const filteredData = dataSource.filter((item) => {
     const query = search.toLowerCase()
@@ -241,35 +268,35 @@ const DataProperties = () => {
                 key: 'tank1',
                 width: 100,
                 align: 'center',
-                render: () => '-',
+                render: renderTankTags,
               },
               {
                 title: 'Tank 2',
                 key: 'tank2',
                 width: 100,
                 align: 'center',
-                render: () => '-',
+                render: renderTankTags,
               },
               {
                 title: 'Tank 3',
                 key: 'tank3',
                 width: 100,
                 align: 'center',
-                render: () => '-',
+                render: renderTankTags,
               },
               {
                 title: 'Tank 4',
                 key: 'tank4',
                 width: 100,
                 align: 'center',
-                render: () => '-',
+                render: renderTankTags,
               },
               {
                 title: 'Tank 5',
                 key: 'tank5',
                 width: 100,
                 align: 'center',
-                render: () => '-',
+                render: renderTankTags,
               },
               {
                 title: 'Site Capacity (L)',
@@ -302,10 +329,29 @@ const DataProperties = () => {
         </CModalHeader>
         <CModalBody>
           <CForm>
+            <CRow className="mb-3">
+              <CFormLabel htmlFor="area" className="col-sm-3 col-form-label">
+                Area
+              </CFormLabel>
+              <CCol sm={9}>
+                <CFormSelect
+                  id="area"
+                  name="area"
+                  value={formData.area || ''}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Area</option>
+                  {areaOptions.map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+            </CRow>
+
             {[
               { label: 'BACode', name: 'bacode' },
-              { label: 'Area', name: 'area' },
-              { label: 'City', name: 'locationCity' },
               { label: 'Coordinates', name: 'coordinates', placeholder: 'longitude, latitude' },
             ].map((field) => (
               <CRow className="mb-3" key={field.name}>

@@ -6,7 +6,6 @@ import {
   cilChartPie,
   cilCursor,
   cilDrop,
-  cilLocationPin,
   cilInbox,
   cilExternalLink,
   cilNotes,
@@ -56,20 +55,8 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Master Sites',
-    to: '/master-sites',
-    icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
     name: 'Data Properties',
     to: '/data-properties',
-    icon: <CIcon icon={cilInbox} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Master Tanks',
-    to: '/master-tanks',
     icon: <CIcon icon={cilInbox} customClassName="nav-icon" />,
   },
   // {

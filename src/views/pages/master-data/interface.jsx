@@ -4,7 +4,7 @@ export const tankColumns = [
     title: 'Action',
     key: 'action',
     width: 80,
-    // render override nanti di MasterTanks
+    // render override in page component
   },
   {
     title: 'Tank Info',
