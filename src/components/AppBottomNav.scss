@@ -1,0 +1,131 @@
+.app-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1060;
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.68));
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.app-bottom-nav__slot {
+  min-width: 0;
+  display: flex;
+}
+
+.app-bottom-nav__item {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: #677287;
+  text-decoration: none;
+  padding: 4px 2px;
+  border-radius: 10px;
+}
+
+.app-bottom-nav__button {
+  border: 0;
+  background: transparent;
+  width: 100%;
+}
+
+.app-bottom-nav__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.app-bottom-nav__label {
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.app-bottom-nav__item.is-active {
+  color: var(--cui-primary);
+  font-weight: 600;
+  background-color: rgba(13, 110, 253, 0.08);
+}
+
+.app-bottom-nav__popover .ant-popover-inner {
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.app-bottom-nav__menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 138px;
+}
+
+.app-bottom-nav__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: #566176;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.app-bottom-nav__menu-item.active {
+  color: var(--cui-primary);
+  background-color: rgba(13, 110, 253, 0.1);
+  font-weight: 600;
+}
+
+.app-bottom-nav__menu-icon {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 768px) {
+  .app-bottom-nav {
+    display: grid;
+  }
+
+  .app-bottom-nav.is-hidden {
+    display: none !important;
+  }
+
+  .app-body-with-bottom-nav {
+    padding-bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+}
+
+[data-coreui-theme='dark'] .app-bottom-nav {
+  background: linear-gradient(135deg, rgba(22, 26, 34, 0.88), rgba(22, 26, 34, 0.76));
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-coreui-theme='dark'] .app-bottom-nav__item {
+  color: #a5b0c0;
+}
+
+[data-coreui-theme='dark'] .app-bottom-nav__item.is-active {
+  color: #7fb3ff;
+  background-color: rgba(74, 144, 255, 0.18);
+}
+
+[data-coreui-theme='dark'] .app-bottom-nav__popover .ant-popover-inner {
+  background-color: #1f2630;
+}
+
+[data-coreui-theme='dark'] .app-bottom-nav__menu-item {
+  color: #aeb8c8;
+}
+
+[data-coreui-theme='dark'] .app-bottom-nav__menu-item.active {
+  color: #7fb3ff;
+  background-color: rgba(74, 144, 255, 0.22);
+}

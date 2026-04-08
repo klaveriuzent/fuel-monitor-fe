@@ -1,0 +1,18 @@
+.responsive-table-cards__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 120px;
+}
+
+.responsive-table-cards__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.responsive-table-cards__pagination {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { Table, Tag, Collapse } from 'antd'
+import { Tag, Collapse } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -23,6 +23,7 @@ import axios from 'axios'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
 import { getColumnKey } from '../../../utils/table'
+import ResponsiveTableCards from '../../../components/ResponsiveTableCards'
 import './masterData.scss'
 import '../tableDarkMode.scss'
 import '../../../components/subheader/AppSubHeader.scss'
@@ -273,6 +274,12 @@ const DataProperties = () => {
     const key = getColumnKey(column)
     return visibleColumnKeys.includes(key) || REQUIRED_COLUMN_KEYS.includes(key)
   })
+  const mobileCardKeys = useMemo(() => {
+    const keys = new Set([...REQUIRED_COLUMN_KEYS, ...visibleColumnKeys])
+    return DATA_PROPERTIES_COLUMN_OPTIONS.map((column) => column.key).filter(
+      (key) => keys.has(key) && key !== 'action',
+    )
+  }, [visibleColumnKeys])
   const exportColumnKeys = useMemo(() => {
     const keys = new Set([...REQUIRED_COLUMN_KEYS, ...visibleColumnKeys])
     return [...keys].filter((key) => Boolean(EXPORT_COLUMN_MAP[key]))
@@ -373,13 +380,99 @@ const DataProperties = () => {
     saveAs(blob, 'data-properties.xlsx')
   }
 
+  const renderDataPropertiesCard = (record) => (
+    <CCard className="master-data-card">
+      <CCardBody className="master-data-card__body">
+        <div className="master-data-mobile-list">
+          {mobileCardKeys.map((key) => {
+            const label =
+              DATA_PROPERTIES_COLUMN_OPTIONS.find((column) => column.key === key)?.label || key
+
+            let valueNode = '-'
+            const isIdSite = key === 'idSite'
+            if (key === 'idSite') {
+              valueNode = (
+                <div className="d-flex flex-column align-items-start gap-1">
+                  <Tag color={record.active ? 'green' : 'default'}>
+                    {record.active ? 'Active' : 'Offline'}
+                  </Tag>
+                  <div className="master-data-mobile-id-site-row">
+                    <span className="master-data-mobile-item__label">ID Site</span>
+                    <span className="master-data-mobile-id-site-value">{record.idSite || '-'}</span>
+                  </div>
+                </div>
+              )
+            } else if (key === 'bacode') {
+              valueNode = record.bacode || '-'
+            } else if (key === 'area') {
+              valueNode = record.area || '-'
+            } else if (['tank1', 'tank2', 'tank3', 'tank4', 'tank5'].includes(key)) {
+              valueNode = '0'
+            } else if (key === 'siteCapacity') {
+              valueNode = '-'
+            }
+
+            return (
+              <div
+                key={key}
+                className={`master-data-mobile-item${isIdSite ? ' master-data-mobile-item--id-site' : ''}`}
+              >
+                {!isIdSite && <div className="master-data-mobile-item__label">{label}</div>}
+                <div className="master-data-mobile-item__value">{valueNode}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        {visibleColumnKeys.includes('action') && (
+          <div className="master-data-card__actions">
+            <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
+              Edit
+            </CButton>
+          </div>
+        )}
+      </CCardBody>
+    </CCard>
+  )
+
   return (
     <div className="master-data-page">
       {/* Filter Section */}
       <CCard className="master-data-filter-card mb-3">
         <CRow className="align-items-center g-2">
-          <CCol xs={12}>
-            <div className="d-flex align-items-center gap-2 w-100 flex-nowrap">
+          <CCol xs={12} sm={6} md={3}>
+            <CFormSelect
+              size="sm"
+              value={tankCountFilter}
+              onChange={(e) => {
+                setTankCountFilter(e.target.value)
+              }}
+            >
+              <option value="all">All Tank Count</option>
+              {tankCountOptions.map((count) => (
+                <option key={count} value={count}>
+                  {count} Tank
+                </option>
+              ))}
+            </CFormSelect>
+          </CCol>
+
+          <CCol xs={12} sm={6} md={3}>
+            <CFormSelect
+              size="sm"
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value)
+              }}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="offline">Offline</option>
+            </CFormSelect>
+          </CCol>
+
+          <CCol xs={12} md={6}>
+            <div className="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
               <CFormInput
                 type="text"
                 placeholder="Search by ID Site / BACode..."
@@ -388,42 +481,12 @@ const DataProperties = () => {
                   setSearch(e.target.value)
                 }}
                 size="sm"
-                style={{ minWidth: 0, flex: '1 1 auto' }}
+                className="flex-grow-1"
               />
-
-              <CFormSelect
-                size="sm"
-                value={tankCountFilter}
-                onChange={(e) => {
-                  setTankCountFilter(e.target.value)
-                }}
-                style={{ width: '170px', flex: '0 0 auto' }}
-              >
-                <option value="all">All Tank Count</option>
-                {tankCountOptions.map((count) => (
-                  <option key={count} value={count}>
-                    {count} Tank
-                  </option>
-                ))}
-              </CFormSelect>
-
-              <CFormSelect
-                size="sm"
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value)
-                }}
-                style={{ width: '150px', flex: '0 0 auto' }}
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="offline">Offline</option>
-              </CFormSelect>
 
               <CButton
                 color="secondary"
                 size="sm"
-                style={{ flex: '0 0 auto' }}
                 onClick={() => {
                   setSearch('')
                   setTankCountFilter('all')
@@ -434,13 +497,7 @@ const DataProperties = () => {
                 Clear
               </CButton>
 
-              <CButton
-                color="info"
-                size="sm"
-                style={{ flex: '0 0 auto' }}
-                onClick={handleRefresh}
-                disabled={loading}
-              >
+              <CButton color="info" size="sm" onClick={handleRefresh} disabled={loading}>
                 {loading ? <CSpinner size="sm" /> : 'Refresh'}
               </CButton>
             </div>
@@ -512,15 +569,25 @@ const DataProperties = () => {
               Export to Excel
             </CButton>
           </div>
-          <Table
+          <ResponsiveTableCards
             dataSource={filteredData}
             loading={loading}
-            className="app-data-table"
-            bordered
-            pagination={{ pageSize: 8, showSizeChanger: false }}
-            scroll={{ x: 'max-content' }}
-            locale={{ emptyText: 'No sites found' }}
-            columns={tableColumns}
+            emptyText="No sites found"
+            mobilePageSize={8}
+            rowKey="key"
+            renderCard={renderDataPropertiesCard}
+            tableProps={{
+              className: 'app-data-table',
+              bordered: true,
+              pagination: {
+                pageSize: 10,
+                showSizeChanger: true,
+                pageSizeOptions: [10, 20, 50, 100],
+              },
+              scroll: { x: 'max-content' },
+              locale: { emptyText: 'No sites found' },
+              columns: tableColumns,
+            }}
           />
         </CCardBody>
       </CCard>

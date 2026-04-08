@@ -2,7 +2,6 @@ import React, { useMemo, useState, useEffect } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
-import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
@@ -10,6 +9,7 @@ import { transactionColumns, formatDateTime, formatDecimal } from './interface.t
 import '../tableDarkMode.scss'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import { getColumnKey } from '../../../utils/table'
+import ResponsiveTableCards from '../../../components/ResponsiveTableCards'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
@@ -31,6 +31,41 @@ const Transactions = () => {
     () => transactionColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
     [visibleColumnKeys],
   )
+
+  const renderTransactionCard = (record) => {
+    const activeColumns = transactionColumns.filter((column) =>
+      visibleColumnKeys.includes(getColumnKey(column)),
+    )
+
+    return (
+      <CCard className="mb-2">
+        <CCardBody className="py-2">
+          {activeColumns.map((column) => {
+            const key = getColumnKey(column)
+            const rawValue = column.dataIndex ? record?.[column.dataIndex] : undefined
+            let value = rawValue
+
+            if (key === 'waktu') value = formatDateTime(rawValue)
+            if (key === 'odometer') value = Number(rawValue || 0).toLocaleString('id-ID')
+            if (key === 'volume') value = formatDecimal(rawValue || 0)
+            if (key === 'unit_price') value = Number(rawValue || 0).toLocaleString('id-ID')
+            if (key === 'stock_by_receive' || key === 'stock_by_atg') value = '-'
+
+            return (
+              <div
+                key={key}
+                className="d-flex justify-content-between align-items-start py-1"
+                style={{ borderBottom: '1px dashed var(--cui-border-color-translucent, rgba(0,0,0,.1))' }}
+              >
+                <div className="small fw-semibold text-secondary">{column.title}</div>
+                <div className="small text-end ms-3">{value || '-'}</div>
+              </div>
+            )
+          })}
+        </CCardBody>
+      </CCard>
+    )
+  }
 
   // Ambil data dari API
   useEffect(() => {
@@ -173,14 +208,20 @@ const Transactions = () => {
             </CButton>
           </div>
 
-          <Table
+          <ResponsiveTableCards
             dataSource={filteredData}
-            columns={tableColumns}
-            className="app-data-table"
             loading={loading}
-            pagination
-            scroll={{ x: 'max-content' }}
-            bordered
+            emptyText="No data"
+            mobilePageSize={8}
+            rowKey="key"
+            renderCard={renderTransactionCard}
+            tableProps={{
+              columns: tableColumns,
+              className: 'app-data-table',
+              pagination: true,
+              scroll: { x: 'max-content' },
+              bordered: true,
+            }}
           />
         </CCardBody>
       </CCard>

@@ -2,14 +2,20 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
-import { Table } from 'antd'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import AddFuelReceiveModal from '../../../components/modals/AddFuelReceiveModal'
 import { getColumnKey } from '../../../utils/table'
-import { buildFuelReceiveColumns, formatDecimal, parseDateSafe } from './interface.fuelreceive'
+import {
+  buildFuelReceiveColumns,
+  formatDateTime,
+  formatDecimal,
+  formatPercentage,
+  parseDateSafe,
+} from './interface.fuelreceive'
+import ResponsiveTableCards from '../../../components/ResponsiveTableCards'
 import '../tableDarkMode.scss'
 
 dayjs.extend(isBetween)
@@ -102,6 +108,50 @@ const FuelReceive = () => {
     () => allColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
     [allColumns, visibleColumnKeys],
   )
+
+  const renderFuelReceiveCard = (record) => {
+    const activeColumns = allColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column)))
+
+    const getCardValue = (columnKey) => {
+      if (columnKey === 'id_site') return record.id_site || '-'
+      if (columnKey === 'id_tank') return record.id_tank || '-'
+      if (columnKey === 'waktu_mulai_delivery') return formatDateTime(record.waktu_mulai_delivery)
+
+      if (columnKey === 'document') {
+        return `PO: ${record.no_invoice || '-'} | DO: ${record.no_do || '-'} | Vol: ${formatDecimal(record.volume_permintaan || 0)}`
+      }
+
+      if (columnKey === 'pengiriman') {
+        return `${record.pengirim || '-'} | Plate: ${record.no_kendaraan || '-'} | Driver: ${record.nama_pengemudi || '-'}`
+      }
+
+      if (columnKey === 'total_information') {
+        return `Delivery: ${formatDecimal(record.total_deliv || 0)} | Request: ${formatDecimal(record.total_permintaan || 0)} | Selisih: ${formatDecimal(record.total_selisih || 0)} (${formatPercentage(record.persentase_selisih || 0)})`
+      }
+
+      return '-'
+    }
+
+    return (
+      <CCard className="mb-2">
+        <CCardBody className="py-2">
+          {activeColumns.map((column) => {
+            const key = getColumnKey(column)
+            return (
+              <div
+                key={key}
+                className="d-flex justify-content-between align-items-start py-1"
+                style={{ borderBottom: '1px dashed var(--cui-border-color-translucent, rgba(0,0,0,.1))' }}
+              >
+                <div className="small fw-semibold text-secondary">{column.title}</div>
+                <div className="small text-end ms-3">{getCardValue(key)}</div>
+              </div>
+            )
+          })}
+        </CCardBody>
+      </CCard>
+    )
+  }
 
   const fetchData = useCallback(async () => {
     try {
@@ -406,14 +456,24 @@ const FuelReceive = () => {
             </CButton>
           </div>
 
-          <Table
+          <ResponsiveTableCards
             dataSource={filteredData}
-            columns={tableColumns}
-            className="app-data-table"
             loading={loading}
-            pagination
-            scroll={{ x: 'max-content' }}
-            bordered
+            emptyText="No data"
+            mobilePageSize={8}
+            rowKey="key"
+            renderCard={renderFuelReceiveCard}
+            tableProps={{
+              columns: tableColumns,
+              className: 'app-data-table',
+              pagination: {
+                pageSize: 10,
+                showSizeChanger: true,
+                pageSizeOptions: [10, 20, 50, 100],
+              },
+              scroll: { x: 'max-content' },
+              bordered: true,
+            }}
           />
         </CCardBody>
       </CCard>

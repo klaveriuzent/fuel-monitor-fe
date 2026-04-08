@@ -1,4 +1,5 @@
 import AppBreadcrumb from './AppBreadcrumb'
+import AppBottomNav from './AppBottomNav'
 import AppContent from './AppContent'
 import AppFooter from './AppFooter'
 import AppHeader from './AppHeader'
@@ -11,6 +12,7 @@ import DocsExample from './DocsExample'
 
 export {
   AppBreadcrumb,
+  AppBottomNav,
   AppContent,
   AppFooter,
   AppHeader,
