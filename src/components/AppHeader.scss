@@ -1,0 +1,28 @@
+.app-header-glass {
+  --cui-header-bg: transparent !important;
+  --cui-header-border-color: transparent !important;
+  background: transparent !important;
+}
+
+.app-header-top-row {
+  background-color: var(--cui-body-bg) !important;
+}
+
+.app-header-glass-row {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.12) 100%
+  ) !important;
+  backdrop-filter: blur(14px);
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-coreui-theme='dark'] .app-header-glass-row {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 39, 46, 0.42) 0%,
+    rgba(34, 39, 46, 0.22) 100%
+  ) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}

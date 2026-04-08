@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
-import { CRow, CCol, CWidgetStatsA } from '@coreui/react'
+import { CRow, CCol, CWidgetStatsA, CSpinner } from '@coreui/react'
 import { CChartLine } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
 
@@ -73,6 +73,9 @@ const WidgetsDropdown = ({
   fuelReceiveData = [],
   transaksiData = [],
   stockData = [], // pastikan ini array: response.data
+  loadingTrans = false,
+  loadingReceive = false,
+  loadingStock = false,
 }) => {
   const widgetChartRef1 = useRef(null)
   const widgetChartRef2 = useRef(null)
@@ -81,6 +84,15 @@ const WidgetsDropdown = ({
   /* totals */
   const totalTransactions = transaksiData.length
   const totalFuelReceived = fuelReceiveData.length
+  const renderMetricValue = (isLoading, text) =>
+    isLoading ? (
+      <span className="d-inline-flex align-items-center gap-2">
+        <CSpinner size="sm" color="light" />
+        Loading...
+      </span>
+    ) : (
+      text
+    )
 
   /* count online / standby */
   const { onlineStock, standbyStock } = useMemo(() => {
@@ -121,7 +133,7 @@ const WidgetsDropdown = ({
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="primary"
-          value={`${totalTransactions} records`}
+          value={renderMetricValue(loadingTrans, `${totalTransactions} records`)}
           title="Total Transactions"
           chart={<div style={{ height: '51.79px' }} />}
           // chart={
@@ -158,7 +170,7 @@ const WidgetsDropdown = ({
       <CCol sm={6} xl={4} xxl={3}>
         <CWidgetStatsA
           color="info"
-          value={`${totalFuelReceived} records`}
+          value={renderMetricValue(loadingReceive, `${totalFuelReceived} records`)}
           title="Fuel Received"
           chart={<div style={{ height: '51.79px' }} />}
           // chart={
@@ -201,14 +213,18 @@ const WidgetsDropdown = ({
 
             <div className="d-flex justify-content-around align-items-center text-center">
               <div>
-                <div className="fs-3 fw-bold text-success">{onlineStock}</div>
+                <div className="fs-3 fw-bold text-success">
+                  {loadingStock ? <CSpinner size="sm" color="success" /> : onlineStock}
+                </div>
                 <div className="text-success small fw-semibold">Online</div>
               </div>
 
               <div className="border-start" style={{ height: '45px' }} />
 
               <div>
-                <div className="fs-3 fw-bold text-secondary">{standbyStock}</div>
+                <div className="fs-3 fw-bold text-secondary">
+                  {loadingStock ? <CSpinner size="sm" color="secondary" /> : standbyStock}
+                </div>
                 <div className="text-muted small">Stand-by</div>
               </div>
             </div>
@@ -224,6 +240,9 @@ WidgetsDropdown.propTypes = {
   fuelReceiveData: PropTypes.array,
   transaksiData: PropTypes.array,
   stockData: PropTypes.array,
+  loadingTrans: PropTypes.bool,
+  loadingReceive: PropTypes.bool,
+  loadingStock: PropTypes.bool,
 }
 
 export default WidgetsDropdown

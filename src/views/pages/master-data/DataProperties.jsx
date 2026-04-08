@@ -29,6 +29,8 @@ import '../../../components/subheader/AppSubHeader.scss'
 
 const DEFAULT_TANK_COUNT = 5
 const TANK_COUNT_OPTIONS = [1, 2, 3, 4, 5]
+const REQUIRED_COLUMN_KEYS = ['idSite']
+const TANK_INPUT_FIELDS = ['tank1', 'tank2', 'tank3', 'tank4', 'tank5']
 const DATA_PROPERTIES_COLUMN_OPTIONS = [
   { key: 'idSite', label: 'ID Site' },
   { key: 'bacode', label: 'BACode' },
@@ -41,6 +43,17 @@ const DATA_PROPERTIES_COLUMN_OPTIONS = [
   { key: 'siteCapacity', label: 'Site Capacity (L)' },
   { key: 'action', label: 'Action' },
 ]
+const EXPORT_COLUMN_MAP = {
+  idSite: { header: 'ID Site', getValue: (item) => item.idSite || '-' },
+  bacode: { header: 'BACode', getValue: (item) => item.bacode || '-' },
+  area: { header: 'Area', getValue: (item) => item.area || '-' },
+  tank1: { header: 'Tank 1', getValue: () => '0' },
+  tank2: { header: 'Tank 2', getValue: () => '0' },
+  tank3: { header: 'Tank 3', getValue: () => '0' },
+  tank4: { header: 'Tank 4', getValue: () => '0' },
+  tank5: { header: 'Tank 5', getValue: () => '0' },
+  siteCapacity: { header: 'Site Capacity (L)', getValue: () => '-' },
+}
 const { CheckableTag } = Tag
 
 const mapSiteData = (item) => ({
@@ -190,7 +203,7 @@ const DataProperties = () => {
       title: 'BACode',
       dataIndex: 'bacode',
       key: 'bacode',
-      width: 120,
+      width: 80,
       align: 'center',
     },
     {
@@ -256,9 +269,14 @@ const DataProperties = () => {
     },
   ]
 
-  const tableColumns = allColumns.filter((column) =>
-    visibleColumnKeys.includes(getColumnKey(column)),
-  )
+  const tableColumns = allColumns.filter((column) => {
+    const key = getColumnKey(column)
+    return visibleColumnKeys.includes(key) || REQUIRED_COLUMN_KEYS.includes(key)
+  })
+  const exportColumnKeys = useMemo(() => {
+    const keys = new Set([...REQUIRED_COLUMN_KEYS, ...visibleColumnKeys])
+    return [...keys].filter((key) => Boolean(EXPORT_COLUMN_MAP[key]))
+  }, [visibleColumnKeys])
 
   const filteredData = dataSource.filter((item) => {
     const query = search.toLowerCase()
@@ -279,8 +297,13 @@ const DataProperties = () => {
   }
 
   const handleColumnToggle = (columnKey) => {
+    if (REQUIRED_COLUMN_KEYS.includes(columnKey)) {
+      return
+    }
+
     setVisibleColumnKeys((prev = []) => {
-      const isActive = prev.includes(columnKey)
+      const withRequired = [...new Set([...REQUIRED_COLUMN_KEYS, ...prev])]
+      const isActive = withRequired.includes(columnKey)
       const updated = isActive ? prev.filter((key) => key !== columnKey) : [...prev, columnKey]
       return DATA_PROPERTIES_COLUMN_OPTIONS.map((column) => column.key).filter((key) =>
         updated.includes(key),
@@ -290,12 +313,24 @@ const DataProperties = () => {
 
   const handleEdit = (record) => {
     setSelectedRecord(record)
-    setFormData(record)
+    setFormData({
+      ...record,
+      tank1: record?.tank1 ?? '0',
+      tank2: record?.tank2 ?? '0',
+      tank3: record?.tank3 ?? '0',
+      tank4: record?.tank4 ?? '0',
+      tank5: record?.tank5 ?? '0',
+    })
     setVisible(true)
   }
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    if (TANK_INPUT_FIELDS.includes(name)) {
+      const numericOnly = value.replace(/\D/g, '')
+      setFormData((prev) => ({ ...prev, [name]: numericOnly || '0' }))
+      return
+    }
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -310,22 +345,18 @@ const DataProperties = () => {
   }
 
   const handleExport = async () => {
-    const exportData = filteredData.map((item) => ({
-      'ID Site': item.idSite || '-',
-      BACode: item.bacode || '-',
-      Area: item.area || '-',
-      'Tank 1': '-',
-      'Tank 2': '-',
-      'Tank 3': '-',
-      'Tank 4': '-',
-      'Tank 5': '-',
-      'Site Capacity': '-',
-      Status: item.active ? 'Active' : 'Offline',
-    }))
+    const exportData = filteredData.map((item) => {
+      const row = {}
+      exportColumnKeys.forEach((key) => {
+        const config = EXPORT_COLUMN_MAP[key]
+        row[config.header] = config.getValue(item)
+      })
+      return row
+    })
 
     const workbook = new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet('DataProperties')
-    const headers = Object.keys(exportData[0] || {})
+    const headers = exportColumnKeys.map((key) => EXPORT_COLUMN_MAP[key].header)
 
     worksheet.columns = headers.map((header) => ({
       header,
@@ -438,6 +469,14 @@ const DataProperties = () => {
                     <div className="app-subheader__column-tags">
                       {DATA_PROPERTIES_COLUMN_OPTIONS.map((column) => {
                         const isActive = visibleColumnKeys.includes(column.key)
+                        if (REQUIRED_COLUMN_KEYS.includes(column.key)) {
+                          return (
+                            <Tag key={column.key} className="app-subheader__column-tag is-active">
+                              {column.label}
+                            </Tag>
+                          )
+                        }
+
                         return (
                           <CheckableTag
                             key={column.key}
@@ -468,7 +507,7 @@ const DataProperties = () => {
               className="text-white"
               style={{ minWidth: '154.5px' }}
               onClick={handleExport}
-              disabled={!filteredData.length}
+              disabled={!filteredData.length || !exportColumnKeys.length}
             >
               Export to Excel
             </CButton>
@@ -494,48 +533,6 @@ const DataProperties = () => {
         <CModalBody>
           <CForm>
             <CRow className="mb-3">
-              <CFormLabel htmlFor="area" className="col-sm-3 col-form-label">
-                Area
-              </CFormLabel>
-              <CCol sm={9}>
-                <CFormSelect
-                  id="area"
-                  name="area"
-                  value={formData.area || ''}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Area</option>
-                  {areaOptions.map((area) => (
-                    <option key={area} value={area}>
-                      {area}
-                    </option>
-                  ))}
-                </CFormSelect>
-              </CCol>
-            </CRow>
-
-            {[
-              { label: 'BACode', name: 'bacode' },
-              { label: 'Coordinates', name: 'coordinates', placeholder: 'longitude, latitude' },
-            ].map((field) => (
-              <CRow className="mb-3" key={field.name}>
-                <CFormLabel htmlFor={field.name} className="col-sm-3 col-form-label">
-                  {field.label}
-                </CFormLabel>
-                <CCol sm={9}>
-                  <CFormInput
-                    type="text"
-                    id={field.name}
-                    name={field.name}
-                    value={formData[field.name] || ''}
-                    placeholder={field.placeholder || ''}
-                    onChange={handleChange}
-                  />
-                </CCol>
-              </CRow>
-            ))}
-
-            <CRow className="mb-3">
               <CFormLabel className="col-sm-3 col-form-label">Status</CFormLabel>
               <CCol sm={9}>
                 <CFormCheck
@@ -556,6 +553,64 @@ const DataProperties = () => {
                 />
               </CCol>
             </CRow>
+
+            <CRow className="mb-3">
+              <CFormLabel htmlFor="area" className="col-sm-3 col-form-label">
+                Area
+              </CFormLabel>
+              <CCol sm={9}>
+                <CFormSelect
+                  id="area"
+                  name="area"
+                  value={formData.area || ''}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Area</option>
+                  {areaOptions.map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+            </CRow>
+
+            {[{ label: 'BACode', name: 'bacode' }].map((field) => (
+              <CRow className="mb-3" key={field.name}>
+                <CFormLabel htmlFor={field.name} className="col-sm-3 col-form-label">
+                  {field.label}
+                </CFormLabel>
+                <CCol sm={9}>
+                  <CFormInput
+                    type="text"
+                    id={field.name}
+                    name={field.name}
+                    value={formData[field.name] || ''}
+                    placeholder={field.placeholder || ''}
+                    onChange={handleChange}
+                  />
+                </CCol>
+              </CRow>
+            ))}
+
+            {TANK_INPUT_FIELDS.map((tankField, index) => (
+              <CRow className="mb-3" key={tankField}>
+                <CFormLabel htmlFor={tankField} className="col-sm-3 col-form-label">
+                  Tank {index + 1}
+                </CFormLabel>
+                <CCol sm={9}>
+                  <CFormInput
+                    type="text"
+                    id={tankField}
+                    name={tankField}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={formData[tankField] ?? '0'}
+                    onChange={handleChange}
+                  />
+                </CCol>
+              </CRow>
+            ))}
           </CForm>
         </CModalBody>
         <CModalFooter>

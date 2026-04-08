@@ -6,6 +6,7 @@ import CIcon from '@coreui/icons-react'
 import { cilMenu } from '@coreui/icons'
 import { AppHeaderDropdown } from './header/index'
 import axios from 'axios'
+import './AppHeader.scss'
 
 const AppHeader = () => {
   const headerRef = useRef()
@@ -45,8 +46,8 @@ const AppHeader = () => {
   }, [])
 
   return (
-    <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
-      <CContainer className="border-bottom px-4" fluid>
+    <CHeader position="sticky" className="app-header-glass mb-4 p-0" ref={headerRef}>
+      <CContainer className="app-header-top-row border-bottom px-4" fluid>
         <CHeaderToggler
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
           style={{ marginInlineStart: '-14px' }}
@@ -67,7 +68,7 @@ const AppHeader = () => {
         </CHeaderNav>
       </CContainer>
 
-      <div className="w-100 d-flex justify-content-between align-items-center px-4 py-2 border-top">
+      <div className="app-header-glass-row w-100 d-flex justify-content-between align-items-center px-4 py-2 border-top">
         {/* START - Select lokasi dari API */}
         <CFormSelect
           size="sm"

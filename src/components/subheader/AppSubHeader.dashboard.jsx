@@ -1,15 +1,14 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
-import { DatePicker, Collapse, Tag } from 'antd'
-import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
+import { DatePicker, Collapse, Tag, AutoComplete } from 'antd'
+import { CCard, CRow, CCol } from '@coreui/react'
 import axios from 'axios'
 
 import './AppSubHeader.scss'
 
 const DEFAULT_STORAGE_KEY = 'app-subheader-filters'
 const { RangePicker } = DatePicker
-const { Panel } = Collapse
 const { CheckableTag } = Tag
 
 const AppSubHeaderDashboard = ({
@@ -23,6 +22,7 @@ const AppSubHeaderDashboard = ({
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
+  const [siteInputValue, setSiteInputValue] = useState('All Sites')
   const [quickRange, setQuickRange] = useState('today')
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
@@ -96,15 +96,36 @@ const AppSubHeaderDashboard = ({
     fetchSites()
   }, [fetchSites])
 
-  const handleClearFilters = () => {
-    setSearch('')
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSiteInputValue(siteFilter === 'all' ? 'All Sites' : siteFilter || 'All Sites')
+  }, [siteFilter])
+
+  const siteAutoCompleteOptions = useMemo(
+    () => [
+      { value: 'All Sites', siteValue: 'all' },
+      ...siteOptions.map((site) => ({
+        value: site.id_site,
+        siteValue: site.id_site,
+      })),
+    ],
+    [siteOptions],
+  )
+
+  const handleSiteSelect = (_, option) => {
+    const selectedSiteValue = option?.siteValue || 'all'
+    setSiteFilter(selectedSiteValue)
+  }
+
+  const handleSiteBlur = () => {
+    const matchedOption = siteAutoCompleteOptions.find(
+      (option) => option.value.toLowerCase() === String(siteInputValue || '').toLowerCase(),
+    )
+    if (matchedOption) {
+      setSiteFilter(matchedOption.siteValue)
+      return
+    }
     setSiteFilter('all')
-    setQuickRange('today')
-
-    const [start, end] = calculateQuickRange('today')
-    setDateRange([start, end])
-
-    localStorage.removeItem(storageKey)
   }
 
   const handleQuickRangeToggle = (value) => {
@@ -123,14 +144,25 @@ const AppSubHeaderDashboard = ({
       {/* Filter Row */}
       <CRow className="align-items-center g-2">
         <CCol xs={12} sm={12} md={12}>
-          <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
-            <option value="all">All Sites</option>
-            {siteOptions.map((site) => (
-              <option key={site.id} value={site.id_site}>
-                {site.id_site}
-              </option>
-            ))}
-          </CFormSelect>
+          <AutoComplete
+            size="middle"
+            value={siteInputValue}
+            options={siteAutoCompleteOptions}
+            onSelect={handleSiteSelect}
+            onChange={(value) => {
+              setSiteInputValue(value)
+              if (!value) {
+                setSiteFilter('all')
+              }
+            }}
+            onBlur={handleSiteBlur}
+            filterOption={(inputValue, option) =>
+              (option?.value ?? '').toUpperCase().includes(inputValue.toUpperCase())
+            }
+            style={{ width: '100%' }}
+            placeholder="All Sites"
+            allowClear
+          />
         </CCol>
 
         {/* <CCol xs={12} sm={12} md={8}>

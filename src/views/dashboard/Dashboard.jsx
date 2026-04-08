@@ -19,6 +19,8 @@ const Dashboard = () => {
   const [tankData, setTankData] = useState([])
 
   const [loadingTrans, setLoadingTrans] = useState(false)
+  const [loadingReceive, setLoadingReceive] = useState(false)
+  const [loadingTank, setLoadingTank] = useState(false)
 
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
@@ -55,6 +57,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchReceive = async () => {
       try {
+        setLoadingReceive(true)
         const { data } = await axios.get(`${baseURL}tankdeliv`)
         if (Array.isArray(data?.data)) {
           setFuelReceiveData(
@@ -68,6 +71,8 @@ const Dashboard = () => {
         }
       } catch (err) {
         console.error('Error fetch fuel receive', err)
+      } finally {
+        setLoadingReceive(false)
       }
     }
     fetchReceive()
@@ -77,12 +82,15 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchTank = async () => {
       try {
+        setLoadingTank(true)
         const { data } = await axios.get(`${baseURL}ms-tank`)
         if (Array.isArray(data?.data)) {
           setTankData(data.data)
         }
       } catch (err) {
         console.error('Error fetch ms-tank', err)
+      } finally {
+        setLoadingTank(false)
       }
     }
     fetchTank()
@@ -165,6 +173,9 @@ const Dashboard = () => {
         transaksiData={filteredTransaksi}
         fuelReceiveData={filteredFuelReceive}
         stockData={tankData}
+        loadingTrans={loadingTrans}
+        loadingReceive={loadingReceive}
+        loadingStock={loadingTank}
       />
 
       <Watermark content="UNDER DEVELOPMENT">
