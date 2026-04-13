@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
-import { Watermark } from 'antd'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import { CCard, CCardBody } from '@coreui/react'
@@ -178,14 +177,12 @@ const Dashboard = () => {
         loadingStock={loadingTank}
       />
 
-      <Watermark content="UNDER DEVELOPMENT">
-        <CCard className="mb-4">
-          <CCardBody>
-            <h4 className="card-title mb-3">Consumption Trend</h4>
-            <MainChart data={filteredTransaksi} loading={loadingTrans} />
-          </CCardBody>
-        </CCard>
-      </Watermark>
+      <CCard className="mb-4">
+        <CCardBody>
+          <h4 className="card-title mb-3">Consumption Trend</h4>
+          <MainChart data={filteredTransaksi} loading={loadingTrans} />
+        </CCardBody>
+      </CCard>
     </>
   )
 }

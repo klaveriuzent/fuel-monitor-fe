@@ -1,13 +1,48 @@
-import React, { useEffect, useRef } from 'react'
-
-import { CChartLine } from '@coreui/react-chartjs'
+import React, { useEffect, useMemo, useRef } from 'react'
+import dayjs from 'dayjs'
+import { CChartBar } from '@coreui/react-chartjs'
+import { CSpinner } from '@coreui/react'
 import { getStyle } from '@coreui/utils'
 
-const MainChart = () => {
+const MainChart = ({ data = [], loading = false }) => {
   const chartRef = useRef(null)
 
+  const chartData = useMemo(() => {
+    const monthKeys = Array.from({ length: 12 }, (_, idx) =>
+      dayjs()
+        .subtract(11 - idx, 'month')
+        .startOf('month'),
+    )
+
+    const labels = monthKeys.map((m) => m.format('MMM YYYY'))
+    const initialAgg = monthKeys.reduce((acc, m) => {
+      const key = m.format('YYYY-MM')
+      acc[key] = { count: 0, volume: 0 }
+      return acc
+    }, {})
+
+    data.forEach((item) => {
+      const d = dayjs(item?.date)
+      if (!d.isValid()) return
+
+      const key = d.startOf('month').format('YYYY-MM')
+      if (!initialAgg[key]) return
+
+      initialAgg[key].count += 1
+      initialAgg[key].volume += Number(item?.volume || 0)
+    })
+
+    const countData = monthKeys.map((m) => initialAgg[m.format('YYYY-MM')].count)
+    const volumeData = monthKeys.map((m) =>
+      Number(initialAgg[m.format('YYYY-MM')].volume.toFixed(2)),
+    )
+    const maxCount = Math.max(...countData, 0)
+
+    return { labels, countData, volumeData, maxCount }
+  }, [data])
+
   useEffect(() => {
-    document.documentElement.addEventListener('ColorSchemeChange', () => {
+    const handleColorSchemeChange = () => {
       if (chartRef.current) {
         setTimeout(() => {
           chartRef.current.options.scales.x.grid.borderColor = getStyle(
@@ -20,64 +55,58 @@ const MainChart = () => {
           )
           chartRef.current.options.scales.y.grid.color = getStyle('--cui-border-color-translucent')
           chartRef.current.options.scales.y.ticks.color = getStyle('--cui-body-color')
+          chartRef.current.options.scales.y1.grid.borderColor = getStyle(
+            '--cui-border-color-translucent',
+          )
+          chartRef.current.options.scales.y1.grid.color = getStyle('--cui-border-color-translucent')
+          chartRef.current.options.scales.y1.ticks.color = getStyle('--cui-body-color')
           chartRef.current.update()
         })
       }
-    })
+    }
+
+    document.documentElement.addEventListener('ColorSchemeChange', handleColorSchemeChange)
+    return () =>
+      document.documentElement.removeEventListener('ColorSchemeChange', handleColorSchemeChange)
   }, [chartRef])
 
-  // eslint-disable-next-line react-hooks/purity
-  const random = () => Math.round(Math.random() * 100)
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '300px' }}>
+        <CSpinner color="primary" />
+      </div>
+    )
+  }
 
   return (
     <>
-      <CChartLine
+      <CChartBar
         ref={chartRef}
         style={{ height: '300px', marginTop: '40px' }}
         data={{
-          labels: [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December',
-          ],
+          labels: chartData.labels,
           datasets: [
             {
               label: 'Jumlah Transaksi',
-              backgroundColor: `rgba(${getStyle('--cui-info-rgb')}, .1)`,
+              backgroundColor: `rgba(${getStyle('--cui-info-rgb')}, .75)`,
               borderColor: getStyle('--cui-info'),
-              pointHoverBackgroundColor: getStyle('--cui-info'),
-              borderWidth: 2,
-              data: [
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-                random(50, 200),
-              ],
-              fill: true,
+              borderWidth: 1,
+              data: chartData.countData,
+              barPercentage: 0.7,
+              categoryPercentage: 0.7,
+              yAxisID: 'y',
             },
             {
-              label: 'Jumlah Fuel Consumed',
-              data: [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000],
-              borderWidth: 0,
-              pointRadius: 0,
-              fill: false,
+              label: 'Total Volume (L)',
+              type: 'line',
+              data: chartData.volumeData,
+              borderColor: getStyle('--cui-success'),
+              backgroundColor: `rgba(${getStyle('--cui-success-rgb')}, .15)`,
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 3,
+              pointHoverRadius: 4,
+              yAxisID: 'y1',
             },
           ],
         }}
@@ -85,7 +114,21 @@ const MainChart = () => {
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              display: false,
+              display: true,
+              labels: {
+                color: getStyle('--cui-body-color'),
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const isVolume = ctx.dataset?.yAxisID === 'y1'
+                  if (isVolume) {
+                    return `${ctx.dataset.label}: ${Number(ctx.raw || 0).toLocaleString('id-ID')} L`
+                  }
+                  return `${ctx.dataset.label}: ${ctx.raw || 0} transaksi`
+                },
+              },
             },
           },
           scales: {
@@ -96,6 +139,8 @@ const MainChart = () => {
               },
               ticks: {
                 color: getStyle('--cui-body-color'),
+                autoSkip: true,
+                maxRotation: 0,
               },
             },
             y: {
@@ -106,23 +151,27 @@ const MainChart = () => {
               grid: {
                 color: getStyle('--cui-border-color-translucent'),
               },
-              max: 250,
+              max: Math.max(5, Math.ceil(chartData.maxCount / 5) * 5),
               ticks: {
                 color: getStyle('--cui-body-color'),
                 maxTicksLimit: 5,
-                stepSize: Math.ceil(250 / 5),
+                stepSize: Math.max(1, Math.ceil(Math.max(5, chartData.maxCount) / 5)),
               },
             },
-          },
-          elements: {
-            line: {
-              tension: 0.4,
-            },
-            point: {
-              radius: 0,
-              hitRadius: 10,
-              hoverRadius: 4,
-              hoverBorderWidth: 3,
+            y1: {
+              beginAtZero: true,
+              position: 'right',
+              border: {
+                color: getStyle('--cui-border-color-translucent'),
+              },
+              grid: {
+                drawOnChartArea: false,
+                color: getStyle('--cui-border-color-translucent'),
+              },
+              ticks: {
+                color: getStyle('--cui-body-color'),
+                callback: (value) => `${Number(value).toLocaleString('id-ID')} L`,
+              },
             },
           },
         }}
