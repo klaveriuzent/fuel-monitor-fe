@@ -417,6 +417,41 @@ const FuelCard = ({ item }) => {
         const nextWaterData = sorted.map((e) => toNumber(e.volume_air))
         const nextTotalData = sorted.map((e) => toNumber(e.volume_oil) + toNumber(e.volume_air))
 
+        // Jaga konsistensi dengan angka snapshot pada kartu (khusus day).
+        if (timeScale === 'day') {
+          const snapshotLabel = item.update_date || new Date().toISOString()
+          const snapshotFuel = toNumber(item.volume_oil)
+          const snapshotWater = toNumber(item.volume_air)
+          const snapshotTotal = snapshotFuel + snapshotWater
+          const snapshotTime = getTanggalSortValue(snapshotLabel, 'day')
+          const lastLabel = nextLabels[nextLabels.length - 1]
+          const lastTime = getTanggalSortValue(lastLabel, 'day')
+
+          if (!nextLabels.length) {
+            nextLabels.push(snapshotLabel)
+            nextFuelData.push(snapshotFuel)
+            nextWaterData.push(snapshotWater)
+            nextTotalData.push(snapshotTotal)
+          } else if (
+            typeof snapshotTime === 'number' &&
+            typeof lastTime === 'number' &&
+            Math.abs(snapshotTime - lastTime) <= 60 * 1000
+          ) {
+            nextLabels[nextLabels.length - 1] = snapshotLabel
+            nextFuelData[nextFuelData.length - 1] = snapshotFuel
+            nextWaterData[nextWaterData.length - 1] = snapshotWater
+            nextTotalData[nextTotalData.length - 1] = snapshotTotal
+          } else if (
+            typeof snapshotTime === 'number' &&
+            (typeof lastTime !== 'number' || snapshotTime > lastTime)
+          ) {
+            nextLabels.push(snapshotLabel)
+            nextFuelData.push(snapshotFuel)
+            nextWaterData.push(snapshotWater)
+            nextTotalData.push(snapshotTotal)
+          }
+        }
+
         if (isMounted) {
           setLabels(nextLabels)
           setFuelData(nextFuelData)
@@ -445,7 +480,16 @@ const FuelCard = ({ item }) => {
       isMounted = false
       controller.abort()
     }
-  }, [baseURL, isModalVisible, item.id_site, item.id_tank, timeScale])
+  }, [
+    baseURL,
+    isModalVisible,
+    item.id_site,
+    item.id_tank,
+    item.update_date,
+    item.volume_oil,
+    item.volume_air,
+    timeScale,
+  ])
 
   return (
     <Badge.Ribbon text={badgeStatus.text} color={badgeStatus.color}>
