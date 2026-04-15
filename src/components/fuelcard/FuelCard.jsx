@@ -1,31 +1,14 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+﻿import React, { useCallback, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
-import {
-  CCard,
-  CCardBody,
-  CCardTitle,
-  CCardText,
-  CButton,
-  CModal,
-  CModalBody,
-  CModalHeader,
-  CModalTitle,
-} from '@coreui/react'
-import { CChartLine } from '@coreui/react-chartjs'
-import { getStyle } from '@coreui/utils'
+import { CCard, CCardBody, CCardTitle, CCardText, CButton } from '@coreui/react'
+
+import FuelCardModalChart from './FuelCardModalChart'
+import { clamp, toNumber } from './fuelCardUtils'
+import { useTankHistory } from './useTankHistory'
 
 import './FuelCard.scss'
-
-const toNumber = (v) => {
-  if (v === null || v === undefined) return 0
-  if (typeof v === 'number') return Number.isFinite(v) ? v : 0
-  const n = Number(String(v).replace(',', '.'))
-  return Number.isFinite(n) ? n : 0
-}
-
-const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
 
 const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) => {
   const safeCapacity = Math.max(1, toNumber(capacity))
@@ -200,143 +183,11 @@ TankWithScale.propTypes = {
   temperature: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 }
 
-const getNiceStep = (capacity, targetTicks = 4) => {
-  if (!capacity) return 1000
-
-  const roughStep = capacity / targetTicks
-  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)))
-  const residual = roughStep / magnitude
-
-  let niceResidual
-  if (residual >= 5) niceResidual = 5
-  else if (residual >= 2) niceResidual = 2
-  else niceResidual = 1
-
-  return niceResidual * magnitude
-}
-
-const getTanggalSortValue = (tanggal, scale) => {
-  if (!tanggal) return null
-
-  const parsed = new Date(tanggal)
-  if (!Number.isNaN(parsed.getTime())) return parsed.getTime()
-
-  const raw = String(tanggal).trim()
-  const parsedIsoLike = new Date(raw.replace(' ', 'T'))
-  if (!Number.isNaN(parsedIsoLike.getTime())) return parsedIsoLike.getTime()
-
-  if (scale === 'month') {
-    const monthMatch = raw.match(/^(\d{4})-(\d{2})$/)
-    if (monthMatch) {
-      const [, y, m] = monthMatch
-      return Date.UTC(Number(y), Number(m) - 1, 1)
-    }
-  }
-
-  if (scale === 'week') {
-    const weekMatch = raw.match(/^(\d{4})-W(\d{1,2})$/i)
-    if (weekMatch) {
-      const [, y, w] = weekMatch
-      return Date.UTC(Number(y), 0, 1 + (Number(w) - 1) * 7)
-    }
-  }
-
-  return null
-}
-
-const parseTanggalByScale = (dateValue, scale) => {
-  if (!dateValue) return null
-  const parsed = new Date(dateValue)
-  if (!Number.isNaN(parsed.getTime())) return parsed
-
-  const raw = String(dateValue).trim()
-  const parsedIsoLike = new Date(raw.replace(' ', 'T'))
-  if (!Number.isNaN(parsedIsoLike.getTime())) return parsedIsoLike
-
-  if (scale === 'month') {
-    const monthMatch = raw.match(/^(\d{4})-(\d{2})$/)
-    if (monthMatch) {
-      const [, y, m] = monthMatch
-      return new Date(Number(y), Number(m) - 1, 1)
-    }
-  }
-
-  if (scale === 'week') {
-    const weekMatch = raw.match(/^(\d{4})-W(\d{1,2})$/i)
-    if (weekMatch) {
-      const [, y, w] = weekMatch
-      return new Date(Number(y), 0, 1 + (Number(w) - 1) * 7)
-    }
-  }
-
-  return null
-}
-
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [timeScale, setTimeScale] = useState('day')
-  const [fuelData, setFuelData] = useState([])
-  const [waterData, setWaterData] = useState([])
-  const [totalData, setTotalData] = useState([])
-  const [labels, setLabels] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL
-
-  const formatTooltipLabel = (dateValue, scale) => {
-    if (!dateValue) return ''
-    const parsedDate = new Date(dateValue)
-    const isValidDate = !Number.isNaN(parsedDate.getTime())
-
-    if (!isValidDate) {
-      return String(dateValue)
-    }
-
-    if (scale === 'day') {
-      return parsedDate.toLocaleString('id-ID', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23',
-      })
-    }
-    return parsedDate.toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-    })
-  }
-
-  const formatXAxisLabel = (dateValue, scale) => {
-    if (!dateValue) return ''
-    const parsedDate = parseTanggalByScale(dateValue, scale)
-    if (!parsedDate) return String(dateValue)
-
-    if (scale === 'week' || scale === 'month') {
-      return parsedDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-      })
-    }
-
-    const monthDay = parsedDate.toLocaleDateString('id-ID', {
-      month: 'short',
-      day: '2-digit',
-    })
-    const hourMinute = parsedDate.toLocaleTimeString('id-ID', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hourCycle: 'h23',
-    })
-
-    return `${monthDay} ${hourMinute}`
-  }
-
-  const isStandby = () => {
+  const isStandby = useCallback(() => {
     if (item.aktif_flag !== '1' || !item.update_date) return false
 
     const lastUpdate = new Date(item.update_date).getTime()
@@ -344,152 +195,33 @@ const FuelCard = ({ item }) => {
     const diffMinutes = (now - lastUpdate) / 1000 / 60
 
     return diffMinutes > 5
-  }
+  }, [item.aktif_flag, item.update_date])
 
+  const baseURL = import.meta.env.VITE_API_BASE_URL
   const capacity = Number(item.max_capacity) || 0
-  const max = Math.ceil(capacity / 1000) * 1000
-  const step = max / 4
+
+  const {
+    fuelData,
+    waterData,
+    totalData,
+    labels,
+    offlineMask,
+    offlineRanges,
+    isLoading,
+    errorMessage,
+  } = useTankHistory({
+    baseURL,
+    isModalVisible,
+    item,
+    timeScale,
+    isStandby,
+  })
 
   const badgeStatus = isStandby()
     ? { text: 'Standby', color: 'orange' }
     : item.aktif_flag === '1'
       ? { text: 'Online', color: 'green' }
       : { text: 'Offline', color: 'red' }
-
-  useEffect(() => {
-    if (!isModalVisible) return undefined
-
-    let isMounted = true
-    const controller = new AbortController()
-
-    const fetchHistory = async () => {
-      setIsLoading(true)
-      setErrorMessage('')
-      try {
-        const params = new URLSearchParams({
-          id_site: item.id_site,
-          id_tank: item.id_tank,
-          filter: timeScale, // day | week | month
-        })
-
-        const response = await fetch(`${baseURL}tank/history?${params.toString()}`, {
-          signal: controller.signal,
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch tank history data')
-        }
-
-        const payload = await response.json()
-        const rows = Array.isArray(payload)
-          ? payload
-          : Array.isArray(payload?.data)
-            ? payload.data
-            : Array.isArray(payload?.results)
-              ? payload.results
-              : []
-
-        // Backend biasanya sudah terfilter, tapi tetap dijaga biar tidak
-        // tercampur antar site jika ada id_tank yang sama.
-        const filtered = rows.filter(
-          (e) =>
-            String(e?.id_tank ?? '') === String(item?.id_tank ?? '') &&
-            String(e?.id_site ?? '') === String(item?.id_site ?? ''),
-        )
-
-        const sorted = [...filtered].sort((a, b) => {
-          const aValue = getTanggalSortValue(a?.tanggal, timeScale)
-          const bValue = getTanggalSortValue(b?.tanggal, timeScale)
-
-          if (typeof aValue === 'number' && typeof bValue === 'number') {
-            return aValue - bValue
-          }
-          if (typeof aValue === 'number') return -1
-          if (typeof bValue === 'number') return 1
-
-          return String(a?.tanggal || '').localeCompare(String(b?.tanggal || ''), 'en', {
-            numeric: true,
-          })
-        })
-
-        const nextLabels = sorted.map((e) => e.tanggal)
-        const nextFuelData = sorted.map((e) => toNumber(e.volume_oil))
-        const nextWaterData = sorted.map((e) => toNumber(e.volume_air))
-        const nextTotalData = sorted.map((e) => toNumber(e.volume_oil) + toNumber(e.volume_air))
-
-        // Jaga konsistensi dengan angka snapshot pada kartu (khusus day).
-        if (timeScale === 'day') {
-          const snapshotLabel = item.update_date || new Date().toISOString()
-          const snapshotFuel = toNumber(item.volume_oil)
-          const snapshotWater = toNumber(item.volume_air)
-          const snapshotTotal = snapshotFuel + snapshotWater
-          const snapshotTime = getTanggalSortValue(snapshotLabel, 'day')
-          const lastLabel = nextLabels[nextLabels.length - 1]
-          const lastTime = getTanggalSortValue(lastLabel, 'day')
-
-          if (!nextLabels.length) {
-            nextLabels.push(snapshotLabel)
-            nextFuelData.push(snapshotFuel)
-            nextWaterData.push(snapshotWater)
-            nextTotalData.push(snapshotTotal)
-          } else if (
-            typeof snapshotTime === 'number' &&
-            typeof lastTime === 'number' &&
-            Math.abs(snapshotTime - lastTime) <= 60 * 1000
-          ) {
-            nextLabels[nextLabels.length - 1] = snapshotLabel
-            nextFuelData[nextFuelData.length - 1] = snapshotFuel
-            nextWaterData[nextWaterData.length - 1] = snapshotWater
-            nextTotalData[nextTotalData.length - 1] = snapshotTotal
-          } else if (
-            typeof snapshotTime === 'number' &&
-            (typeof lastTime !== 'number' || snapshotTime > lastTime)
-          ) {
-            nextLabels.push(snapshotLabel)
-            nextFuelData.push(snapshotFuel)
-            nextWaterData.push(snapshotWater)
-            nextTotalData.push(snapshotTotal)
-          }
-        }
-
-        if (isMounted) {
-          setLabels(nextLabels)
-          setFuelData(nextFuelData)
-          setWaterData(nextWaterData)
-          setTotalData(nextTotalData)
-        }
-      } catch (error) {
-        if (error?.name !== 'AbortError') {
-          console.error('Error fetching tank history data:', error)
-          if (isMounted) {
-            setLabels([])
-            setFuelData([])
-            setWaterData([])
-            setTotalData([])
-            setErrorMessage('Gagal memuat data grafik.')
-          }
-        }
-      } finally {
-        if (isMounted) setIsLoading(false)
-      }
-    }
-
-    fetchHistory()
-
-    return () => {
-      isMounted = false
-      controller.abort()
-    }
-  }, [
-    baseURL,
-    isModalVisible,
-    item.id_site,
-    item.id_tank,
-    item.update_date,
-    item.volume_oil,
-    item.volume_air,
-    timeScale,
-  ])
 
   return (
     <Badge.Ribbon text={badgeStatus.text} color={badgeStatus.color}>
@@ -585,144 +317,23 @@ const FuelCard = ({ item }) => {
         </CCardBody>
       </CCard>
 
-      <CModal
-        alignment="center"
-        size="lg"
-        visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)}
-      >
-        <CModalHeader>
-          <CModalTitle>
-            Tank {item.id_tank} - {item.id_site}
-          </CModalTitle>
-        </CModalHeader>
-        <CModalBody>
-          <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
-            <strong>Time Scale:</strong>
-            {[
-              { label: 'Day', value: 'day' },
-              { label: 'Week', value: 'week' },
-              { label: 'Month', value: 'month' },
-            ].map((option) => (
-              <label key={option.value} className="d-flex align-items-center gap-2">
-                <input
-                  type="radio"
-                  name={`time-scale-${item.id_tank}`}
-                  value={option.value}
-                  checked={timeScale === option.value}
-                  onChange={() => setTimeScale(option.value)}
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
-          </div>
-
-          {isLoading && <div className="mb-2">Loading chart...</div>}
-          {errorMessage && <div className="mb-2 text-danger">{errorMessage}</div>}
-
-          <CChartLine
-            style={{ height: '260px' }}
-            data={{
-              labels,
-              datasets: [
-                {
-                  label: 'Fuel',
-                  backgroundColor: `rgba(${getStyle('--cui-warning-rgb')}, .1)`,
-                  borderColor: getStyle('--cui-warning'),
-                  pointHoverBackgroundColor: getStyle('--cui-warning'),
-                  borderWidth: 2,
-                  data: fuelData,
-                  fill: true,
-                },
-                {
-                  label: 'Water',
-                  backgroundColor: 'transparent',
-                  borderColor: getStyle('--cui-info'),
-                  pointHoverBackgroundColor: getStyle('--cui-info'),
-                  borderWidth: 2,
-                  data: waterData,
-                },
-                {
-                  label: 'Total',
-                  backgroundColor: 'transparent',
-                  borderColor: getStyle('--cui-success'),
-                  pointHoverBackgroundColor: getStyle('--cui-success'),
-                  borderWidth: 2,
-                  borderDash: [6, 4],
-                  data: totalData,
-                },
-              ],
-            }}
-            options={{
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: true, position: 'bottom' },
-                tooltip: {
-                  mode: 'index',
-                  intersect: false,
-                  yAlign: 'center',
-                  callbacks: {
-                    title: (items) => {
-                      const idx = items?.[0]?.dataIndex ?? 0
-                      const dateValue = labels[idx]
-                      return `Time: ${formatTooltipLabel(dateValue, timeScale)}`
-                    },
-                    label: (context) => {
-                      const v = context.parsed?.y ?? 0
-                      const label = context.dataset.label
-                      return `${label}: ${Number(v).toLocaleString('id-ID', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })} L`
-                    },
-                  },
-                },
-              },
-              scales: {
-                x: {
-                  grid: {
-                    color: getStyle('--cui-border-color-translucent'),
-                    drawOnChartArea: false,
-                  },
-                  ticks: {
-                    color: getStyle('--cui-body-color'),
-                    autoSkip: timeScale !== 'day',
-                    maxRotation: 45,
-                    minRotation: 45,
-                    callback: function (value, index) {
-                      const labelFromChart =
-                        typeof this.getLabelForValue === 'function'
-                          ? this.getLabelForValue(value)
-                          : undefined
-                      const rawLabel = labelFromChart ?? labels[index] ?? value
-                      return formatXAxisLabel(rawLabel, timeScale)
-                    },
-                  },
-                },
-                y: {
-                  min: 0,
-                  max: max,
-                  ticks: {
-                    stepSize: step,
-                    color: getStyle('--cui-body-color'),
-                    callback: (value) => `${value} L`,
-                  },
-                  border: {
-                    color: getStyle('--cui-border-color-translucent'),
-                  },
-                  grid: {
-                    color: getStyle('--cui-border-color-translucent'),
-                  },
-                },
-              },
-              elements: {
-                line: { tension: 0.35 },
-                point: { radius: 2, hitRadius: 6, hoverRadius: 4 },
-              },
-            }}
-          />
-        </CModalBody>
-      </CModal>
+      <FuelCardModalChart
+        item={item}
+        isModalVisible={isModalVisible}
+        setIsModalVisible={setIsModalVisible}
+        timeScale={timeScale}
+        setTimeScale={setTimeScale}
+        labels={labels}
+        fuelData={fuelData}
+        waterData={waterData}
+        totalData={totalData}
+        offlineMask={offlineMask}
+        offlineRanges={offlineRanges}
+        isLoading={isLoading}
+        errorMessage={errorMessage}
+        isStandby={isStandby()}
+        capacity={capacity}
+      />
     </Badge.Ribbon>
   )
 }

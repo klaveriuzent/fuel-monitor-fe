@@ -6,17 +6,7 @@ export const mapFuelStockData = (apiData) => {
         const tanks = Array.isArray(item?.last_tank_data) ? item.last_tank_data : []
 
         if (!tanks.length) {
-            return [{
-                id_tank: '',
-                id_site: String(item?.id_site ?? ''),
-                aktif_flag: '',
-                volume_oil: '',
-                volume_air: '',
-                max_capacity: '',
-                ruang_kosong: '',
-                temperature: '',
-                update_date: '',
-            }]
+            return []
         }
 
         return tanks.map((tankData) => ({

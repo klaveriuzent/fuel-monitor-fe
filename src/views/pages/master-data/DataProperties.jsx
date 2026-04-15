@@ -30,6 +30,7 @@ import '../../../components/subheader/AppSubHeader.scss'
 
 const DEFAULT_TANK_COUNT = 5
 const TANK_COUNT_OPTIONS = [1, 2, 3, 4, 5]
+const TANK_NUMBERS = [1, 2, 3, 4, 5]
 const REQUIRED_COLUMN_KEYS = ['idSite']
 const TANK_INPUT_FIELDS = ['tank1', 'tank2', 'tank3', 'tank4', 'tank5']
 const DATA_PROPERTIES_COLUMN_OPTIONS = [
@@ -44,17 +45,6 @@ const DATA_PROPERTIES_COLUMN_OPTIONS = [
   { key: 'siteCapacity', label: 'Site Capacity (L)' },
   { key: 'action', label: 'Action' },
 ]
-const EXPORT_COLUMN_MAP = {
-  idSite: { header: 'ID Site', getValue: (item) => item.idSite || '-' },
-  bacode: { header: 'BACode', getValue: (item) => item.bacode || '-' },
-  area: { header: 'Area', getValue: (item) => item.area || '-' },
-  tank1: { header: 'Tank 1', getValue: () => '0' },
-  tank2: { header: 'Tank 2', getValue: () => '0' },
-  tank3: { header: 'Tank 3', getValue: () => '0' },
-  tank4: { header: 'Tank 4', getValue: () => '0' },
-  tank5: { header: 'Tank 5', getValue: () => '0' },
-  siteCapacity: { header: 'Site Capacity (L)', getValue: () => '-' },
-}
 const { CheckableTag } = Tag
 
 const mapSiteData = (item) => ({
@@ -74,14 +64,6 @@ const mapSiteData = (item) => ({
   updateDate: item.update_date,
 })
 
-const renderTankTags = () => (
-  <div className="d-flex flex-column gap-1">
-    <div>
-      <Tag>Capacity</Tag>0
-    </div>
-  </div>
-)
-
 const DataProperties = () => {
   const [visible, setVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
@@ -95,6 +77,7 @@ const DataProperties = () => {
   const [dataSource, setDataSource] = useState([])
   const [areaOptions, setAreaOptions] = useState([])
   const [tankCountLookup, setTankCountLookup] = useState({ bySite: {}, byBacode: {} })
+  const [tankCapacityLookup, setTankCapacityLookup] = useState({ bySite: {}, byBacode: {} })
   const [loading, setLoading] = useState(false)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -130,42 +113,74 @@ const DataProperties = () => {
     }
   }, [baseURL])
 
-  const fetchTankCounts = useCallback(async () => {
+  const fetchTankMeta = useCallback(async () => {
     try {
       const { data } = await axios.get(`${baseURL}ms-tank`)
       const rows = Array.isArray(data?.data) ? data.data : []
 
-      const nextLookup = rows.reduce(
-        (acc, item) => {
-          const siteKey = String(item?.id_site || '')
+      const nextCapacityLookup = { bySite: {}, byBacode: {} }
+      const nextCountLookup = { bySite: {}, byBacode: {} }
+
+      const upsertCapacity = (siteKey, bacodeKey, tankNumber, capacityValue) => {
+        if (!Number.isInteger(tankNumber) || tankNumber < 1 || tankNumber > 5) return
+
+        if (siteKey) {
+          if (!nextCapacityLookup.bySite[siteKey]) nextCapacityLookup.bySite[siteKey] = {}
+          nextCapacityLookup.bySite[siteKey][tankNumber] = capacityValue
+        }
+
+        if (bacodeKey) {
+          if (!nextCapacityLookup.byBacode[bacodeKey]) nextCapacityLookup.byBacode[bacodeKey] = {}
+          nextCapacityLookup.byBacode[bacodeKey][tankNumber] = capacityValue
+        }
+      }
+
+      rows.forEach((item) => {
+        const fallbackSiteKey = String(item?.id_site || '')
+          .trim()
+          .toLowerCase()
+        const fallbackBacodeKey = String(item?.id_location || '')
+          .trim()
+          .toLowerCase()
+        const tankRows =
+          Array.isArray(item?.last_tank_data) && item.last_tank_data.length
+            ? item.last_tank_data
+            : [item]
+
+        tankRows.forEach((tankRow) => {
+          const siteKey = String(tankRow?.id_site || fallbackSiteKey || '')
             .trim()
             .toLowerCase()
-          const bacodeKey = String(item?.id_location || '')
+          const bacodeKey = String(tankRow?.id_location || fallbackBacodeKey || '')
             .trim()
             .toLowerCase()
+          const tankNumber = Number.parseInt(String(tankRow?.id_tank || ''), 10)
+          const rawCapacity = Number(tankRow?.max_capacity ?? item?.max_capacity ?? 0)
+          const capacityValue = Number.isFinite(rawCapacity) ? rawCapacity : 0
 
-          if (siteKey) {
-            acc.bySite[siteKey] = (acc.bySite[siteKey] || 0) + 1
-          }
-          if (bacodeKey) {
-            acc.byBacode[bacodeKey] = (acc.byBacode[bacodeKey] || 0) + 1
-          }
-          return acc
-        },
-        { bySite: {}, byBacode: {} },
-      )
+          upsertCapacity(siteKey, bacodeKey, tankNumber, capacityValue)
+        })
+      })
 
-      setTankCountLookup(nextLookup)
+      Object.keys(nextCapacityLookup.bySite).forEach((key) => {
+        nextCountLookup.bySite[key] = Object.keys(nextCapacityLookup.bySite[key] || {}).length
+      })
+      Object.keys(nextCapacityLookup.byBacode).forEach((key) => {
+        nextCountLookup.byBacode[key] = Object.keys(nextCapacityLookup.byBacode[key] || {}).length
+      })
+
+      setTankCountLookup(nextCountLookup)
+      setTankCapacityLookup(nextCapacityLookup)
     } catch (error) {
-      console.error('Error fetching tank counts:', error)
+      console.error('Error fetching tank metadata:', error)
     }
   }, [baseURL])
 
   useEffect(() => {
     fetchSites()
     fetchLocationAreas()
-    fetchTankCounts()
-  }, [fetchSites, fetchLocationAreas, fetchTankCounts])
+    fetchTankMeta()
+  }, [fetchSites, fetchLocationAreas, fetchTankMeta])
 
   const getTankCount = useCallback(
     (item) => {
@@ -181,6 +196,81 @@ const DataProperties = () => {
       )
     },
     [tankCountLookup],
+  )
+
+  const getTankCapacity = useCallback(
+    (item, tankNumber) => {
+      const siteKey = String(item?.idSite || '')
+        .trim()
+        .toLowerCase()
+      const bacodeKey = String(item?.bacode || '')
+        .trim()
+        .toLowerCase()
+
+      return (
+        tankCapacityLookup.bySite?.[siteKey]?.[tankNumber] ??
+        tankCapacityLookup.byBacode?.[bacodeKey]?.[tankNumber] ??
+        null
+      )
+    },
+    [tankCapacityLookup],
+  )
+
+  const formatTankCapacity = useCallback((value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return ''
+    return Number(value).toLocaleString('id-ID')
+  }, [])
+
+  const renderTankTags = useCallback(
+    (record, tankNumber) => (
+      <div className="d-flex flex-column gap-1">
+        <div>
+          <Tag>Capacity</Tag>
+          {formatTankCapacity(getTankCapacity(record, tankNumber))}
+        </div>
+      </div>
+    ),
+    [formatTankCapacity, getTankCapacity],
+  )
+
+  const enhancedDataSource = useMemo(
+    () =>
+      dataSource.map((item) => {
+        const capacities = TANK_NUMBERS.map((tankNumber) => getTankCapacity(item, tankNumber))
+        const siteCapacity = capacities.reduce(
+          (sum, value) => (typeof value === 'number' ? sum + value : sum),
+          0,
+        )
+
+        return {
+          ...item,
+          tank1: capacities[0],
+          tank2: capacities[1],
+          tank3: capacities[2],
+          tank4: capacities[3],
+          tank5: capacities[4],
+          siteCapacity,
+        }
+      }),
+    [dataSource, getTankCapacity],
+  )
+
+  const EXPORT_COLUMN_MAP = useMemo(
+    () => ({
+      idSite: { header: 'ID Site', getValue: (item) => item.idSite || '-' },
+      bacode: { header: 'BACode', getValue: (item) => item.bacode || '-' },
+      area: { header: 'Area', getValue: (item) => item.area || '-' },
+      tank1: { header: 'Tank 1', getValue: (item) => formatTankCapacity(item.tank1) },
+      tank2: { header: 'Tank 2', getValue: (item) => formatTankCapacity(item.tank2) },
+      tank3: { header: 'Tank 3', getValue: (item) => formatTankCapacity(item.tank3) },
+      tank4: { header: 'Tank 4', getValue: (item) => formatTankCapacity(item.tank4) },
+      tank5: { header: 'Tank 5', getValue: (item) => formatTankCapacity(item.tank5) },
+      siteCapacity: {
+        header: 'Site Capacity (L)',
+        getValue: (item) => formatTankCapacity(item.siteCapacity),
+      },
+    }),
+    [formatTankCapacity],
   )
 
   const tankCountOptions = useMemo(() => TANK_COUNT_OPTIONS, [])
@@ -219,35 +309,35 @@ const DataProperties = () => {
       key: 'tank1',
       width: 100,
       align: 'center',
-      render: renderTankTags,
+      render: (_, record) => renderTankTags(record, 1),
     },
     {
       title: 'Tank 2',
       key: 'tank2',
       width: 100,
       align: 'center',
-      render: renderTankTags,
+      render: (_, record) => renderTankTags(record, 2),
     },
     {
       title: 'Tank 3',
       key: 'tank3',
       width: 100,
       align: 'center',
-      render: renderTankTags,
+      render: (_, record) => renderTankTags(record, 3),
     },
     {
       title: 'Tank 4',
       key: 'tank4',
       width: 100,
       align: 'center',
-      render: renderTankTags,
+      render: (_, record) => renderTankTags(record, 4),
     },
     {
       title: 'Tank 5',
       key: 'tank5',
       width: 100,
       align: 'center',
-      render: renderTankTags,
+      render: (_, record) => renderTankTags(record, 5),
     },
     {
       title: 'Site Capacity (L)',
@@ -255,7 +345,7 @@ const DataProperties = () => {
       width: 140,
       fixed: 'right',
       align: 'center',
-      render: () => '-',
+      render: (_, record) => formatTankCapacity(record.siteCapacity),
     },
     {
       title: 'Action',
@@ -283,9 +373,9 @@ const DataProperties = () => {
   const exportColumnKeys = useMemo(() => {
     const keys = new Set([...REQUIRED_COLUMN_KEYS, ...visibleColumnKeys])
     return [...keys].filter((key) => Boolean(EXPORT_COLUMN_MAP[key]))
-  }, [visibleColumnKeys])
+  }, [EXPORT_COLUMN_MAP, visibleColumnKeys])
 
-  const filteredData = dataSource.filter((item) => {
+  const filteredData = enhancedDataSource.filter((item) => {
     const query = search.toLowerCase()
     const idSite = String(item.idSite || '').toLowerCase()
     const bacode = String(item.bacode || '').toLowerCase()
@@ -300,7 +390,7 @@ const DataProperties = () => {
 
   const handleRefresh = () => {
     fetchSites()
-    fetchTankCounts()
+    fetchTankMeta()
   }
 
   const handleColumnToggle = (columnKey) => {
@@ -407,9 +497,9 @@ const DataProperties = () => {
             } else if (key === 'area') {
               valueNode = record.area || '-'
             } else if (['tank1', 'tank2', 'tank3', 'tank4', 'tank5'].includes(key)) {
-              valueNode = '0'
+              valueNode = formatTankCapacity(record[key])
             } else if (key === 'siteCapacity') {
-              valueNode = '-'
+              valueNode = formatTankCapacity(record.siteCapacity)
             }
 
             return (

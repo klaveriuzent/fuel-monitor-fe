@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Row, Col, Pagination } from 'antd'
 import ExcelJS from 'exceljs'
+import axios from 'axios'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
@@ -12,50 +13,42 @@ const FuelStock = () => {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(8)
   const [search, setSearch] = useState('')
   const [filterSite, setFilterSite] = useState('all')
 
-  const pageSize = 8
-
   useEffect(() => {
-    let isMounted = true
+    const controller = new AbortController()
 
     const fetchData = async () => {
       setLoading(true)
       setData([])
       try {
-        let url = `${baseURL}ms-tank`
+        const params = {}
         if (filterSite !== 'all') {
-          url += `?id_site=${filterSite}`
+          params.id_site = filterSite
         }
 
-        const response = await fetch(url)
-        if (!response.ok) {
-          throw new Error('Failed to fetch fuel stock data')
-        }
-
-        const apiData = await response.json()
+        const { data: apiData } = await axios.get(`${baseURL}ms-tank`, {
+          params,
+          signal: controller.signal,
+        })
         const mappedData = mapFuelStockData(apiData)
-
-        if (isMounted) {
-          setData(mappedData)
-        }
+        setData(mappedData)
       } catch (error) {
-        console.error(error)
-        if (isMounted) {
+        if (error?.name !== 'CanceledError' && error?.code !== 'ERR_CANCELED') {
+          console.error(error)
           setData([])
         }
       } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
+        setLoading(false)
       }
     }
 
     fetchData()
 
     return () => {
-      isMounted = false
+      controller.abort()
     }
   }, [filterSite])
 
@@ -80,7 +73,7 @@ const FuelStock = () => {
           item.id_site.toLowerCase().includes(normalizedSearch)
 
         const matchSite =
-          filterSite === 'all' || item.id_site.toLowerCase().includes(filterSite.toLowerCase())
+          filterSite === 'all' || item.id_site.toLowerCase() === filterSite.toLowerCase()
 
         return matchSearch && matchSite
       })
@@ -168,7 +161,12 @@ const FuelStock = () => {
           pageSize={pageSize}
           total={filteredData.length}
           onChange={setCurrentPage}
-          showSizeChanger={false}
+          onShowSizeChange={(_, size) => {
+            setPageSize(size)
+            setCurrentPage(1)
+          }}
+          showSizeChanger
+          pageSizeOptions={['8', '16', '24', '48']}
           responsive
         />
       </div>
