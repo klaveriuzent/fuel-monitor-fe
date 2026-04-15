@@ -55,7 +55,9 @@ const Transactions = () => {
               <div
                 key={key}
                 className="d-flex justify-content-between align-items-start py-1"
-                style={{ borderBottom: '1px dashed var(--cui-border-color-translucent, rgba(0,0,0,.1))' }}
+                style={{
+                  borderBottom: '1px dashed var(--cui-border-color-translucent, rgba(0,0,0,.1))',
+                }}
               >
                 <div className="small fw-semibold text-secondary">{column.title}</div>
                 <div className="small text-end ms-3">{value || '-'}</div>
@@ -130,10 +132,18 @@ const Transactions = () => {
   const siteTotalCount = filteredBySearchDate.length
 
   const filteredData = useMemo(() => {
-    if (siteFilter === 'all') return filteredBySearchDate
-    return filteredBySearchDate.filter(
-      (item) => item.id_site && item.id_site.toLowerCase() === siteFilter.toLowerCase(),
-    )
+    const baseData =
+      siteFilter === 'all'
+        ? filteredBySearchDate
+        : filteredBySearchDate.filter(
+            (item) => item.id_site && item.id_site.toLowerCase() === siteFilter.toLowerCase(),
+          )
+
+    return [...baseData].sort((a, b) => {
+      const timeA = a?.waktu ? new Date(a.waktu).getTime() : 0
+      const timeB = b?.waktu ? new Date(b.waktu).getTime() : 0
+      return timeB - timeA
+    })
   }, [filteredBySearchDate, siteFilter])
 
   // Export Excel (tetap sama)

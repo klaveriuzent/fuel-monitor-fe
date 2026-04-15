@@ -143,6 +143,17 @@ const Dashboard = () => {
     })
   }, [fuelReceiveData, searchValue, siteFilter, dateRange])
 
+  const filteredTankData = useMemo(() => {
+    if (siteFilter === 'all') return tankData
+
+    const targetSite = String(siteFilter).toLowerCase()
+    return tankData.filter((item) => {
+      const siteFromRoot = String(item?.id_site || '').toLowerCase()
+      const siteFromLast = String(item?.last_tank_data?.[0]?.id_site || '').toLowerCase()
+      return siteFromRoot === targetSite || siteFromLast === targetSite
+    })
+  }, [tankData, siteFilter])
+
   const siteTotalCount = filteredTransaksi.length
   const siteCounts = useMemo(() => {
     return filteredTransaksi.reduce((acc, it) => {
@@ -171,7 +182,7 @@ const Dashboard = () => {
         className="mb-4"
         transaksiData={filteredTransaksi}
         fuelReceiveData={filteredFuelReceive}
-        stockData={tankData}
+        stockData={filteredTankData}
         loadingTrans={loadingTrans}
         loadingReceive={loadingReceive}
         loadingStock={loadingTank}
