@@ -227,6 +227,10 @@
   opacity: 0.7;
 }
 
+.fuel-card--standby .tank-visual__fuel-fill {
+  background: linear-gradient(to top, #6b7280, #9ca3af);
+}
+
 [data-coreui-theme='dark'] .fuel-card {
   --fuel-card-surface: #1f2937;
   --fuel-card-border: #374151;
@@ -252,4 +256,8 @@
 [data-coreui-theme='dark'] .tank-visual__fuel-fill {
   background: linear-gradient(to top, #f59e0b, #fbbf24);
   opacity: 0.85;
+}
+
+[data-coreui-theme='dark'] .fuel-card--standby .tank-visual__fuel-fill {
+  background: linear-gradient(to top, #4b5563, #9ca3af);
 }

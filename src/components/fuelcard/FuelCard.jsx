@@ -225,7 +225,9 @@ const FuelCard = ({ item }) => {
 
   return (
     <Badge.Ribbon text={badgeStatus.text} color={badgeStatus.color}>
-      <CCard className="fuel-card shadow-sm h-full">
+      <CCard
+        className={`fuel-card shadow-sm h-full${badgeStatus.text === 'Standby' ? ' fuel-card--standby' : ''}`}
+      >
         <CCardBody className="fuel-card__body">
           <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
           <CCardText className="fuel-card__details">

@@ -22,7 +22,6 @@ const FuelStock = () => {
 
     const fetchData = async () => {
       setLoading(true)
-      setData([])
       try {
         const params = {}
         if (filterSite !== 'all') {
@@ -81,7 +80,14 @@ const FuelStock = () => {
         if (a.id_site !== b.id_site) {
           return a.id_site.localeCompare(b.id_site)
         }
-        return a.id_tank.localeCompare(b.id_tank, undefined, { numeric: true })
+        const tankCompare = a.id_tank.localeCompare(b.id_tank, undefined, { numeric: true })
+        if (tankCompare !== 0) return tankCompare
+
+        const aTime = new Date(a.update_date || 0).getTime()
+        const bTime = new Date(b.update_date || 0).getTime()
+        if (aTime !== bTime) return bTime - aTime
+
+        return String(a.row_id || '').localeCompare(String(b.row_id || ''))
       })
   }, [data, filterSite, normalizedSearch])
 
@@ -147,8 +153,14 @@ const FuelStock = () => {
             <div style={{ textAlign: 'center' }}>Loading...</div>
           </Col>
         ) : (
-          paginatedData.map((item) => (
-            <Col key={`${item.id_site}-${item.id_tank}`} xs={24} sm={12} md={8} lg={6}>
+          paginatedData.map((item, index) => (
+            <Col
+              key={item.row_id || `${item.id_site}-${item.id_tank}-${item.update_date}-${startIndex + index}`}
+              xs={24}
+              sm={12}
+              md={8}
+              lg={6}
+            >
               <FuelCard item={item} />
             </Col>
           ))
