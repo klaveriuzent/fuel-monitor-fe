@@ -191,7 +191,7 @@ const Dashboard = () => {
       <CCard className="mb-4">
         <CCardBody>
           <h4 className="card-title mb-3">Consumption Trend</h4>
-          <MainChart data={filteredTransaksi} loading={loadingTrans} />
+          <MainChart data={filteredTransaksi} loading={loadingTrans} dateRange={dateRange} />
         </CCardBody>
       </CCard>
     </>

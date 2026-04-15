@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { CRow, CCol, CWidgetStatsA, CSpinner } from '@coreui/react'
 import { CChartLine } from '@coreui/react-chartjs'
+import { Tooltip } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import { getStyle } from '@coreui/utils'
 
 // normalize active flag
@@ -208,7 +210,17 @@ const WidgetsDropdown = ({
         <div className="card shadow-sm border-0 h-100">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h6 className="mb-0 fw-semibold">Machine</h6>
+              <div className="d-flex align-items-center gap-2">
+                <h6 className="mb-0 fw-semibold">Machine</h6>
+                <Tooltip title="Data pada card ini adalah data saat ini sesuai filter site yang dipilih.">
+                  <span
+                    className="d-inline-flex align-items-center text-muted"
+                    style={{ cursor: 'help' }}
+                  >
+                    <InfoCircleOutlined />
+                  </span>
+                </Tooltip>
+              </div>
             </div>
 
             <div className="d-flex justify-content-around align-items-center text-center">
