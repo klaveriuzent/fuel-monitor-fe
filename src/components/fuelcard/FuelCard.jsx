@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+﻿import React, { useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
@@ -56,7 +56,7 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
             justifyContent: 'space-between',
           }}
         >
-          <span>⛽ Fuel</span>
+          <span>Fuel</span>
           <span>
             {Number(fuel).toLocaleString('id-ID', {
               minimumFractionDigits: 2,
@@ -74,7 +74,7 @@ const TankVisual = ({ fuelLevel, waterLevel, capacity, showFuel, showWater }) =>
             justifyContent: 'space-between',
           }}
         >
-          <span>💧 Water</span>
+          <span>Water</span>
           <span>
             {Number(water).toLocaleString('id-ID', {
               minimumFractionDigits: 2,
@@ -215,11 +215,69 @@ const getNiceStep = (capacity, targetTicks = 4) => {
   return niceResidual * magnitude
 }
 
+const getTanggalSortValue = (tanggal, scale) => {
+  if (!tanggal) return null
+
+  const parsed = new Date(tanggal)
+  if (!Number.isNaN(parsed.getTime())) return parsed.getTime()
+
+  const raw = String(tanggal).trim()
+  const parsedIsoLike = new Date(raw.replace(' ', 'T'))
+  if (!Number.isNaN(parsedIsoLike.getTime())) return parsedIsoLike.getTime()
+
+  if (scale === 'month') {
+    const monthMatch = raw.match(/^(\d{4})-(\d{2})$/)
+    if (monthMatch) {
+      const [, y, m] = monthMatch
+      return Date.UTC(Number(y), Number(m) - 1, 1)
+    }
+  }
+
+  if (scale === 'week') {
+    const weekMatch = raw.match(/^(\d{4})-W(\d{1,2})$/i)
+    if (weekMatch) {
+      const [, y, w] = weekMatch
+      return Date.UTC(Number(y), 0, 1 + (Number(w) - 1) * 7)
+    }
+  }
+
+  return null
+}
+
+const parseTanggalByScale = (dateValue, scale) => {
+  if (!dateValue) return null
+  const parsed = new Date(dateValue)
+  if (!Number.isNaN(parsed.getTime())) return parsed
+
+  const raw = String(dateValue).trim()
+  const parsedIsoLike = new Date(raw.replace(' ', 'T'))
+  if (!Number.isNaN(parsedIsoLike.getTime())) return parsedIsoLike
+
+  if (scale === 'month') {
+    const monthMatch = raw.match(/^(\d{4})-(\d{2})$/)
+    if (monthMatch) {
+      const [, y, m] = monthMatch
+      return new Date(Number(y), Number(m) - 1, 1)
+    }
+  }
+
+  if (scale === 'week') {
+    const weekMatch = raw.match(/^(\d{4})-W(\d{1,2})$/i)
+    if (weekMatch) {
+      const [, y, w] = weekMatch
+      return new Date(Number(y), 0, 1 + (Number(w) - 1) * 7)
+    }
+  }
+
+  return null
+}
+
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [timeScale, setTimeScale] = useState('day')
   const [fuelData, setFuelData] = useState([])
   const [waterData, setWaterData] = useState([])
+  const [totalData, setTotalData] = useState([])
   const [labels, setLabels] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -228,9 +286,15 @@ const FuelCard = ({ item }) => {
 
   const formatTooltipLabel = (dateValue, scale) => {
     if (!dateValue) return ''
+    const parsedDate = new Date(dateValue)
+    const isValidDate = !Number.isNaN(parsedDate.getTime())
+
+    if (!isValidDate) {
+      return String(dateValue)
+    }
+
     if (scale === 'day') {
-      return new Date(dateValue).toLocaleString('id-ID', {
-        timeZone: 'UTC',
+      return parsedDate.toLocaleString('id-ID', {
         year: 'numeric',
         month: 'short',
         day: '2-digit',
@@ -239,12 +303,37 @@ const FuelCard = ({ item }) => {
         hourCycle: 'h23',
       })
     }
-    return new Date(dateValue).toLocaleDateString('id-ID', {
-      timeZone: 'UTC',
+    return parsedDate.toLocaleDateString('id-ID', {
       year: 'numeric',
       month: 'short',
       day: '2-digit',
     })
+  }
+
+  const formatXAxisLabel = (dateValue, scale) => {
+    if (!dateValue) return ''
+    const parsedDate = parseTanggalByScale(dateValue, scale)
+    if (!parsedDate) return String(dateValue)
+
+    if (scale === 'week' || scale === 'month') {
+      return parsedDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+      })
+    }
+
+    const monthDay = parsedDate.toLocaleDateString('id-ID', {
+      month: 'short',
+      day: '2-digit',
+    })
+    const hourMinute = parsedDate.toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    })
+
+    return `${monthDay} ${hourMinute}`
   }
 
   const isStandby = () => {
@@ -291,24 +380,48 @@ const FuelCard = ({ item }) => {
           throw new Error('Failed to fetch tank history data')
         }
 
-        const data = await response.json()
-        const rows = Array.isArray(data) ? data : []
+        const payload = await response.json()
+        const rows = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : Array.isArray(payload?.results)
+              ? payload.results
+              : []
 
-        // Backend filtered-history seharusnya sudah sesuai id_tank,
-        // tapi tetap kita jaga biar aman.
-        const filtered = rows.filter((e) => String(e.id_tank) === String(item.id_tank))
+        // Backend biasanya sudah terfilter, tapi tetap dijaga biar tidak
+        // tercampur antar site jika ada id_tank yang sama.
+        const filtered = rows.filter(
+          (e) =>
+            String(e?.id_tank ?? '') === String(item?.id_tank ?? '') &&
+            String(e?.id_site ?? '') === String(item?.id_site ?? ''),
+        )
 
-        // Sort aman untuk day/week/month (string bucket tetap bisa di Date)
-        const sorted = [...filtered].sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
+        const sorted = [...filtered].sort((a, b) => {
+          const aValue = getTanggalSortValue(a?.tanggal, timeScale)
+          const bValue = getTanggalSortValue(b?.tanggal, timeScale)
+
+          if (typeof aValue === 'number' && typeof bValue === 'number') {
+            return aValue - bValue
+          }
+          if (typeof aValue === 'number') return -1
+          if (typeof bValue === 'number') return 1
+
+          return String(a?.tanggal || '').localeCompare(String(b?.tanggal || ''), 'en', {
+            numeric: true,
+          })
+        })
 
         const nextLabels = sorted.map((e) => e.tanggal)
         const nextFuelData = sorted.map((e) => toNumber(e.volume_oil))
         const nextWaterData = sorted.map((e) => toNumber(e.volume_air))
+        const nextTotalData = sorted.map((e) => toNumber(e.volume_oil) + toNumber(e.volume_air))
 
         if (isMounted) {
           setLabels(nextLabels)
           setFuelData(nextFuelData)
           setWaterData(nextWaterData)
+          setTotalData(nextTotalData)
         }
       } catch (error) {
         if (error?.name !== 'AbortError') {
@@ -317,6 +430,7 @@ const FuelCard = ({ item }) => {
             setLabels([])
             setFuelData([])
             setWaterData([])
+            setTotalData([])
             setErrorMessage('Gagal memuat data grafik.')
           }
         }
@@ -400,7 +514,6 @@ const FuelCard = ({ item }) => {
                     <small>
                       {item.update_date
                         ? new Date(item.update_date).toLocaleString('en-GB', {
-                            timeZone: 'UTC',
                             year: 'numeric',
                             month: '2-digit',
                             day: '2-digit',
@@ -420,7 +533,6 @@ const FuelCard = ({ item }) => {
             color="primary"
             size="sm"
             onClick={() => {
-              setTimeScale('day')
               setIsModalVisible(true)
             }}
           >
@@ -486,6 +598,15 @@ const FuelCard = ({ item }) => {
                   borderWidth: 2,
                   data: waterData,
                 },
+                {
+                  label: 'Total',
+                  backgroundColor: 'transparent',
+                  borderColor: getStyle('--cui-success'),
+                  pointHoverBackgroundColor: getStyle('--cui-success'),
+                  borderWidth: 2,
+                  borderDash: [6, 4],
+                  data: totalData,
+                },
               ],
             }}
             options={{
@@ -505,9 +626,7 @@ const FuelCard = ({ item }) => {
                     label: (context) => {
                       const v = context.parsed?.y ?? 0
                       const label = context.dataset.label
-                      const icon = label === 'Fuel' ? '⛽' : label === 'Water' ? '💧' : ''
-                      // return `${icon} ${label}: ${v} L`
-                      return `${icon} ${label}: ${Number(v).toLocaleString('id-ID', {
+                      return `${label}: ${Number(v).toLocaleString('id-ID', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })} L`
@@ -523,9 +642,17 @@ const FuelCard = ({ item }) => {
                   },
                   ticks: {
                     color: getStyle('--cui-body-color'),
-                    autoSkip: false, // tampilkan semua label
+                    autoSkip: timeScale !== 'day',
                     maxRotation: 45,
                     minRotation: 45,
+                    callback: function (value, index) {
+                      const labelFromChart =
+                        typeof this.getLabelForValue === 'function'
+                          ? this.getLabelForValue(value)
+                          : undefined
+                      const rawLabel = labelFromChart ?? labels[index] ?? value
+                      return formatXAxisLabel(rawLabel, timeScale)
+                    },
                   },
                 },
                 y: {
