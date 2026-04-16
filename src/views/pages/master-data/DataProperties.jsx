@@ -55,7 +55,7 @@ const mapSiteData = (item) => ({
   key: item.id,
   id: item.id,
   idSite: item.id_site,
-  bacode: item.id_location,
+  bacode: item.plant,
   area: item.location_area,
   group: item.company_name,
   coordinates: item.latitute && item.longitute ? `${item.longitute}, ${item.latitute}` : '-',
@@ -82,11 +82,13 @@ const DataProperties = () => {
   )
   const [dataSource, setDataSource] = useState([])
   const [areaOptions, setAreaOptions] = useState([])
-  const [tankCountLookup, setTankCountLookup] = useState({ bySite: {}, byBacode: {} })
-  const [tankCapacityLookup, setTankCapacityLookup] = useState({ bySite: {}, byBacode: {} })
+  const [tankCountLookup, setTankCountLookup] = useState({ bySite: {} })
+  const [tankCapacityLookup, setTankCapacityLookup] = useState({ bySite: {} })
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [confirmSaveVisible, setConfirmSaveVisible] = useState(false)
+  const [pendingSavePayload, setPendingSavePayload] = useState(null)
   const [toast, addToast] = useState(0)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -127,28 +129,21 @@ const DataProperties = () => {
       const { data } = await axios.get(`${baseURL}ms-tank`)
       const rows = Array.isArray(data?.data) ? data.data : []
 
-      const nextCapacityLookup = { bySite: {}, byBacode: {} }
-      const nextCountLookup = { bySite: {}, byBacode: {} }
+      const nextCapacityLookup = { bySite: {} }
+      const nextCountLookup = { bySite: {} }
 
-      const upsertCapacity = (siteKey, bacodeKey, tankNumber, capacityValue) => {
+      const upsertCapacity = (siteKey, tankNumber, capacityValue) => {
         if (!Number.isInteger(tankNumber) || tankNumber < 1 || tankNumber > 5) return
+        if (capacityValue === null || capacityValue === undefined || capacityValue <= 0) return
 
         if (siteKey) {
           if (!nextCapacityLookup.bySite[siteKey]) nextCapacityLookup.bySite[siteKey] = {}
           nextCapacityLookup.bySite[siteKey][tankNumber] = capacityValue
         }
-
-        if (bacodeKey) {
-          if (!nextCapacityLookup.byBacode[bacodeKey]) nextCapacityLookup.byBacode[bacodeKey] = {}
-          nextCapacityLookup.byBacode[bacodeKey][tankNumber] = capacityValue
-        }
       }
 
       rows.forEach((item) => {
         const fallbackSiteKey = String(item?.id_site || '')
-          .trim()
-          .toLowerCase()
-        const fallbackBacodeKey = String(item?.id_location || '')
           .trim()
           .toLowerCase()
         const tankRows =
@@ -160,22 +155,22 @@ const DataProperties = () => {
           const siteKey = String(tankRow?.id_site || fallbackSiteKey || '')
             .trim()
             .toLowerCase()
-          const bacodeKey = String(tankRow?.id_location || fallbackBacodeKey || '')
-            .trim()
-            .toLowerCase()
           const tankNumber = Number.parseInt(String(tankRow?.id_tank || ''), 10)
-          const rawCapacity = Number(tankRow?.max_capacity ?? item?.max_capacity ?? 0)
-          const capacityValue = Number.isFinite(rawCapacity) ? rawCapacity : 0
+          const rawCapacity = Number(
+            tankRow?.max_capacity ??
+              tankRow?.total_liter ??
+              item?.max_capacity ??
+              item?.total_liter ??
+              0,
+          )
+          const capacityValue = Number.isFinite(rawCapacity) && rawCapacity > 0 ? rawCapacity : null
 
-          upsertCapacity(siteKey, bacodeKey, tankNumber, capacityValue)
+          upsertCapacity(siteKey, tankNumber, capacityValue)
         })
       })
 
       Object.keys(nextCapacityLookup.bySite).forEach((key) => {
         nextCountLookup.bySite[key] = Object.keys(nextCapacityLookup.bySite[key] || {}).length
-      })
-      Object.keys(nextCapacityLookup.byBacode).forEach((key) => {
-        nextCountLookup.byBacode[key] = Object.keys(nextCapacityLookup.byBacode[key] || {}).length
       })
 
       setTankCountLookup(nextCountLookup)
@@ -196,13 +191,7 @@ const DataProperties = () => {
       const siteKey = String(item?.idSite || '')
         .trim()
         .toLowerCase()
-      const bacodeKey = String(item?.bacode || '')
-        .trim()
-        .toLowerCase()
-
-      return (
-        tankCountLookup.bySite[siteKey] ?? tankCountLookup.byBacode[bacodeKey] ?? DEFAULT_TANK_COUNT
-      )
+      return tankCountLookup.bySite[siteKey] ?? DEFAULT_TANK_COUNT
     },
     [tankCountLookup],
   )
@@ -212,15 +201,7 @@ const DataProperties = () => {
       const siteKey = String(item?.idSite || '')
         .trim()
         .toLowerCase()
-      const bacodeKey = String(item?.bacode || '')
-        .trim()
-        .toLowerCase()
-
-      return (
-        tankCapacityLookup.bySite?.[siteKey]?.[tankNumber] ??
-        tankCapacityLookup.byBacode?.[bacodeKey]?.[tankNumber] ??
-        null
-      )
+      return tankCapacityLookup.bySite?.[siteKey]?.[tankNumber] ?? null
     },
     [tankCapacityLookup],
   )
@@ -233,7 +214,12 @@ const DataProperties = () => {
   const renderTankTags = useCallback(
     (record, tankNumber) => {
       const capacity = getTankCapacity(record, tankNumber)
-      if (capacity === null || capacity === undefined || Number.isNaN(Number(capacity))) {
+      if (
+        capacity === null ||
+        capacity === undefined ||
+        Number.isNaN(Number(capacity)) ||
+        Number(capacity) <= 0
+      ) {
         return ''
       }
 
@@ -444,14 +430,19 @@ const DataProperties = () => {
   }
 
   const handleEdit = (record) => {
+    const toTankInputValue = (value) => {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) return ''
+      return String(value)
+    }
+
     setSelectedRecord(record)
     setFormData({
       ...record,
-      tank1: record?.tank1 ?? '0',
-      tank2: record?.tank2 ?? '0',
-      tank3: record?.tank3 ?? '0',
-      tank4: record?.tank4 ?? '0',
-      tank5: record?.tank5 ?? '0',
+      tank1: toTankInputValue(record?.tank1),
+      tank2: toTankInputValue(record?.tank2),
+      tank3: toTankInputValue(record?.tank3),
+      tank4: toTankInputValue(record?.tank4),
+      tank5: toTankInputValue(record?.tank5),
     })
     setVisible(true)
   }
@@ -460,7 +451,7 @@ const DataProperties = () => {
     const { name, value } = e.target
     if (TANK_INPUT_FIELDS.includes(name)) {
       const numericOnly = value.replace(/\D/g, '')
-      setFormData((prev) => ({ ...prev, [name]: numericOnly || '0' }))
+      setFormData((prev) => ({ ...prev, [name]: numericOnly }))
       return
     }
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -508,7 +499,12 @@ const DataProperties = () => {
       return null
     }
 
-    const normalizeTankValue = (value) => String(value ?? '').replace(/\D/g, '')
+    const normalizeTankValue = (value) => {
+      const digitsOnly = String(value ?? '').replace(/\D/g, '')
+      if (!digitsOnly) return ''
+      if (/^0+$/.test(digitsOnly)) return '0'
+      return digitsOnly.replace(/^0+/, '')
+    }
     const activeValue = toBooleanOrNull(formData.active)
     const payload = {
       active: activeValue,
@@ -521,11 +517,53 @@ const DataProperties = () => {
       tank5: normalizeTankValue(formData.tank5),
       update_by: String(formData.updateBy || '').trim(),
     }
+    setPendingSavePayload(payload)
+    setConfirmSaveVisible(true)
+  }
+
+  const handleConfirmSave = async () => {
+    const pushToast = (color, message) => {
+      const isSuccess = color === 'success'
+      const title = isSuccess ? 'Perubahan Tersimpan' : 'Penyimpanan Gagal'
+      const timeLabel = new Date().toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+
+      addToast(
+        <CToast autohide delay={4200} color={color} className="text-white border-0 shadow-sm">
+          <CToastHeader closeButton className="bg-transparent text-white border-0 pb-1">
+            <div className="d-flex align-items-center gap-2 me-auto">
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'currentColor',
+                  opacity: 0.85,
+                }}
+              />
+              <strong>{title}</strong>
+            </div>
+            <small className="text-white-50">{timeLabel}</small>
+          </CToastHeader>
+          <CToastBody className="pt-0">{message}</CToastBody>
+        </CToast>,
+      )
+    }
+
+    if (!selectedRecord?.id || !pendingSavePayload) {
+      setConfirmSaveVisible(false)
+      pushToast('danger', 'Data perubahan tidak valid.')
+      return
+    }
 
     try {
       setSaving(true)
-      await axios.put(`${baseURL}site/${selectedRecord.id}`, payload)
+      await axios.put(`${baseURL}site/${selectedRecord.id}`, pendingSavePayload)
       setVisible(false)
+      setConfirmSaveVisible(false)
+      setPendingSavePayload(null)
       await Promise.all([fetchSites(), fetchTankMeta()])
       pushToast('success', `Site ${selectedRecord.idSite || ''} berhasil diperbarui.`)
     } catch (error) {
@@ -1045,12 +1083,20 @@ const DataProperties = () => {
                     name={tankField}
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={formData[tankField] ?? '0'}
+                    value={formData[tankField] ?? ''}
                     onChange={handleChange}
                   />
                 </CCol>
               </CRow>
             ))}
+            <CRow className="mb-1">
+              <CCol sm={{ span: 9, offset: 3 }}>
+                <small className="text-secondary d-block">
+                  Info: isi nilai <b>0</b> pada Tank 1-5 untuk menghapus data tank terkait dari
+                  tabel <b>ms_tank</b>.
+                </small>
+              </CCol>
+            </CRow>
           </CForm>
         </CModalBody>
         <CModalFooter>
@@ -1059,6 +1105,46 @@ const DataProperties = () => {
           </CButton>
           <CButton color="primary" onClick={handleSave} disabled={saving}>
             {saving ? <CSpinner size="sm" /> : 'Save changes'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+      <CModal
+        visible={confirmSaveVisible}
+        onClose={() => {
+          if (saving) return
+          setConfirmSaveVisible(false)
+          setPendingSavePayload(null)
+        }}
+        alignment="center"
+      >
+        <CModalHeader>
+          <CModalTitle>Konfirmasi Simpan Perubahan</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p className="mb-2">
+            Pastikan data yang diubah sudah benar sebelum disimpan.
+          </p>
+          <div className="small text-secondary">
+            Nilai Tank 1-5 yang diisi <b>0</b> akan menghapus data tank terkait dari tabel{' '}
+            <b>ms_tank</b>.
+          </div>
+          <div className="small text-secondary mt-1">
+            Mohon cek kembali BACode, Area, Status, dan kapasitas tank.
+          </div>
+        </CModalBody>
+        <CModalFooter>
+          <CButton
+            color="secondary"
+            onClick={() => {
+              setConfirmSaveVisible(false)
+              setPendingSavePayload(null)
+            }}
+            disabled={saving}
+          >
+            Batal
+          </CButton>
+          <CButton color="primary" onClick={handleConfirmSave} disabled={saving}>
+            {saving ? <CSpinner size="sm" /> : 'Ya, Simpan'}
           </CButton>
         </CModalFooter>
       </CModal>
