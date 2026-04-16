@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { Tag, Collapse } from 'antd'
+import { Tag, Collapse, AutoComplete } from 'antd'
 import {
   CCard,
   CCardBody,
@@ -430,6 +430,10 @@ const DataProperties = () => {
 
     return suggestions
   }, [enhancedDataSource, search])
+  const searchAutoCompleteOptions = useMemo(
+    () => searchSuggestions.map((value) => ({ value })),
+    [searchSuggestions],
+  )
 
   const handleRefresh = () => {
     fetchSites()
@@ -766,21 +770,19 @@ const DataProperties = () => {
           <CCol xs={12}>
             <div className="d-flex align-items-center gap-2 flex-wrap flex-md-nowrap">
               <div className="flex-grow-1">
-                <CFormInput
-                  type="text"
-                  placeholder="Search by ID Site / BACode..."
+                <AutoComplete
+                  size="middle"
                   value={search}
-                  list="data-properties-search-options"
-                  onChange={(e) => {
-                    setSearch(e.target.value)
-                  }}
-                  size="sm"
+                  options={searchAutoCompleteOptions}
+                  onSelect={(value) => setSearch(value)}
+                  onChange={(value) => setSearch(value)}
+                  filterOption={(inputValue, option) =>
+                    (option?.value ?? '').toUpperCase().includes(inputValue.toUpperCase())
+                  }
+                  style={{ width: '100%' }}
+                  placeholder="Search by ID Site / BACode..."
+                  allowClear
                 />
-                <datalist id="data-properties-search-options">
-                  {searchSuggestions.map((value) => (
-                    <option key={value} value={value} />
-                  ))}
-                </datalist>
               </div>
 
               <CFormSelect

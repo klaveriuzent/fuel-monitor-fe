@@ -2,7 +2,16 @@ import React, { useMemo, useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
-import { CCard, CCardBody, CButton } from '@coreui/react'
+import {
+  CCard,
+  CCardBody,
+  CButton,
+  CModal,
+  CModalHeader,
+  CModalTitle,
+  CModalBody,
+  CModalFooter,
+} from '@coreui/react'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
@@ -63,6 +72,8 @@ const FuelReceive = () => {
   const [isLoadingSites, setIsLoadingSites] = useState(false)
   const [tankOptions, setTankOptions] = useState([])
   const [isLoadingTanks, setIsLoadingTanks] = useState(false)
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false)
+  const [selectedAttachmentRecord, setSelectedAttachmentRecord] = useState(null)
 
   const handleEdit = useCallback(
     (record) => {
@@ -102,7 +113,20 @@ const FuelReceive = () => {
     [setFormData],
   )
 
-  const allColumns = useMemo(() => buildFuelReceiveColumns(handleEdit), [handleEdit])
+  const handleOpenAttachmentModal = useCallback((record) => {
+    setSelectedAttachmentRecord(record || null)
+    setIsAttachmentModalOpen(true)
+  }, [])
+
+  const handleCloseAttachmentModal = useCallback(() => {
+    setIsAttachmentModalOpen(false)
+    setSelectedAttachmentRecord(null)
+  }, [])
+
+  const allColumns = useMemo(
+    () => buildFuelReceiveColumns(handleEdit, handleOpenAttachmentModal),
+    [handleEdit, handleOpenAttachmentModal],
+  )
 
   const tableColumns = useMemo(
     () => allColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),
@@ -127,6 +151,18 @@ const FuelReceive = () => {
 
       if (columnKey === 'total_information') {
         return `Delivery: ${formatDecimal(record.total_deliv || 0)} | Request: ${formatDecimal(record.total_permintaan || 0)} | Selisih: ${formatDecimal(record.total_selisih || 0)} (${formatPercentage(record.persentase_selisih || 0)})`
+      }
+      if (columnKey === 'attachment') {
+        return (
+          <CButton
+            color="secondary"
+            size="sm"
+            variant="outline"
+            onClick={() => handleOpenAttachmentModal(record)}
+          >
+            Upload
+          </CButton>
+        )
       }
 
       return '-'
@@ -492,6 +528,36 @@ const FuelReceive = () => {
         tankOptions={availableTankOptions}
         isLoadingTanks={isLoadingTanks}
       />
+
+      <CModal visible={isAttachmentModalOpen} onClose={handleCloseAttachmentModal} alignment="center">
+        <CModalHeader>
+          <CModalTitle>Upload Attachment</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <div className="small text-secondary mb-2">
+            Ini masih mode dummy. Proses upload file belum diaktifkan.
+          </div>
+          <div className="small">
+            <div>
+              <strong>Site:</strong> {selectedAttachmentRecord?.id_site || '-'}
+            </div>
+            <div>
+              <strong>Tank:</strong> {selectedAttachmentRecord?.id_tank || '-'}
+            </div>
+            <div>
+              <strong>Date:</strong> {selectedAttachmentRecord?.waktu_mulai_delivery || '-'}
+            </div>
+          </div>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={handleCloseAttachmentModal}>
+            Close
+          </CButton>
+          <CButton color="primary" disabled>
+            Upload (Soon)
+          </CButton>
+        </CModalFooter>
+      </CModal>
     </>
   )
 }

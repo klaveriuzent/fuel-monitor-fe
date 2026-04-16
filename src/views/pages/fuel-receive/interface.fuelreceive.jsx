@@ -1,4 +1,4 @@
-//import { CButton } from '@coreui/react'
+import { CButton } from '@coreui/react'
 import { Tag } from 'antd'
 
 export const parseDateSafe = (value) => {
@@ -117,7 +117,7 @@ export const formatPercentage = (value) =>
 const formatValueOrDash = (value, formatter = (val) => val) =>
   value || value === 0 ? formatter(value) : '-'
 
-export const buildFuelReceiveColumns = (onEdit = () => {}) => [
+export const buildFuelReceiveColumns = (onEdit = () => {}, onOpenAttachment = () => {}) => [
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },
   { title: 'Tank', dataIndex: 'id_tank', key: 'id_tank', align: 'center' },
   {
@@ -208,6 +208,22 @@ export const buildFuelReceiveColumns = (onEdit = () => {}) => [
           </span>
         </span>
       </div>
+    ),
+  },
+  {
+    title: 'Attachment',
+    key: 'attachment',
+    width: 120,
+    align: 'center',
+    render: (_, record) => (
+      <CButton
+        color="secondary"
+        size="sm"
+        variant="outline"
+        onClick={() => onOpenAttachment(record)}
+      >
+        Upload
+      </CButton>
     ),
   },
   // SAAT INI TIDAK ADA ACTION, JADI SAYA KOMEN AJA DULU, NANTI BISA DITAMBAHKAN KEMBALI

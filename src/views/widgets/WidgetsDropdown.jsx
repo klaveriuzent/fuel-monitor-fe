@@ -57,7 +57,12 @@ const parseDateSafe = (value) => {
 // decide tank status from last_tank_data
 const getTankStatus = (item, standbyThresholdMin = 5) => {
   const last = item?.last_tank_data?.[0]
-  if (!last) return { key: 'offline' }
+  if (!last) {
+    const rawCapacity = Number(item?.total_liter ?? 0)
+    const hasCapacity = Number.isFinite(rawCapacity) && rawCapacity > 0
+    const activeMasterTank = isAktif(item?.is_active)
+    return { key: hasCapacity && activeMasterTank ? 'standby' : 'offline' }
+  }
 
   if (!isAktif(last.aktif_flag)) return { key: 'offline' }
 
