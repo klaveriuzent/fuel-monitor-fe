@@ -377,18 +377,40 @@ const DataProperties = () => {
     return [...keys].filter((key) => Boolean(EXPORT_COLUMN_MAP[key]))
   }, [EXPORT_COLUMN_MAP, visibleColumnKeys])
 
-  const filteredData = enhancedDataSource.filter((item) => {
+  const filteredData = useMemo(() => {
     const query = search.toLowerCase()
-    const idSite = String(item.idSite || '').toLowerCase()
-    const bacode = String(item.bacode || '').toLowerCase()
-    const matchesText = idSite.includes(query) || bacode.includes(query)
-    const matchesTankCount =
-      tankCountFilter === 'all' ? true : getTankCount(item) === Number(tankCountFilter)
-    const matchesStatus =
-      statusFilter === 'all' ? true : statusFilter === 'active' ? item.active : !item.active
 
-    return matchesText && matchesTankCount && matchesStatus
-  })
+    return enhancedDataSource
+      .filter((item) => {
+        const idSite = String(item.idSite || '').toLowerCase()
+        const bacode = String(item.bacode || '').toLowerCase()
+        const matchesText = idSite.includes(query) || bacode.includes(query)
+        const matchesTankCount =
+          tankCountFilter === 'all' ? true : getTankCount(item) === Number(tankCountFilter)
+        const matchesStatus =
+          statusFilter === 'all' ? true : statusFilter === 'active' ? item.active : !item.active
+
+        return matchesText && matchesTankCount && matchesStatus
+      })
+      .sort((a, b) => {
+        const idSiteCompare = String(a.idSite || '').localeCompare(String(b.idSite || ''), undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        })
+        if (idSiteCompare !== 0) return idSiteCompare
+
+        const bacodeCompare = String(a.bacode || '').localeCompare(String(b.bacode || ''), undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        })
+        if (bacodeCompare !== 0) return bacodeCompare
+
+        return String(a.id || '').localeCompare(String(b.id || ''), undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        })
+      })
+  }, [enhancedDataSource, search, tankCountFilter, statusFilter, getTankCount])
   const searchSuggestions = useMemo(() => {
     const query = search.trim().toLowerCase()
     const seen = new Set()
@@ -507,6 +529,7 @@ const DataProperties = () => {
     }
     const activeValue = toBooleanOrNull(formData.active)
     const payload = {
+      id_site: String(selectedRecord.idSite || '').trim(),
       active: activeValue,
       area: String(formData.area || '').trim(),
       bacode: String(formData.bacode || '').trim(),
