@@ -206,10 +206,28 @@
   position: absolute;
   bottom: 0;
   width: 100%;
+  height: 100%;
   background: linear-gradient(to top, #3b82f6, #60a5fa);
   opacity: 0.7;
   transition: height 0.6s ease-in-out;
   z-index: 1;
+  overflow: hidden;
+}
+
+.tank-visual__water::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -7px;
+  width: 100%;
+  height: 14px;
+  background:
+    radial-gradient(circle at 8px 12px, rgba(255, 255, 255, 0.58) 7px, transparent 8px) 0 0 / 24px
+      14px repeat-x,
+    radial-gradient(circle at 20px 12px, rgba(255, 255, 255, 0.42) 7px, transparent 8px) 0 0 / 24px
+      14px repeat-x;
+  animation: tank-wave-shift 2.8s linear infinite;
+  pointer-events: none;
 }
 
 .tank-visual__fuel {
@@ -221,10 +239,28 @@
 }
 
 .tank-visual__fuel-fill {
+  position: relative;
   width: 100%;
   height: 100%;
   background: linear-gradient(to top, #f59e0b, #fbbf24);
   opacity: 0.7;
+  overflow: hidden;
+}
+
+.tank-visual__fuel-fill::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 14px;
+  background:
+    radial-gradient(circle at 8px 0, rgba(255, 255, 255, 0.52) 7px, transparent 8px) 0 0 / 24px 14px
+      repeat-x,
+    radial-gradient(circle at 20px 0, rgba(255, 255, 255, 0.36) 7px, transparent 8px) 0 0 / 24px
+      14px repeat-x;
+  animation: tank-wave-shift 2.4s linear infinite;
+  pointer-events: none;
 }
 
 .fuel-card--standby .tank-visual__fuel-fill {
@@ -260,4 +296,20 @@
 
 [data-coreui-theme='dark'] .fuel-card--standby .tank-visual__fuel-fill {
   background: linear-gradient(to top, #4b5563, #9ca3af);
+}
+
+@keyframes tank-wave-shift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 24px 0, 24px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tank-visual__water::after,
+  .tank-visual__fuel-fill::after {
+    animation: none;
+  }
 }
