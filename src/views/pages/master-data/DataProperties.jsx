@@ -18,6 +18,10 @@ import {
   CForm,
   CFormLabel,
   CFormCheck,
+  CToast,
+  CToastBody,
+  CToastHeader,
+  CToaster,
 } from '@coreui/react'
 import axios from 'axios'
 import { saveAs } from 'file-saver'
@@ -66,8 +70,10 @@ const mapSiteData = (item) => ({
 
 const DataProperties = () => {
   const [visible, setVisible] = useState(false)
+  const [addVisible, setAddVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [formData, setFormData] = useState({})
+  const [addFormData, setAddFormData] = useState({})
   const [search, setSearch] = useState('')
   const [tankCountFilter, setTankCountFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -79,6 +85,9 @@ const DataProperties = () => {
   const [tankCountLookup, setTankCountLookup] = useState({ bySite: {}, byBacode: {} })
   const [tankCapacityLookup, setTankCapacityLookup] = useState({ bySite: {}, byBacode: {} })
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [toast, addToast] = useState(0)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
   const filterGroup = useSelector((state) => state.filterGroup)
@@ -222,14 +231,21 @@ const DataProperties = () => {
   }, [])
 
   const renderTankTags = useCallback(
-    (record, tankNumber) => (
-      <div className="d-flex flex-column gap-1">
-        <div>
-          <Tag>Capacity</Tag>
-          {formatTankCapacity(getTankCapacity(record, tankNumber))}
+    (record, tankNumber) => {
+      const capacity = getTankCapacity(record, tankNumber)
+      if (capacity === null || capacity === undefined || Number.isNaN(Number(capacity))) {
+        return ''
+      }
+
+      return (
+        <div className="d-flex flex-column gap-1">
+          <div>
+            <Tag>Capacity</Tag>
+            {formatTankCapacity(capacity)}
+          </div>
         </div>
-      </div>
-    ),
+      )
+    },
     [formatTankCapacity, getTankCapacity],
   )
 
@@ -387,6 +403,25 @@ const DataProperties = () => {
 
     return matchesText && matchesTankCount && matchesStatus
   })
+  const searchSuggestions = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    const seen = new Set()
+
+    const suggestions = enhancedDataSource
+      .flatMap((item) => [item.idSite, item.bacode])
+      .map((value) => String(value || '').trim())
+      .filter((value) => value !== '')
+      .filter((value) => {
+        const key = value.toLowerCase()
+        if (query && !key.includes(query)) return false
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      .slice(0, 30)
+
+    return suggestions
+  }, [enhancedDataSource, search])
 
   const handleRefresh = () => {
     fetchSites()
@@ -432,12 +467,149 @@ const DataProperties = () => {
   }
 
   const handleSave = async () => {
+    const pushToast = (color, message) => {
+      const isSuccess = color === 'success'
+      const title = isSuccess ? 'Perubahan Tersimpan' : 'Penyimpanan Gagal'
+      const timeLabel = new Date().toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+
+      addToast(
+        <CToast autohide delay={4200} color={color} className="text-white border-0 shadow-sm">
+          <CToastHeader closeButton className="bg-transparent text-white border-0 pb-1">
+            <div className="d-flex align-items-center gap-2 me-auto">
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'currentColor',
+                  opacity: 0.85,
+                }}
+              />
+              <strong>{title}</strong>
+            </div>
+            <small className="text-white-50">{timeLabel}</small>
+          </CToastHeader>
+          <CToastBody className="pt-0">{message}</CToastBody>
+        </CToast>,
+      )
+    }
+
+    if (!selectedRecord?.id) {
+      pushToast('danger', 'Site tidak valid untuk disimpan.')
+      return
+    }
+
+    const toBooleanOrNull = (value) => {
+      if (value === true || value === 'true') return true
+      if (value === false || value === 'false') return false
+      return null
+    }
+
+    const normalizeTankValue = (value) => String(value ?? '').replace(/\D/g, '')
+    const activeValue = toBooleanOrNull(formData.active)
+    const payload = {
+      active: activeValue,
+      area: String(formData.area || '').trim(),
+      bacode: String(formData.bacode || '').trim(),
+      tank1: normalizeTankValue(formData.tank1),
+      tank2: normalizeTankValue(formData.tank2),
+      tank3: normalizeTankValue(formData.tank3),
+      tank4: normalizeTankValue(formData.tank4),
+      tank5: normalizeTankValue(formData.tank5),
+      update_by: String(formData.updateBy || '').trim(),
+    }
+
     try {
-      // await axios.put(`${baseURL}site/${selectedRecord.id}`, formData)
+      setSaving(true)
+      await axios.put(`${baseURL}site/${selectedRecord.id}`, payload)
       setVisible(false)
-      fetchSites()
+      await Promise.all([fetchSites(), fetchTankMeta()])
+      pushToast('success', `Site ${selectedRecord.idSite || ''} berhasil diperbarui.`)
     } catch (error) {
       console.error('Error updating site:', error)
+      const apiMessage = error?.response?.data?.message || error?.response?.data?.error
+      pushToast('danger', apiMessage || 'Gagal menyimpan perubahan data site.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleOpenAdd = () => {
+    setAddFormData({
+      idSite: '',
+      bacode: '',
+      area: '',
+      active: true,
+      userCreate: '',
+    })
+    setAddVisible(true)
+  }
+
+  const handleAddChange = (e) => {
+    const { name, value } = e.target
+    setAddFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleCreateSave = async () => {
+    const pushToast = (color, message) => {
+      const isSuccess = color === 'success'
+      const title = isSuccess ? 'Data Berhasil Ditambahkan' : 'Tambah Data Gagal'
+      const timeLabel = new Date().toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+
+      addToast(
+        <CToast autohide delay={4200} color={color} className="text-white border-0 shadow-sm">
+          <CToastHeader closeButton className="bg-transparent text-white border-0 pb-1">
+            <div className="d-flex align-items-center gap-2 me-auto">
+              <span
+                style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: 'currentColor',
+                  opacity: 0.85,
+                }}
+              />
+              <strong>{title}</strong>
+            </div>
+            <small className="text-white-50">{timeLabel}</small>
+          </CToastHeader>
+          <CToastBody className="pt-0">{message}</CToastBody>
+        </CToast>,
+      )
+    }
+
+    const idSite = String(addFormData.idSite || '').trim()
+    if (!idSite) {
+      pushToast('danger', 'ID Site wajib diisi.')
+      return
+    }
+
+    const payload = {
+      id_site: idSite,
+      bacode: String(addFormData.bacode || '').trim(),
+      area: String(addFormData.area || '').trim(),
+      active: addFormData.active === true || addFormData.active === 'true',
+      user_create: String(addFormData.userCreate || '').trim(),
+    }
+
+    try {
+      setCreating(true)
+      await axios.post(`${baseURL}site`, payload)
+      setAddVisible(false)
+      await Promise.all([fetchSites(), fetchTankMeta()])
+      pushToast('success', `Site ${idSite} berhasil ditambahkan.`)
+    } catch (error) {
+      console.error('Error creating site:', error)
+      const apiMessage = error?.response?.data?.message || error?.response?.data?.error
+      pushToast('danger', apiMessage || 'Gagal menambahkan data site.')
+    } finally {
+      setCreating(false)
     }
   }
 
@@ -530,49 +702,54 @@ const DataProperties = () => {
       {/* Filter Section */}
       <CCard className="master-data-filter-card mb-3">
         <CRow className="align-items-center g-2">
-          <CCol xs={12} sm={6} md={3}>
-            <CFormSelect
-              size="sm"
-              value={tankCountFilter}
-              onChange={(e) => {
-                setTankCountFilter(e.target.value)
-              }}
-            >
-              <option value="all">All Tank Count</option>
-              {tankCountOptions.map((count) => (
-                <option key={count} value={count}>
-                  {count} Tank
-                </option>
-              ))}
-            </CFormSelect>
-          </CCol>
+          <CCol xs={12}>
+            <div className="d-flex align-items-center gap-2 flex-wrap flex-md-nowrap">
+              <div className="flex-grow-1">
+                <CFormInput
+                  type="text"
+                  placeholder="Search by ID Site / BACode..."
+                  value={search}
+                  list="data-properties-search-options"
+                  onChange={(e) => {
+                    setSearch(e.target.value)
+                  }}
+                  size="sm"
+                />
+                <datalist id="data-properties-search-options">
+                  {searchSuggestions.map((value) => (
+                    <option key={value} value={value} />
+                  ))}
+                </datalist>
+              </div>
 
-          <CCol xs={12} sm={6} md={3}>
-            <CFormSelect
-              size="sm"
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value)
-              }}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="offline">Offline</option>
-            </CFormSelect>
-          </CCol>
-
-          <CCol xs={12} md={6}>
-            <div className="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
-              <CFormInput
-                type="text"
-                placeholder="Search by ID Site / BACode..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value)
-                }}
+              <CFormSelect
                 size="sm"
-                className="flex-grow-1"
-              />
+                value={tankCountFilter}
+                onChange={(e) => {
+                  setTankCountFilter(e.target.value)
+                }}
+                style={{ width: '150px' }}
+              >
+                <option value="all">All Tank Count</option>
+                {tankCountOptions.map((count) => (
+                  <option key={count} value={count}>
+                    {count} Tank
+                  </option>
+                ))}
+              </CFormSelect>
+
+              <CFormSelect
+                size="sm"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value)
+                }}
+                style={{ width: '130px' }}
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="offline">Offline</option>
+              </CFormSelect>
 
               <CButton
                 color="secondary"
@@ -659,6 +836,16 @@ const DataProperties = () => {
               Export to Excel
             </CButton>
           </div>
+          <div className="d-flex justify-content-end align-items-center mb-3">
+            <CButton
+              color="primary"
+              size="sm"
+              style={{ minWidth: '154.5px' }}
+              onClick={handleOpenAdd}
+            >
+              New Data Properties
+            </CButton>
+          </div>
           <ResponsiveTableCards
             dataSource={filteredData}
             loading={loading}
@@ -681,6 +868,102 @@ const DataProperties = () => {
           />
         </CCardBody>
       </CCard>
+
+      {/* Modal Edit */}
+      <CModal visible={addVisible} onClose={() => setAddVisible(false)} alignment="center">
+        <CModalHeader>
+          <CModalTitle>Add Site</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <CForm>
+            <CRow className="mb-3">
+              <CFormLabel htmlFor="idSite" className="col-sm-3 col-form-label">
+                ID Site
+              </CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
+                  type="text"
+                  id="idSite"
+                  name="idSite"
+                  value={addFormData.idSite || ''}
+                  onChange={handleAddChange}
+                  placeholder="Contoh: SITE001"
+                />
+                <small className="text-secondary d-block mt-1">
+                  Pastikan ID Site sama persis dengan ID mesin yang sudah terdaftar agar integrasi
+                  data berjalan benar.
+                </small>
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-3">
+              <CFormLabel className="col-sm-3 col-form-label">Status</CFormLabel>
+              <CCol sm={9}>
+                <CFormCheck
+                  type="radio"
+                  name="addActive"
+                  id="addStatusActive"
+                  label="Active"
+                  checked={addFormData.active === true || addFormData.active === 'true'}
+                  onChange={() => setAddFormData((prev) => ({ ...prev, active: true }))}
+                />
+                <CFormCheck
+                  type="radio"
+                  name="addActive"
+                  id="addStatusOffline"
+                  label="Offline"
+                  checked={addFormData.active === false || addFormData.active === 'false'}
+                  onChange={() => setAddFormData((prev) => ({ ...prev, active: false }))}
+                />
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-3">
+              <CFormLabel htmlFor="addArea" className="col-sm-3 col-form-label">
+                Area
+              </CFormLabel>
+              <CCol sm={9}>
+                <CFormSelect
+                  id="addArea"
+                  name="area"
+                  value={addFormData.area || ''}
+                  onChange={handleAddChange}
+                >
+                  <option value="">Select Area</option>
+                  {areaOptions.map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
+                </CFormSelect>
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-3">
+              <CFormLabel htmlFor="addBacode" className="col-sm-3 col-form-label">
+                BACode
+              </CFormLabel>
+              <CCol sm={9}>
+                <CFormInput
+                  type="text"
+                  id="addBacode"
+                  name="bacode"
+                  value={addFormData.bacode || ''}
+                  onChange={handleAddChange}
+                />
+              </CCol>
+            </CRow>
+          </CForm>
+        </CModalBody>
+        <CModalFooter>
+          <CButton color="secondary" onClick={() => setAddVisible(false)}>
+            Close
+          </CButton>
+          <CButton color="primary" onClick={handleCreateSave} disabled={creating}>
+            {creating ? <CSpinner size="sm" /> : 'Save'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
 
       {/* Modal Edit */}
       <CModal visible={visible} onClose={() => setVisible(false)} alignment="center">
@@ -774,11 +1057,12 @@ const DataProperties = () => {
           <CButton color="secondary" onClick={() => setVisible(false)}>
             Close
           </CButton>
-          <CButton color="primary" onClick={handleSave}>
-            Save changes
+          <CButton color="primary" onClick={handleSave} disabled={saving}>
+            {saving ? <CSpinner size="sm" /> : 'Save changes'}
           </CButton>
         </CModalFooter>
       </CModal>
+      <CToaster push={toast} placement="top-end" className="p-3" />
     </div>
   )
 }

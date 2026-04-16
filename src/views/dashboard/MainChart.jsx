@@ -139,8 +139,8 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
           datasets: [
             {
               label: 'Jumlah Transaksi',
-              backgroundColor: `rgba(${getStyle('--cui-info-rgb')}, .75)`,
-              borderColor: getStyle('--cui-info'),
+              backgroundColor: `rgba(${getStyle('--cui-primary-rgb')}, .75)`,
+              borderColor: getStyle('--cui-primary'),
               borderWidth: 1,
               data: chartData.countData,
               barPercentage: 0.7,
