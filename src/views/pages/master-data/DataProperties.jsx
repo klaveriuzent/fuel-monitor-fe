@@ -781,9 +781,14 @@ const DataProperties = () => {
                     (option?.value ?? '').toUpperCase().includes(inputValue.toUpperCase())
                   }
                   style={{ width: '100%' }}
-                  placeholder="Search by ID Site / BACode..."
                   allowClear
-                />
+                >
+                  <CFormInput
+                    size="sm"
+                    className="master-data-search-input"
+                    placeholder="Search by ID Site / BACode..."
+                  />
+                </AutoComplete>
               </div>
 
               <CFormSelect

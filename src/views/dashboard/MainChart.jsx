@@ -17,6 +17,12 @@ const getGranularity = (dateRange) => {
 
 const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => {
   const chartRef = useRef(null)
+  const currentTheme =
+    typeof document !== 'undefined'
+      ? document.documentElement.getAttribute('data-coreui-theme')
+      : 'light'
+  const chartTextColor =
+    getStyle('--cui-body-color') || (currentTheme === 'dark' ? '#e9ecef' : '#212529')
 
   const chartData = useMemo(() => {
     const [startRaw, endRaw] = dateRange || []
@@ -96,21 +102,28 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
     const handleColorSchemeChange = () => {
       if (chartRef.current) {
         setTimeout(() => {
+          const theme =
+            typeof document !== 'undefined'
+              ? document.documentElement.getAttribute('data-coreui-theme')
+              : 'light'
+          const bodyColor = getStyle('--cui-body-color') || (theme === 'dark' ? '#e9ecef' : '#212529')
+
+          chartRef.current.options.plugins.legend.labels.color = bodyColor
           chartRef.current.options.scales.x.grid.borderColor = getStyle(
             '--cui-border-color-translucent',
           )
           chartRef.current.options.scales.x.grid.color = getStyle('--cui-border-color-translucent')
-          chartRef.current.options.scales.x.ticks.color = getStyle('--cui-body-color')
+          chartRef.current.options.scales.x.ticks.color = bodyColor
           chartRef.current.options.scales.y.grid.borderColor = getStyle(
             '--cui-border-color-translucent',
           )
           chartRef.current.options.scales.y.grid.color = getStyle('--cui-border-color-translucent')
-          chartRef.current.options.scales.y.ticks.color = getStyle('--cui-body-color')
+          chartRef.current.options.scales.y.ticks.color = bodyColor
           chartRef.current.options.scales.y1.grid.borderColor = getStyle(
             '--cui-border-color-translucent',
           )
           chartRef.current.options.scales.y1.grid.color = getStyle('--cui-border-color-translucent')
-          chartRef.current.options.scales.y1.ticks.color = getStyle('--cui-body-color')
+          chartRef.current.options.scales.y1.ticks.color = bodyColor
           chartRef.current.update()
         })
       }
@@ -167,7 +180,7 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
             legend: {
               display: true,
               labels: {
-                color: getStyle('--cui-body-color'),
+                color: chartTextColor,
               },
             },
             tooltip: {
@@ -189,7 +202,7 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
                 drawOnChartArea: false,
               },
               ticks: {
-                color: getStyle('--cui-body-color'),
+                color: chartTextColor,
                 autoSkip: chartData.granularity !== 'hour',
                 maxRotation: 0,
               },
@@ -204,7 +217,7 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
               },
               max: Math.max(5, Math.ceil(chartData.maxCount / 5) * 5),
               ticks: {
-                color: getStyle('--cui-body-color'),
+                color: chartTextColor,
                 maxTicksLimit: 5,
                 stepSize: Math.max(1, Math.ceil(Math.max(5, chartData.maxCount) / 5)),
               },
@@ -220,7 +233,7 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
                 color: getStyle('--cui-border-color-translucent'),
               },
               ticks: {
-                color: getStyle('--cui-body-color'),
+                color: chartTextColor,
                 callback: (value) => `${Number(value).toLocaleString('id-ID')} L`,
               },
             },

@@ -145,7 +145,8 @@ const AppSubHeaderDashboard = ({
       <CRow className="align-items-center g-2">
         <CCol xs={12} sm={12} md={12}>
           <AutoComplete
-            size="middle"
+            size="small"
+            className="app-subheader__site-autocomplete"
             value={siteInputValue}
             options={siteAutoCompleteOptions}
             onSelect={handleSiteSelect}

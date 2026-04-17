@@ -82,6 +82,36 @@
   &__range-picker {
     margin-left: -12px;
   }
+
+  &__site-autocomplete {
+    width: 100%;
+  }
+}
+
+.app-subheader__site-autocomplete.ant-select-single.ant-select-sm .ant-select-selector {
+  min-height: 31px;
+  padding: 0 0.75rem;
+}
+
+.app-subheader__site-autocomplete .ant-select-selector {
+  background-color: var(--cui-body-bg, #fff);
+  color: var(--cui-body-color, #212529);
+  border-color: var(--cui-border-color-translucent, rgba(0, 0, 0, 0.1));
+}
+
+.app-subheader__site-autocomplete .ant-select-selection-placeholder {
+  color: var(--cui-secondary-color, rgba(108, 117, 125, 0.8));
+}
+
+.app-subheader__site-autocomplete .ant-select-arrow,
+.app-subheader__site-autocomplete .ant-select-clear {
+  color: var(--cui-secondary-color, rgba(108, 117, 125, 0.8));
+}
+
+.app-subheader__site-autocomplete .ant-select-selection-search-input,
+.app-subheader__site-autocomplete .ant-select-input {
+  color: inherit;
+  background-color: transparent !important;
 }
 
 [data-coreui-theme='dark'] .app-subheader {
@@ -110,6 +140,40 @@
       color: var(--cui-light, #ffffff);
     }
   }
+}
+
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete {
+  --ant-select-selector-bg: var(--cui-dark-bg-subtle, #1c1f26);
+  color-scheme: dark;
+}
+
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-selector,
+[data-coreui-theme='dark']
+  .app-subheader__site-autocomplete.ant-select-outlined:not(.ant-select-customize-input)
+  .ant-select-selector {
+  background-color: var(--cui-dark-bg-subtle, #1c1f26) !important;
+  color: var(--cui-body-color, #e9ecef) !important;
+  border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16)) !important;
+}
+
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-selection-item,
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-selection-search-input,
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-input {
+  color: var(--cui-body-color, #e9ecef) !important;
+  -webkit-text-fill-color: var(--cui-body-color, #e9ecef) !important;
+  background: transparent !important;
+}
+
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-selection-placeholder,
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-input::placeholder {
+  color: rgba(233, 236, 239, 0.78) !important;
+  -webkit-text-fill-color: rgba(233, 236, 239, 0.78) !important;
+  opacity: 1 !important;
+}
+
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-arrow,
+[data-coreui-theme='dark'] .app-subheader__site-autocomplete .ant-select-clear {
+  color: rgba(233, 236, 239, 0.7) !important;
 }
 
 .ant-range-custom {
