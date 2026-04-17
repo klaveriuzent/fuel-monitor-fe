@@ -6,6 +6,7 @@ import axios from 'axios'
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
 import { mapFuelStockData } from './interface.fuelstock'
+import '../tableDarkMode.scss'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
@@ -167,7 +168,7 @@ const FuelStock = () => {
         )}
       </Row>
 
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+      <div className="app-data-table" style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
         <Pagination
           current={currentPage}
           pageSize={pageSize}

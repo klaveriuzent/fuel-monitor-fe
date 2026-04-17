@@ -1,3 +1,6 @@
+import { Tooltip } from 'antd'
+import { InfoCircleOutlined } from '@ant-design/icons'
+
 export const formatDateTime = (value) =>
   new Date(value)
     .toLocaleString('id-ID', {
@@ -63,14 +66,32 @@ export const transactionColumns = [
     render: formatDecimal,
   },
   {
-    title: 'Stock By Receive',
+    title: (
+      <span className="d-inline-flex align-items-center gap-1">
+        <span>Stock By Receive</span>
+        <Tooltip title="Stock hasil perhitungan berdasarkan data fuel receive.">
+          <span className="d-inline-flex align-items-center text-muted" style={{ cursor: 'help' }}>
+            <InfoCircleOutlined />
+          </span>
+        </Tooltip>
+      </span>
+    ),
     dataIndex: 'stock_by_receive',
     key: 'stock_by_receive',
     align: 'right',
     render: () => '-',
   },
   {
-    title: 'Stock By ATG',
+    title: (
+      <span className="d-inline-flex align-items-center gap-1">
+        <span>Stock By ATG</span>
+        <Tooltip title="Stock hasil pembacaan langsung dari mesin ATG.">
+          <span className="d-inline-flex align-items-center text-muted" style={{ cursor: 'help' }}>
+            <InfoCircleOutlined />
+          </span>
+        </Tooltip>
+      </span>
+    ),
     dataIndex: 'stock_by_atg',
     key: 'stock_by_atg',
     align: 'right',

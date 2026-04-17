@@ -771,7 +771,8 @@ const DataProperties = () => {
             <div className="d-flex align-items-center gap-2 flex-wrap flex-md-nowrap">
               <div className="flex-grow-1">
                 <AutoComplete
-                  size="middle"
+                  size="small"
+                  className="master-data-search-autocomplete"
                   value={search}
                   options={searchAutoCompleteOptions}
                   onSelect={(value) => setSearch(value)}

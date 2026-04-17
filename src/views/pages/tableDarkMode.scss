@@ -224,3 +224,41 @@
     color: rgba(233, 236, 239, 0.4);
   }
 }
+
+/* ======================================================
+ * Dark Mode - Pagination readability fix
+ * ====================================================== */
+[data-coreui-theme='dark'] .app-data-table {
+  .ant-pagination-item a,
+  .ant-pagination-jump-prev .ant-pagination-item-container .ant-pagination-item-ellipsis,
+  .ant-pagination-jump-next .ant-pagination-item-container .ant-pagination-item-ellipsis {
+    color: var(--cui-body-color, #e9ecef) !important;
+  }
+
+  .ant-pagination-item-active a {
+    color: #fff !important;
+  }
+
+  .ant-pagination-total-text,
+  .ant-pagination-options,
+  .ant-pagination-options-size-changer,
+  .ant-pagination-options-quick-jumper,
+  .ant-pagination-options-quick-jumper input {
+    color: var(--cui-body-color, #e9ecef) !important;
+  }
+
+  .ant-pagination-options-quick-jumper input {
+    background-color: var(--cui-dark-bg-subtle, #1c1f26);
+    border-color: var(--cui-border-color, rgba(255, 255, 255, 0.16));
+  }
+
+  .ant-pagination-options-size-changer .ant-select-selector,
+  .ant-pagination-options-size-changer .ant-select-selection-item,
+  .ant-pagination-options-size-changer .ant-select-selection-placeholder {
+    color: var(--cui-body-color, #e9ecef) !important;
+  }
+
+  .ant-pagination-options-size-changer .ant-select-arrow {
+    color: rgba(233, 236, 239, 0.7) !important;
+  }
+}
