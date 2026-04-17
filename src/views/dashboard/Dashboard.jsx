@@ -25,6 +25,48 @@ const Dashboard = () => {
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState([null, null])
 
+  useEffect(() => {
+    const runSSOValidation = async () => {
+      const params = new URLSearchParams(window.location.search)
+      const token = params.get('t') || ''
+      if (!token) return
+
+      try {
+        const res = await fetch(`${baseURL}auth/sso_validate?t=${encodeURIComponent(token)}`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        })
+        const json = await res.json()
+
+        if (!res.ok) {
+          alert(json?.message || 'Authorization has been denied for this request.')
+          window.location.href = '/fuelmonitoring/login'
+          return
+        }
+
+        const username = json?.data?.username || ''
+        const fullName = json?.data?.full_name || ''
+        if (username) localStorage.setItem('username', username)
+        if (fullName) localStorage.setItem('full_name', fullName)
+        localStorage.setItem(
+          'user-data',
+          JSON.stringify({
+            UserName: username,
+            FullName: fullName,
+          }),
+        )
+
+        window.history.replaceState({}, '', '/fuelmonitoring/dashboard')
+      } catch (error) {
+        console.error('SSO validation error', error)
+        alert('Authorization has been denied for this request.')
+        window.location.href = '/fuelmonitoring/login'
+      }
+    }
+
+    runSSOValidation()
+  }, [])
+
   /* fetch transaksi */
   useEffect(() => {
     const fetchTransaksi = async () => {
