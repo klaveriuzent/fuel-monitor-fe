@@ -44,17 +44,7 @@ const Dashboard = () => {
           return
         }
 
-        const username = json?.data?.username || ''
-        const fullName = json?.data?.full_name || ''
-        if (username) localStorage.setItem('username', username)
-        if (fullName) localStorage.setItem('full_name', fullName)
-        localStorage.setItem(
-          'user-data',
-          JSON.stringify({
-            UserName: username,
-            FullName: fullName,
-          }),
-        )
+        localStorage.setItem('user-data', JSON.stringify(json?.data || {}))
 
         window.history.replaceState({}, '', '/fuelmonitoring/dashboard')
       } catch (error) {

@@ -19,6 +19,29 @@ const AppHeader = () => {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
   const [locations, setLocations] = useState([])
+  const [displayUserName, setDisplayUserName] = useState('username')
+
+  useEffect(() => {
+    const syncUserName = () => {
+      try {
+        const raw = localStorage.getItem('user-data')
+        if (!raw) {
+          setDisplayUserName('username')
+          return
+        }
+
+        const parsed = JSON.parse(raw)
+        const userName = parsed?.UserName || parsed?.username || 'username'
+        setDisplayUserName(userName)
+      } catch {
+        setDisplayUserName('username')
+      }
+    }
+
+    syncUserName()
+    window.addEventListener('storage', syncUserName)
+    return () => window.removeEventListener('storage', syncUserName)
+  }, [])
 
   // fetch data lokasi
   useEffect(() => {
@@ -62,7 +85,7 @@ const AppHeader = () => {
 
         <CHeaderNav>
           <li className="nav-item d-flex align-items-center ms-3">
-            <span className="fw-semibold">username</span>
+            <span className="fw-semibold">{displayUserName}</span>
           </li>
           <AppHeaderDropdown />
         </CHeaderNav>

@@ -43,6 +43,10 @@ const handleLogout = async () => {
       credentials: 'include',
     })
 
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('user-data')
+    }
+
     window.location.href = '/fuelmonitoring/login'
   } catch (error) {
     console.error('Logout gagal', error)
