@@ -1,11 +1,11 @@
-﻿import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Badge, Tooltip } from 'antd'
 import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { CCard, CCardBody, CCardTitle, CCardText, CButton } from '@coreui/react'
 
 import FuelCardModalChart from './FuelCardModalChart'
-import { clamp, toNumber } from './fuelCardUtils'
+import { clamp, formatDatabaseDateTimeDisplay, getDateTimestamp, toNumber } from './fuelCardUtils'
 import { useTankHistory } from './useTankHistory'
 
 import './FuelCard.scss'
@@ -186,16 +186,35 @@ TankWithScale.propTypes = {
 const FuelCard = ({ item }) => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [timeScale, setTimeScale] = useState('day')
+  const [nowMs, setNowMs] = useState(() => Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowMs(Date.now())
+    }, 30000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  const telemetryStatus = useMemo(() => {
+    if (item.aktif_flag !== '1') return { key: 'offline', text: 'Offline', color: 'red' }
+    if (!item.update_date) return { key: 'standby', text: 'Standby', color: 'orange' }
+
+    const lastUpdate = getDateTimestamp(item.update_date, 'day')
+    if (lastUpdate === null) return { key: 'standby', text: 'Standby', color: 'orange' }
+
+    const diffMinutes = (nowMs - lastUpdate) / 1000 / 60
+
+    if (diffMinutes > 24 * 60) return { key: 'offline', text: 'Offline', color: 'red' }
+    if (diffMinutes > 5) return { key: 'standby', text: 'Standby', color: 'orange' }
+
+    return { key: 'online', text: 'Online', color: 'green' }
+  }, [item.aktif_flag, item.update_date, nowMs])
 
   const isStandby = useCallback(() => {
-    if (item.aktif_flag !== '1' || !item.update_date) return false
-
-    const lastUpdate = new Date(item.update_date).getTime()
-    const now = Date.now()
-    const diffMinutes = (now - lastUpdate) / 1000 / 60
-
-    return diffMinutes > 5
-  }, [item.aktif_flag, item.update_date])
+    if (telemetryStatus.key === 'standby') return true
+    return telemetryStatus.key === 'offline' && item.aktif_flag === '1'
+  }, [item.aktif_flag, telemetryStatus.key])
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
   const capacity = Number(item.max_capacity) || 0
@@ -217,16 +236,16 @@ const FuelCard = ({ item }) => {
     isStandby,
   })
 
-  const badgeStatus = isStandby()
-    ? { text: 'Standby', color: 'orange' }
-    : item.aktif_flag === '1'
-      ? { text: 'Online', color: 'green' }
-      : { text: 'Offline', color: 'red' }
+  const badgeStatus = telemetryStatus
 
   return (
     <Badge.Ribbon text={badgeStatus.text} color={badgeStatus.color}>
       <CCard
-        className={`fuel-card shadow-sm h-full${badgeStatus.text === 'Standby' ? ' fuel-card--standby' : ''}`}
+        className={`fuel-card shadow-sm h-full${
+          badgeStatus.text === 'Standby' || badgeStatus.text === 'Offline'
+            ? ' fuel-card--standby fuel-card--offline'
+            : ''
+        }`}
       >
         <CCardBody className="fuel-card__body">
           <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
@@ -289,18 +308,7 @@ const FuelCard = ({ item }) => {
                     <small>Last Updated</small>
                   </td>
                   <td style={{ width: '90px' }}>
-                    <small>
-                      {item.update_date
-                        ? new Date(item.update_date).toLocaleString('en-GB', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                          })
-                        : '-'}
-                    </small>
+                    <small>{formatDatabaseDateTimeDisplay(item.update_date)}</small>
                   </td>
                 </tr>
               </tbody>

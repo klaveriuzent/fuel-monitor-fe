@@ -25,6 +25,26 @@ const parseDateSafe = (value) => {
 
   const raw = String(value).trim()
 
+  // "YYYY-MM-DD HH:mm:ss(.SSS)" (with optional timezone suffix) -> treat as DB-local wall time
+  const ymd = raw.match(
+    /^([0-9]{4})-([0-9]{2})-([0-9]{2})(?:[ T]([0-9]{2}):([0-9]{2})(?::([0-9]{2})(?:\.([0-9]{1,6}))?)?)?(?:Z|[+-][0-9]{2}:?[0-9]{2})?$/,
+  )
+  if (ymd) {
+    const [, yyyy, mm, dd, HH = '00', MI = '00', SS = '00', frac = '0'] = ymd
+    const ms = Number(frac.slice(0, 3).padEnd(3, '0'))
+    const dt = new Date(
+      Number(yyyy),
+      Number(mm) - 1,
+      Number(dd),
+      Number(HH),
+      Number(MI),
+      Number(SS),
+      ms,
+    )
+    const ts = dt.getTime()
+    if (Number.isFinite(ts)) return ts
+  }
+
   // ISO first
   let t = Date.parse(raw)
   if (Number.isFinite(t)) return t
@@ -55,7 +75,7 @@ const parseDateSafe = (value) => {
 }
 
 // decide tank status from last_tank_data
-const getTankStatus = (item, standbyThresholdMin = 5) => {
+const getTankStatus = (item, standbyThresholdMin = 5, offlineThresholdMin = 24 * 60) => {
   const last = item?.last_tank_data?.[0]
   if (!last) {
     const rawCapacity = Number(item?.total_liter ?? 0)
@@ -70,6 +90,7 @@ const getTankStatus = (item, standbyThresholdMin = 5) => {
   if (!updMs) return { key: 'standby' }
 
   const diffMin = (Date.now() - updMs) / 60000
+  if (diffMin > offlineThresholdMin) return { key: 'offline' }
   return diffMin > standbyThresholdMin ? { key: 'standby' } : { key: 'online' }
 }
 

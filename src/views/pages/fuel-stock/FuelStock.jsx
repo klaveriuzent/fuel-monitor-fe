@@ -5,6 +5,7 @@ import axios from 'axios'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
+import { getDateTimestamp } from '../../../components/fuelcard/fuelCardUtils'
 import { mapFuelStockData } from './interface.fuelstock'
 import '../tableDarkMode.scss'
 
@@ -84,8 +85,8 @@ const FuelStock = () => {
         const tankCompare = a.id_tank.localeCompare(b.id_tank, undefined, { numeric: true })
         if (tankCompare !== 0) return tankCompare
 
-        const aTime = new Date(a.update_date || 0).getTime()
-        const bTime = new Date(b.update_date || 0).getTime()
+        const aTime = getDateTimestamp(a.update_date, 'day') ?? 0
+        const bTime = getDateTimestamp(b.update_date, 'day') ?? 0
         if (aTime !== bTime) return bTime - aTime
 
         return String(a.row_id || '').localeCompare(String(b.row_id || ''))
@@ -156,7 +157,10 @@ const FuelStock = () => {
         ) : (
           paginatedData.map((item, index) => (
             <Col
-              key={item.row_id || `${item.id_site}-${item.id_tank}-${item.update_date}-${startIndex + index}`}
+              key={
+                item.row_id ||
+                `${item.id_site}-${item.id_tank}-${item.update_date}-${startIndex + index}`
+              }
               xs={24}
               sm={12}
               md={8}
@@ -168,7 +172,10 @@ const FuelStock = () => {
         )}
       </Row>
 
-      <div className="app-data-table" style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+      <div
+        className="app-data-table"
+        style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}
+      >
         <Pagination
           current={currentPage}
           pageSize={pageSize}

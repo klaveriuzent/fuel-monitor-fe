@@ -14,15 +14,70 @@ export const toNullableNumber = (v) => {
 
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n))
 
+export const parseDateValue = (value, scale = 'day') => {
+  if (!value) return null
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value
+  }
+
+  const raw = String(value).trim()
+  if (!raw) return null
+
+  const ymdMatch = raw.match(
+    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,6}))?)?)?(?:Z|[+-]\d{2}:?\d{2})?$/,
+  )
+  if (ymdMatch) {
+    const [, y, m, d, hh = '00', mm = '00', ss = '00', frac = '0'] = ymdMatch
+    const ms = Number(frac.slice(0, 3).padEnd(3, '0'))
+    const parsed = new Date(
+      Number(y),
+      Number(m) - 1,
+      Number(d),
+      Number(hh),
+      Number(mm),
+      Number(ss),
+      ms,
+    )
+    return Number.isNaN(parsed.getTime()) ? null : parsed
+  }
+
+  if (scale === 'month') {
+    const monthMatch = raw.match(/^(\d{4})-(\d{2})$/)
+    if (monthMatch) {
+      const [, y, m] = monthMatch
+      return new Date(Number(y), Number(m) - 1, 1)
+    }
+  }
+
+  if (scale === 'week') {
+    const weekMatch = raw.match(/^(\d{4})-W(\d{1,2})$/i)
+    if (weekMatch) {
+      const [, y, w] = weekMatch
+      return new Date(Number(y), 0, 1 + (Number(w) - 1) * 7)
+    }
+  }
+
+  const parsedDirect = new Date(raw)
+  if (!Number.isNaN(parsedDirect.getTime())) return parsedDirect
+
+  const parsedIsoLike = new Date(raw.replace(' ', 'T'))
+  if (!Number.isNaN(parsedIsoLike.getTime())) return parsedIsoLike
+
+  return null
+}
+
+export const getDateTimestamp = (value, scale = 'day') => {
+  const parsed = parseDateValue(value, scale)
+  return parsed ? parsed.getTime() : null
+}
+
 export const getTanggalSortValue = (tanggal, scale) => {
   if (!tanggal) return null
 
-  const parsed = new Date(tanggal)
-  if (!Number.isNaN(parsed.getTime())) return parsed.getTime()
+  const parsedTime = getDateTimestamp(tanggal, scale)
+  if (parsedTime !== null) return parsedTime
 
   const raw = String(tanggal).trim()
-  const parsedIsoLike = new Date(raw.replace(' ', 'T'))
-  if (!Number.isNaN(parsedIsoLike.getTime())) return parsedIsoLike.getTime()
 
   if (scale === 'month') {
     const monthMatch = raw.match(/^(\d{4})-(\d{2})$/)
@@ -44,37 +99,13 @@ export const getTanggalSortValue = (tanggal, scale) => {
 }
 
 export const parseTanggalByScale = (dateValue, scale) => {
-  if (!dateValue) return null
-  const parsed = new Date(dateValue)
-  if (!Number.isNaN(parsed.getTime())) return parsed
-
-  const raw = String(dateValue).trim()
-  const parsedIsoLike = new Date(raw.replace(' ', 'T'))
-  if (!Number.isNaN(parsedIsoLike.getTime())) return parsedIsoLike
-
-  if (scale === 'month') {
-    const monthMatch = raw.match(/^(\d{4})-(\d{2})$/)
-    if (monthMatch) {
-      const [, y, m] = monthMatch
-      return new Date(Number(y), Number(m) - 1, 1)
-    }
-  }
-
-  if (scale === 'week') {
-    const weekMatch = raw.match(/^(\d{4})-W(\d{1,2})$/i)
-    if (weekMatch) {
-      const [, y, w] = weekMatch
-      return new Date(Number(y), 0, 1 + (Number(w) - 1) * 7)
-    }
-  }
-
-  return null
+  return parseDateValue(dateValue, scale)
 }
 
 export const formatTooltipLabel = (dateValue, scale) => {
   if (!dateValue) return ''
-  const parsedDate = new Date(dateValue)
-  const isValidDate = !Number.isNaN(parsedDate.getTime())
+  const parsedDate = parseDateValue(dateValue, scale)
+  const isValidDate = !!parsedDate
 
   if (!isValidDate) {
     return String(dateValue)
@@ -95,6 +126,33 @@ export const formatTooltipLabel = (dateValue, scale) => {
     year: 'numeric',
     month: 'short',
     day: '2-digit',
+  })
+}
+
+export const formatDatabaseDateTimeDisplay = (value) => {
+  if (!value) return '-'
+
+  const raw = String(value).trim()
+  if (!raw) return '-'
+
+  const ymdTimeMatch = raw.match(
+    /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(?:\.\d{1,6})?(?:Z|[+-]\d{2}:?\d{2})?$/,
+  )
+  if (ymdTimeMatch) {
+    const [, y, m, d, hh, mm, ss] = ymdTimeMatch
+    return `${d}/${m}/${y}, ${hh}:${mm}:${ss}`
+  }
+
+  const parsed = parseDateValue(raw, 'day')
+  if (!parsed) return raw
+
+  return parsed.toLocaleString('en-GB', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   })
 }
 
