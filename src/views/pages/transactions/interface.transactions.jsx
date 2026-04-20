@@ -85,7 +85,7 @@ export const transactionColumns = [
     title: (
       <span className="d-inline-flex align-items-center gap-1">
         <span>Stock By ATG</span>
-        <Tooltip title="Stock hasil pembacaan langsung dari mesin ATG.">
+        <Tooltip title="Stock hasil pembacaan langsung dari tiap mesin ATG dalam satu Site. Nilai ini bisa tidak konsisten karena dipengaruhi oleh faktor eksternal seperti ketersediaan jaringan dan status mesin aktif, sehingga tidak digunakan untuk perhitungan lebih lanjut.">
           <span className="d-inline-flex align-items-center text-muted" style={{ cursor: 'help' }}>
             <InfoCircleOutlined />
           </span>
@@ -95,7 +95,7 @@ export const transactionColumns = [
     dataIndex: 'stock_by_atg',
     key: 'stock_by_atg',
     align: 'right',
-    render: () => '-',
+    render: (value) => (value === null || value === undefined || value === '' ? '-' : value),
   },
   {
     title: 'Unit Price',

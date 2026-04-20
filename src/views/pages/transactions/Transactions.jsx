@@ -49,7 +49,8 @@ const Transactions = () => {
             if (key === 'odometer') value = Number(rawValue || 0).toLocaleString('id-ID')
             if (key === 'volume') value = formatDecimal(rawValue || 0)
             if (key === 'unit_price') value = Number(rawValue || 0).toLocaleString('id-ID')
-            if (key === 'stock_by_receive' || key === 'stock_by_atg') value = '-'
+            if (key === 'stock_by_receive') value = '-'
+            if (key === 'stock_by_atg') value = rawValue ?? '-'
 
             return (
               <div
@@ -86,6 +87,7 @@ const Transactions = () => {
             waktu: item.waktu,
             volume: parseFloat(item.volume),
             unit_price: parseFloat(item.unit_price),
+            stock_by_atg: item.atg_level ?? '-',
           }))
           setData(formatted)
         }
