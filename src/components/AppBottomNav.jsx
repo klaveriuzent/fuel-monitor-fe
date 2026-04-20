@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import CIcon from '@coreui/icons-react'
 import { cilSpeedometer, cilCursor, cilDrop, cilInbox } from '@coreui/icons'
-import { Popover } from 'antd'
 import './AppBottomNav.scss'
 
 const transactionMenus = [
@@ -16,11 +15,35 @@ const AppBottomNav = () => {
   const location = useLocation()
   const sidebarShow = useSelector((state) => state.sidebarShow)
   const [openTransactionMenu, setOpenTransactionMenu] = useState(false)
+  const transactionMenuRef = useRef(null)
   const isSidebarOpen = sidebarShow === true || sidebarShow === 'responsive'
 
   useEffect(() => {
-    setOpenTransactionMenu(false)
-  }, [location.pathname])
+    if (!openTransactionMenu) return undefined
+
+    const handleClickOutside = (event) => {
+      const target = event.target
+      if (transactionMenuRef.current && !transactionMenuRef.current.contains(target)) {
+        setOpenTransactionMenu(false)
+      }
+    }
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setOpenTransactionMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [openTransactionMenu])
 
   const isTransactionActive = useMemo(
     () => transactionMenus.some((menu) => location.pathname === menu.to),
@@ -28,13 +51,20 @@ const AppBottomNav = () => {
   )
 
   const transactionContent = (
-    <div className="app-bottom-nav__menu">
-      {transactionMenus.map((menu) => (
-        <NavLink key={menu.to} to={menu.to} className="app-bottom-nav__menu-item">
-          <CIcon icon={menu.icon} className="app-bottom-nav__menu-icon" />
-          <span>{menu.label}</span>
-        </NavLink>
-      ))}
+    <div className="app-bottom-nav__custom-popover" role="menu" aria-label="Transaction menu">
+      <div className="app-bottom-nav__menu">
+        {transactionMenus.map((menu) => (
+          <NavLink
+            key={menu.to}
+            to={menu.to}
+            className="app-bottom-nav__menu-item"
+            onClick={() => setOpenTransactionMenu(false)}
+          >
+            <CIcon icon={menu.icon} className="app-bottom-nav__menu-icon" />
+            <span>{menu.label}</span>
+          </NavLink>
+        ))}
+      </div>
     </div>
   )
 
@@ -47,37 +77,34 @@ const AppBottomNav = () => {
         <NavLink
           to="/dashboard"
           className={`app-bottom-nav__item${location.pathname === '/dashboard' ? ' is-active' : ''}`}
+          onClick={() => setOpenTransactionMenu(false)}
         >
           <CIcon icon={cilSpeedometer} className="app-bottom-nav__icon" />
           <span className="app-bottom-nav__label">Dashboard</span>
         </NavLink>
       </div>
 
-      <div className="app-bottom-nav__slot">
-        <Popover
-          trigger="click"
-          placement="top"
-          open={openTransactionMenu}
-          onOpenChange={setOpenTransactionMenu}
-          content={transactionContent}
-          rootClassName="app-bottom-nav__popover"
+      <div className="app-bottom-nav__slot app-bottom-nav__slot--menu" ref={transactionMenuRef}>
+        <button
+          type="button"
+          className={`app-bottom-nav__item app-bottom-nav__button${
+            isTransactionActive ? ' is-active' : ''
+          }`}
+          aria-haspopup="menu"
+          aria-expanded={openTransactionMenu}
+          onClick={() => setOpenTransactionMenu((prev) => !prev)}
         >
-          <button
-            type="button"
-            className={`app-bottom-nav__item app-bottom-nav__button${
-              isTransactionActive ? ' is-active' : ''
-            }`}
-          >
-            <CIcon icon={cilCursor} className="app-bottom-nav__icon" />
-            <span className="app-bottom-nav__label">Transaksi</span>
-          </button>
-        </Popover>
+          <CIcon icon={cilCursor} className="app-bottom-nav__icon" />
+          <span className="app-bottom-nav__label">Transaksi</span>
+        </button>
+        {openTransactionMenu ? transactionContent : null}
       </div>
 
       <div className="app-bottom-nav__slot">
         <NavLink
           to="/data-properties"
           className={`app-bottom-nav__item${location.pathname === '/data-properties' ? ' is-active' : ''}`}
+          onClick={() => setOpenTransactionMenu(false)}
         >
           <CIcon icon={cilInbox} className="app-bottom-nav__icon" />
           <span className="app-bottom-nav__label">Properties</span>
