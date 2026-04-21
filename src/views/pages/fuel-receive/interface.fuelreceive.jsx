@@ -114,6 +114,12 @@ export const formatPercentage = (value) =>
     maximumFractionDigits: 2,
   })}%`
 
+export const formatLicensePlate = (value) => {
+  if (value === null || value === undefined) return '-'
+  const normalized = String(value).replace(/\s+/g, '').toUpperCase()
+  return normalized || '-'
+}
+
 const formatValueOrDash = (value, formatter = (val) => val) =>
   value || value === 0 ? formatter(value) : '-'
 
@@ -169,7 +175,7 @@ export const buildFuelReceiveColumns = (onEdit = () => {}, onOpenAttachment = ()
         <span>
           <Tag style={{ fontSize: '13px', fontWeight: 500 }}>License Plate</Tag>{' '}
           <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {record?.no_kendaraan ?? '-'}
+            {formatLicensePlate(record?.no_kendaraan)}
           </span>
         </span>
         <span>

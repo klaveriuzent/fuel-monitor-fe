@@ -22,6 +22,7 @@ import {
   formatDateTime,
   formatDecimal,
   formatPercentage,
+  formatLicensePlate,
   parseDateSafe,
 } from './interface.fuelreceive'
 import ResponsiveTableCards from '../../../components/ResponsiveTableCards'
@@ -148,7 +149,7 @@ const FuelReceive = () => {
       }
 
       if (columnKey === 'pengiriman') {
-        return `${record.pengirim || '-'} | Plate: ${record.no_kendaraan || '-'} | Driver: ${record.nama_pengemudi || '-'}`
+        return `${record.pengirim || '-'} | Plate: ${formatLicensePlate(record.no_kendaraan)} | Driver: ${record.nama_pengemudi || '-'}`
       }
 
       if (columnKey === 'total_information') {
@@ -462,6 +463,7 @@ const FuelReceive = () => {
         setSearch={setSearch}
         siteFilter={siteFilter}
         setSiteFilter={setSiteFilter}
+        useSitePolishedSelect
         siteCounts={siteCounts}
         siteTotalCount={siteTotalCount}
         dateRange={dateRange}

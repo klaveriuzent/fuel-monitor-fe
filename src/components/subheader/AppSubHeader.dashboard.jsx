@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 import { DatePicker, Collapse, Tag, AutoComplete } from 'antd'
-import { CCard, CRow, CCol } from '@coreui/react'
+import { CCard, CRow, CCol, CButton } from '@coreui/react'
 import axios from 'axios'
 
 import './AppSubHeader.scss'
@@ -157,31 +157,42 @@ const AppSubHeaderDashboard = ({
     }
   }
 
+  const handleClearSiteFilter = () => {
+    setSiteFilter('all')
+    setSiteInputValue('All Sites')
+  }
+
   return (
     <CCard className="app-subheader mb-3 p-3">
       {/* Filter Row */}
       <CRow className="align-items-center g-2">
-        <CCol xs={12} sm={12} md={12}>
-          <AutoComplete
-            size="small"
-            className="app-subheader__site-autocomplete"
-            value={siteInputValue}
-            options={siteAutoCompleteOptions}
-            onSelect={handleSiteSelect}
-            onChange={(value) => {
-              setSiteInputValue(value)
-              if (!value) {
-                setSiteFilter('all')
+        <CCol xs={12}>
+          <div className="app-subheader__search d-flex align-items-center gap-2">
+            <AutoComplete
+              size="small"
+              className="app-subheader__site-autocomplete"
+              value={siteInputValue}
+              options={siteAutoCompleteOptions}
+              onSelect={handleSiteSelect}
+              onChange={(value) => {
+                setSiteInputValue(value)
+                if (!value) {
+                  setSiteFilter('all')
+                }
+              }}
+              onBlur={handleSiteBlur}
+              filterOption={(inputValue, option) =>
+                (option?.value ?? '').toUpperCase().includes(inputValue.toUpperCase())
               }
-            }}
-            onBlur={handleSiteBlur}
-            filterOption={(inputValue, option) =>
-              (option?.value ?? '').toUpperCase().includes(inputValue.toUpperCase())
-            }
-            style={{ width: '100%' }}
-            placeholder="All Sites"
-            allowClear
-          />
+              style={{ width: '100%' }}
+              placeholder="All Sites"
+              allowClear
+              popupClassName="app-subheader__site-autocomplete-dropdown"
+            />
+            <CButton color="secondary" size="sm" onClick={handleClearSiteFilter}>
+              Clear
+            </CButton>
+          </div>
         </CCol>
 
         {/* <CCol xs={12} sm={12} md={8}>

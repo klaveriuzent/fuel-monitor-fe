@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
-import { DatePicker, Collapse, Tag } from 'antd'
+import { DatePicker, Collapse, Tag, AutoComplete, Select } from 'antd'
 import { CCard, CRow, CCol, CFormInput, CFormSelect, CButton } from '@coreui/react'
 import axios from 'axios'
 
@@ -25,10 +25,29 @@ const AppSubHeader = ({
   columns = [],
   visibleColumnKeys,
   setVisibleColumnKeys,
+  useSiteAutocomplete = false,
+  useSitePolishedSelect = false,
   storageKey = DEFAULT_STORAGE_KEY,
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
+  const sidebarShow = useSelector((state) => state.sidebarShow)
+  const isSidebarOpen = sidebarShow === true || sidebarShow === 'responsive'
   const [siteOptions, setSiteOptions] = useState([])
+  const [siteInputValue, setSiteInputValue] = useState(() => {
+    const saved = localStorage.getItem(storageKey)
+    if (!saved) return 'All Sites'
+
+    try {
+      const parsed = JSON.parse(saved)
+      if (parsed?.siteFilter && parsed.siteFilter !== 'all') {
+        return parsed.siteFilter
+      }
+    } catch {
+      return 'All Sites'
+    }
+
+    return 'All Sites'
+  })
   const [quickRange, setQuickRange] = useState(() => {
     const saved = localStorage.getItem(storageKey)
     if (!saved) return 'today'
@@ -143,7 +162,12 @@ const AppSubHeader = ({
       } = JSON.parse(saved)
 
       if (search !== undefined) setSearch(search)
-      if (siteFilter !== undefined) setSiteFilter(siteFilter)
+      if (siteFilter !== undefined) {
+        setSiteFilter(siteFilter)
+        if (useSiteAutocomplete) {
+          setSiteInputValue(siteFilter === 'all' ? 'All Sites' : siteFilter)
+        }
+      }
       if (quickRange) {
         const [start, end] = calculateQuickRange(quickRange)
         setDateRange([start, end])
@@ -204,6 +228,7 @@ const AppSubHeader = ({
   const handleClearFilters = () => {
     setSearch('')
     setSiteFilter('all')
+    if (useSiteAutocomplete) setSiteInputValue('All Sites')
     setQuickRange('today')
 
     const [start, end] = calculateQuickRange('today')
@@ -256,26 +281,112 @@ const AppSubHeader = ({
     }
   }
 
+  const siteAutoCompleteOptions = useMemo(() => {
+    const allOption = {
+      value: 'All Sites',
+      siteValue: 'all',
+    }
+    const options = siteOptions.map((site) => ({
+      value: formatSiteLabel(site.id_site, siteCounts?.[site.id_site]),
+      siteValue: site.id_site,
+    }))
+    return [allOption, ...options]
+  }, [siteOptions, siteCounts, shouldShowSiteCounts])
+
+  const siteSelectOptions = useMemo(
+    () => [
+      { label: formatSiteLabel('All Sites', siteTotalCount), value: 'all' },
+      ...siteOptions.map((site) => ({
+        label: (
+          <span style={getSiteOptionStyle(siteCounts?.[site.id_site])}>
+            {formatSiteLabel(site.id_site, siteCounts?.[site.id_site])}
+          </span>
+        ),
+        value: site.id_site,
+      })),
+    ],
+    [siteOptions, siteCounts, siteTotalCount, shouldShowSiteCounts, formatSiteLabel, getSiteOptionStyle],
+  )
+
+  const handleSiteSelect = (_, option) => {
+    const selectedSiteValue = option?.siteValue || 'all'
+    setSiteFilter(selectedSiteValue)
+    setSiteInputValue(option?.value || 'All Sites')
+  }
+
+  const handleSiteBlur = () => {
+    const currentInput = String(siteInputValue || '').toLowerCase()
+    const matchedOption = siteAutoCompleteOptions.find(
+      (option) =>
+        option.value.toLowerCase() === currentInput || option.siteValue.toLowerCase() === currentInput,
+    )
+
+    if (matchedOption) {
+      setSiteFilter(matchedOption.siteValue)
+      setSiteInputValue(matchedOption.value)
+      return
+    }
+
+    setSiteFilter('all')
+    setSiteInputValue('All Sites')
+  }
+
   return (
     <CCard className="app-subheader mb-3 p-3">
       {/* Filter Row */}
       <CRow className="align-items-center g-2">
-        <CCol xs={12} sm={6} md={4}>
-          <CFormSelect size="sm" value={siteFilter} onChange={(e) => setSiteFilter(e.target.value)}>
-            <option value="all">{formatSiteLabel('All Sites', siteTotalCount)}</option>
-            {siteOptions.map((site) => (
-              <option
-                key={site.id}
-                value={site.id_site}
-                style={getSiteOptionStyle(siteCounts?.[site.id_site])}
-              >
-                {formatSiteLabel(site.id_site, siteCounts?.[site.id_site])}
-              </option>
-            ))}
-          </CFormSelect>
+        <CCol xs={12} sm={12} md={6} lg={isSidebarOpen ? 7 : 5}>
+          {useSiteAutocomplete ? (
+            <AutoComplete
+              size="small"
+              className="app-subheader__site-autocomplete"
+              value={siteInputValue}
+              options={siteAutoCompleteOptions}
+              onSelect={handleSiteSelect}
+              onChange={(value) => {
+                setSiteInputValue(value)
+                if (!value) setSiteFilter('all')
+              }}
+              onBlur={handleSiteBlur}
+              filterOption={(inputValue, option) =>
+                (option?.value ?? '').toUpperCase().includes(inputValue.toUpperCase())
+              }
+              style={{ width: '100%' }}
+              placeholder="All Sites"
+              allowClear
+              popupClassName="app-subheader__site-autocomplete-dropdown"
+            />
+          ) : useSitePolishedSelect ? (
+            <Select
+              size="small"
+              className="app-subheader__site-select-polished"
+              popupClassName="app-subheader__site-select-dropdown"
+              value={siteFilter}
+              onChange={(value) => setSiteFilter(value)}
+              options={siteSelectOptions}
+            />
+          ) : (
+            <CFormSelect
+              size="sm"
+              className="app-subheader__site-select"
+              value={siteFilter}
+              onChange={(e) => setSiteFilter(e.target.value)}
+            >
+              <option value="all">{formatSiteLabel('All Sites', siteTotalCount)}</option>
+              {siteOptions.map((site) => (
+                <option
+                  key={site.id}
+                  value={site.id_site}
+                  style={getSiteOptionStyle(siteCounts?.[site.id_site])}
+                >
+                  {formatSiteLabel(site.id_site, siteCounts?.[site.id_site])}
+                </option>
+              ))}
+            </CFormSelect>
+          )}
         </CCol>
 
-        <CCol xs={12} sm={12} md={8}>
+        <CCol xs={12} sm={12} md={6} lg={isSidebarOpen ? 5 : 7}>
           <div className="app-subheader__search d-flex align-items-center gap-2">
             <CFormInput
               type="text"

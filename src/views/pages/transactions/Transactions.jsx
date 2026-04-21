@@ -199,6 +199,7 @@ const Transactions = () => {
         setSearch={setSearch}
         siteFilter={siteFilter}
         setSiteFilter={setSiteFilter}
+        useSitePolishedSelect
         siteCounts={siteCounts}
         siteTotalCount={siteTotalCount}
         dateRange={dateRange}
