@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import CIcon from '@coreui/icons-react'
-import { cilSpeedometer, cilCursor, cilDrop, cilInbox } from '@coreui/icons'
+import { cilSpeedometer, cilCursor, cilDrop, cilInbox, cilUser } from '@coreui/icons'
 import './AppBottomNav.scss'
 
 const transactionMenus = [
@@ -108,6 +108,17 @@ const AppBottomNav = () => {
         >
           <CIcon icon={cilInbox} className="app-bottom-nav__icon" />
           <span className="app-bottom-nav__label">Properties</span>
+        </NavLink>
+      </div>
+
+      <div className="app-bottom-nav__slot">
+        <NavLink
+          to="/profile"
+          className={`app-bottom-nav__item${location.pathname === '/profile' ? ' is-active' : ''}`}
+          onClick={() => setOpenTransactionMenu(false)}
+        >
+          <CIcon icon={cilUser} className="app-bottom-nav__icon" />
+          <span className="app-bottom-nav__label">Profile</span>
         </NavLink>
       </div>
     </nav>

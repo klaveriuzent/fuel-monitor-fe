@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import {
-  CAvatar,
   CDropdown,
   CDropdownItem,
   CDropdownMenu,
@@ -9,8 +9,6 @@ import {
   CFormSwitch,
   useColorModes,
 } from '@coreui/react'
-
-import avatar0 from './../../assets/images/avatars/0.jpg'
 
 const themeStorageKey = 'coreui-free-react-admin-template-theme'
 const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -55,12 +53,36 @@ const handleLogout = async () => {
 
 const AppHeaderDropdown = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { setColorMode } = useColorModes(themeStorageKey)
   const [activeTheme, setActiveTheme] = useState(() => resolveCurrentTheme())
+  const [avatarInitial, setAvatarInitial] = useState('U')
 
   useEffect(() => {
     dispatch({ type: 'set', theme: activeTheme })
   }, [dispatch, activeTheme])
+
+  useEffect(() => {
+    const syncAvatarInitial = () => {
+      try {
+        const raw = window.localStorage.getItem('user-data')
+        if (!raw) {
+          setAvatarInitial('U')
+          return
+        }
+        const parsed = JSON.parse(raw)
+        const fullName = parsed?.full_name || parsed?.FullName || parsed?.username || 'User'
+        const initial = String(fullName).trim().charAt(0).toUpperCase() || 'U'
+        setAvatarInitial(initial)
+      } catch {
+        setAvatarInitial('U')
+      }
+    }
+
+    syncAvatarInitial()
+    window.addEventListener('storage', syncAvatarInitial)
+    return () => window.removeEventListener('storage', syncAvatarInitial)
+  }, [])
 
   const handleThemeToggle = () => {
     const nextTheme = activeTheme === 'dark' ? 'light' : 'dark'
@@ -77,7 +99,18 @@ const AppHeaderDropdown = () => {
         className="d-flex align-items-center border-0 bg-transparent p-0"
         caret={false}
       >
-        <CAvatar src={avatar0} size="md" />
+        <span
+          className="d-inline-flex align-items-center justify-content-center text-white fw-semibold"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #0d6efd, #20c997)',
+            boxShadow: '0 8px 18px rgba(13, 110, 253, 0.24)',
+          }}
+        >
+          {avatarInitial}
+        </span>
       </CDropdownToggle>
       <CDropdownMenu placement="bottom-end">
         <CDropdownItem
@@ -91,6 +124,7 @@ const AppHeaderDropdown = () => {
             onChange={handleThemeToggle}
           />
         </CDropdownItem>
+        <CDropdownItem onClick={() => navigate('/profile')}>Profile</CDropdownItem>
         <CDropdownItem onClick={handleLogout}>Log Out</CDropdownItem>
       </CDropdownMenu>
     </CDropdown>

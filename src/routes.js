@@ -8,6 +8,7 @@ const Typography = React.lazy(() => import('./views/theme/typography/Typography'
 const Transactions = React.lazy(() => import('./views/pages/transactions/Transactions'))
 const FuelReceive = React.lazy(() => import('./views/pages/fuel-receive/FuelReceive'))
 const FuelStock = React.lazy(() => import('./views/pages/fuel-stock/FuelStock'))
+const Profile = React.lazy(() => import('./views/pages/profile/Profile'))
 
 // Master Data
 const DataProperties = React.lazy(() => import('./views/pages/master-data/DataProperties'))
@@ -65,6 +66,7 @@ const routes = [
   { path: '/transactions', name: 'Transactions', element: Transactions },
   { path: '/fuel-receive', name: 'Fuel Receive', element: FuelReceive },
   { path: '/fuel-stock', name: 'Fuel Stock', element: FuelStock },
+  { path: '/profile', name: 'Profile', element: Profile },
   { path: '/data-properties', name: 'Data Properties', element: DataProperties },
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },

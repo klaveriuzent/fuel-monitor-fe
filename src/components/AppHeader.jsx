@@ -19,28 +19,34 @@ const AppHeader = () => {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
   const [locations, setLocations] = useState([])
-  const [displayUserName, setDisplayUserName] = useState('username')
+  const [displayName, setDisplayName] = useState('User')
+  const [displayRole, setDisplayRole] = useState('-')
 
   useEffect(() => {
-    const syncUserName = () => {
+    const syncUserData = () => {
       try {
         const raw = localStorage.getItem('user-data')
         if (!raw) {
-          setDisplayUserName('username')
+          setDisplayName('User')
+          setDisplayRole('-')
           return
         }
 
         const parsed = JSON.parse(raw)
-        const userName = parsed?.UserName || parsed?.username || 'username'
-        setDisplayUserName(userName)
+        const fullName = parsed?.full_name || parsed?.FullName || parsed?.username || 'User'
+        const roleRaw = parsed?.role || '-'
+        const role = String(roleRaw).toLowerCase() === 'superuser' ? 'admin' : roleRaw
+        setDisplayName(fullName)
+        setDisplayRole(role)
       } catch {
-        setDisplayUserName('username')
+        setDisplayName('User')
+        setDisplayRole('-')
       }
     }
 
-    syncUserName()
-    window.addEventListener('storage', syncUserName)
-    return () => window.removeEventListener('storage', syncUserName)
+    syncUserData()
+    window.addEventListener('storage', syncUserData)
+    return () => window.removeEventListener('storage', syncUserData)
   }, [])
 
   // fetch data lokasi
@@ -85,7 +91,10 @@ const AppHeader = () => {
 
         <CHeaderNav>
           <li className="nav-item d-flex align-items-center ms-3">
-            <span className="fw-semibold">{displayUserName}</span>
+            <div className="d-flex flex-column align-items-end lh-sm">
+              <span className="fw-semibold">{displayName}</span>
+              <small className="text-medium-emphasis">{displayRole}</small>
+            </div>
           </li>
           <AppHeaderDropdown />
         </CHeaderNav>

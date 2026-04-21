@@ -8,7 +8,7 @@
   bottom: max(72px, env(safe-area-inset-bottom));
   z-index: 1060;
   display: none;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
   gap: 6px;
   padding: 12px 10px calc(12px + env(safe-area-inset-bottom));
