@@ -33,6 +33,7 @@ export default [
     },
     rules: {
       ...eslintPluginReactHooks.configs.recommended.rules,
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
   eslintPluginPrettierRecommended,

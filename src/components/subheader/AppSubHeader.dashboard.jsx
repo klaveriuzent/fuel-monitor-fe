@@ -22,8 +22,32 @@ const AppSubHeaderDashboard = ({
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
-  const [siteInputValue, setSiteInputValue] = useState('All Sites')
-  const [quickRange, setQuickRange] = useState('today')
+  const [siteInputValue, setSiteInputValue] = useState(() => {
+    const saved = localStorage.getItem(storageKey)
+    if (!saved) return 'All Sites'
+
+    try {
+      const parsed = JSON.parse(saved)
+      if (parsed?.siteFilter && parsed.siteFilter !== 'all') {
+        return parsed.siteFilter
+      }
+    } catch {
+      return 'All Sites'
+    }
+
+    return 'All Sites'
+  })
+  const [quickRange, setQuickRange] = useState(() => {
+    const saved = localStorage.getItem(storageKey)
+    if (!saved) return 'today'
+
+    try {
+      const parsed = JSON.parse(saved)
+      return parsed?.quickRange || 'today'
+    } catch {
+      return 'today'
+    }
+  })
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const quickRangeOptions = [
@@ -67,8 +91,6 @@ const AppSubHeaderDashboard = ({
       if (search !== undefined) setSearch(search)
       if (siteFilter !== undefined) setSiteFilter(siteFilter)
       if (quickRange) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setQuickRange(quickRange)
         const [start, end] = calculateQuickRange(quickRange)
         setDateRange([start, end])
       } else if (dateRange) {
@@ -77,7 +99,6 @@ const AppSubHeaderDashboard = ({
     } else {
       const [start, end] = calculateQuickRange('today')
       setDateRange([start, end])
-      setQuickRange('today')
     }
   }, [calculateQuickRange, setSearch, setSiteFilter, setDateRange, storageKey])
 
@@ -92,14 +113,8 @@ const AppSubHeaderDashboard = ({
   }, [search, siteFilter, quickRange, dateRange, storageKey])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSites()
   }, [fetchSites])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSiteInputValue(siteFilter === 'all' ? 'All Sites' : siteFilter || 'All Sites')
-  }, [siteFilter])
 
   const siteAutoCompleteOptions = useMemo(
     () => [
@@ -115,6 +130,7 @@ const AppSubHeaderDashboard = ({
   const handleSiteSelect = (_, option) => {
     const selectedSiteValue = option?.siteValue || 'all'
     setSiteFilter(selectedSiteValue)
+    setSiteInputValue(option?.value || 'All Sites')
   }
 
   const handleSiteBlur = () => {
@@ -123,9 +139,11 @@ const AppSubHeaderDashboard = ({
     )
     if (matchedOption) {
       setSiteFilter(matchedOption.siteValue)
+      setSiteInputValue(matchedOption.value)
       return
     }
     setSiteFilter('all')
+    setSiteInputValue('All Sites')
   }
 
   const handleQuickRangeToggle = (value) => {

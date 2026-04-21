@@ -56,12 +56,7 @@ const handleLogout = async () => {
 const AppHeaderDropdown = () => {
   const dispatch = useDispatch()
   const { setColorMode } = useColorModes(themeStorageKey)
-  const [activeTheme, setActiveTheme] = useState('light')
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setActiveTheme(resolveCurrentTheme())
-  }, [])
+  const [activeTheme, setActiveTheme] = useState(() => resolveCurrentTheme())
 
   useEffect(() => {
     dispatch({ type: 'set', theme: activeTheme })

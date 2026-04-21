@@ -134,7 +134,9 @@ const FuelReceive = () => {
   )
 
   const renderFuelReceiveCard = (record) => {
-    const activeColumns = allColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column)))
+    const activeColumns = allColumns.filter((column) =>
+      visibleColumnKeys.includes(getColumnKey(column)),
+    )
 
     const getCardValue = (columnKey) => {
       if (columnKey === 'id_site') return record.id_site || '-'
@@ -177,7 +179,9 @@ const FuelReceive = () => {
               <div
                 key={key}
                 className="d-flex justify-content-between align-items-start py-1"
-                style={{ borderBottom: '1px dashed var(--cui-border-color-translucent, rgba(0,0,0,.1))' }}
+                style={{
+                  borderBottom: '1px dashed var(--cui-border-color-translucent, rgba(0,0,0,.1))',
+                }}
               >
                 <div className="small fw-semibold text-secondary">{column.title}</div>
                 <div className="small text-end ms-3">{getCardValue(key)}</div>
@@ -229,8 +233,7 @@ const FuelReceive = () => {
     } finally {
       setLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseURL])
+  }, [])
 
   const fetchSites = useCallback(async () => {
     setIsLoadingSites(true)
@@ -245,8 +248,7 @@ const FuelReceive = () => {
     } finally {
       setIsLoadingSites(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseURL])
+  }, [])
 
   const fetchTanks = useCallback(async () => {
     setIsLoadingTanks(true)
@@ -266,8 +268,7 @@ const FuelReceive = () => {
     } finally {
       setIsLoadingTanks(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseURL])
+  }, [])
 
   // Fetch data dari API tankdeliv
   useEffect(() => {
@@ -529,7 +530,11 @@ const FuelReceive = () => {
         isLoadingTanks={isLoadingTanks}
       />
 
-      <CModal visible={isAttachmentModalOpen} onClose={handleCloseAttachmentModal} alignment="center">
+      <CModal
+        visible={isAttachmentModalOpen}
+        onClose={handleCloseAttachmentModal}
+        alignment="center"
+      >
         <CModalHeader>
           <CModalTitle>Upload Attachment</CModalTitle>
         </CModalHeader>

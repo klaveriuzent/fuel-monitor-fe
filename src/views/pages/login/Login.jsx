@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { CButton, CCard, CCardBody, CContainer, CForm, CSpinner } from '@coreui/react'
 import { v4 as GUID } from 'uuid'
 
@@ -11,22 +11,22 @@ const Login = () => {
   const IdApp = import.meta.env.VITE_APP_ID
   const KeyApp = import.meta.env.VITE_APP_KEY
 
-  const sha256 = async (message) => {
+  const sha256 = useCallback(async (message) => {
     const msgBuffer = new TextEncoder().encode(message)
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-  }
+  }, [])
 
-  const getQueryParams = () => {
+  const getQueryParams = useCallback(() => {
     const params = new URLSearchParams(window.location.search)
     return {
       t: params.get('t') || '',
       v: params.get('v') || '',
     }
-  }
+  }, [])
 
-  const getLogin = async () => {
+  const getLogin = useCallback(async () => {
     const guid = crypto.randomUUID()
     localStorage.setItem('GUID', guid)
 
@@ -39,7 +39,54 @@ const Login = () => {
     } catch (err) {
       setIsApplicationLogin(true)
     }
-  }
+  }, [IdApp])
+
+  const handleAfterUserManagementLogin = useCallback(
+    async (token) => {
+      try {
+        const headers = {
+          Accept: 'application/json',
+          authenticationToken: token,
+          'Content-Type': 'application/json',
+        }
+
+        const validDetail = await sha256(token)
+
+        await fetch(`${baseURL}auth/get_token`, {
+          method: 'POST',
+          headers,
+          credentials: 'include',
+          body: JSON.stringify({
+            id: token,
+            token: token,
+            valid_detail: validDetail,
+          }),
+        })
+
+        const res = await fetch(
+          `${baseURL}auth/detail_by_name_application?name_application=FuelMonitoring`,
+          {
+            headers,
+            credentials: 'include',
+          },
+        )
+
+        const json = await res.json()
+
+        if (json.result === true) {
+          localStorage.setItem('user-data', JSON.stringify(json.objek))
+
+          window.location.href = '/dashboard'
+        } else {
+          alert('Server sedang sibuk, silakan coba lagi.')
+        }
+      } catch (error) {
+        console.error('Login error:', error)
+        location.reload()
+      }
+    },
+    [sha256],
+  )
 
   useEffect(() => {
     const run = async () => {
@@ -61,52 +108,7 @@ const Login = () => {
     }
 
     run()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleAfterUserManagementLogin = async (token) => {
-    try {
-      const headers = {
-        Accept: 'application/json',
-        authenticationToken: token,
-        'Content-Type': 'application/json',
-      }
-
-      const validDetail = await sha256(token)
-
-      await fetch(`${baseURL}auth/get_token`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          id: token,
-          token: token,
-          valid_detail: validDetail,
-        }),
-      })
-
-      const res = await fetch(
-        `${baseURL}auth/detail_by_name_application?name_application=FuelMonitoring`,
-        {
-          headers,
-          credentials: 'include',
-        },
-      )
-
-      const json = await res.json()
-
-      if (json.result === true) {
-        localStorage.setItem('user-data', JSON.stringify(json.objek))
-
-        window.location.href = '/dashboard'
-      } else {
-        alert('Server sedang sibuk, silakan coba lagi.')
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      location.reload()
-    }
-  }
+  }, [getLogin, getQueryParams, handleAfterUserManagementLogin, sha256, IdApp, KeyApp])
 
   const handleUserManagementLogin = (e) => {
     e.preventDefault()

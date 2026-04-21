@@ -29,7 +29,17 @@ const AppSubHeader = ({
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
   const [siteOptions, setSiteOptions] = useState([])
-  const [quickRange, setQuickRange] = useState('today')
+  const [quickRange, setQuickRange] = useState(() => {
+    const saved = localStorage.getItem(storageKey)
+    if (!saved) return 'today'
+
+    try {
+      const parsed = JSON.parse(saved)
+      return parsed?.quickRange || 'today'
+    } catch {
+      return 'today'
+    }
+  })
   const baseURL = import.meta.env.VITE_API_BASE_URL
 
   const quickRangeOptions = [
@@ -135,8 +145,6 @@ const AppSubHeader = ({
       if (search !== undefined) setSearch(search)
       if (siteFilter !== undefined) setSiteFilter(siteFilter)
       if (quickRange) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setQuickRange(quickRange)
         const [start, end] = calculateQuickRange(quickRange)
         setDateRange([start, end])
       } else if (dateRange) {
@@ -158,7 +166,6 @@ const AppSubHeader = ({
     } else {
       const [start, end] = calculateQuickRange('today')
       setDateRange([start, end])
-      setQuickRange('today')
     }
   }, [
     calculateQuickRange,
@@ -191,7 +198,6 @@ const AppSubHeader = ({
   }, [search, siteFilter, quickRange, dateRange, activeColumnKeys, availableColumnKeys, storageKey])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSites()
   }, [fetchSites])
 
