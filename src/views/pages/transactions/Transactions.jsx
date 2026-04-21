@@ -5,7 +5,12 @@ import isBetween from 'dayjs/plugin/isBetween'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
-import { transactionColumns, formatDateTime, formatDecimal } from './interface.transactions'
+import {
+  transactionColumns,
+  formatDateTime,
+  formatDecimal,
+  formatOptionalDecimal,
+} from './interface.transactions'
 import '../tableDarkMode.scss'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import { getColumnKey } from '../../../utils/table'
@@ -50,7 +55,7 @@ const Transactions = () => {
             if (key === 'volume') value = formatDecimal(rawValue || 0)
             if (key === 'unit_price') value = Number(rawValue || 0).toLocaleString('id-ID')
             if (key === 'stock_by_receive') value = '-'
-            if (key === 'stock_by_atg') value = rawValue ?? '-'
+            if (key === 'stock_by_atg') value = formatOptionalDecimal(rawValue)
 
             return (
               <div

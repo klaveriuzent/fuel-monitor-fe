@@ -21,6 +21,13 @@ export const formatDecimal = (value) =>
     maximumFractionDigits: 2,
   })
 
+export const formatOptionalDecimal = (value) => {
+  if (value === null || value === undefined || value === '') return '-'
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return '-'
+  return formatDecimal(numericValue)
+}
+
 export const formatCurrency = (value) => {
   const safeValue = Number(value)
   return new Intl.NumberFormat('id-ID', {
@@ -95,7 +102,7 @@ export const transactionColumns = [
     dataIndex: 'stock_by_atg',
     key: 'stock_by_atg',
     align: 'right',
-    render: (value) => (value === null || value === undefined || value === '' ? '-' : value),
+    render: formatOptionalDecimal,
   },
   {
     title: 'Unit Price',

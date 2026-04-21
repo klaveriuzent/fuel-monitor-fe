@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useMemo, useRef } from 'react'
 import PropTypes from 'prop-types'
-import { CModal, CModalBody, CModalHeader, CModalTitle } from '@coreui/react'
+import { CButton, CButtonGroup, CModal, CModalBody, CModalHeader, CModalTitle } from '@coreui/react'
 import Chart from 'chart.js/auto'
 import { getStyle } from '@coreui/utils'
 import { formatTooltipLabel, formatXAxisLabel } from './fuelCardUtils'
@@ -323,28 +323,41 @@ const FuelCardModalChart = ({
     >
       <CModalHeader>
         <CModalTitle>
-          Tank {item.id_tank} - {item.id_site}
+          Fuel Tank {item.id_tank} - {item.id_site}
         </CModalTitle>
       </CModalHeader>
       <CModalBody>
-        <div className="d-flex flex-wrap align-items-center gap-3 mb-3">
-          <strong>Time Scale:</strong>
-          {[
-            { label: 'Day', value: 'day' },
-            { label: 'Week', value: 'week' },
-            { label: 'Month', value: 'month' },
-          ].map((option) => (
-            <label key={option.value} className="d-flex align-items-center gap-2">
-              <input
-                type="radio"
-                name={`time-scale-${item.id_tank}`}
-                value={option.value}
-                checked={timeScale === option.value}
-                onChange={() => setTimeScale(option.value)}
-              />
-              <span>{option.label}</span>
-            </label>
-          ))}
+        <div className="fuel-card-modal__timescale mb-3">
+          <strong className="fuel-card-modal__timescale-label">Time Scale:</strong>
+          <CButtonGroup
+            role="radiogroup"
+            aria-label={`Time scale for fuel tank ${item.id_tank}`}
+            className="fuel-card-modal__timescale-group"
+          >
+            {[
+              { label: 'Day', value: 'day' },
+              { label: 'Week', value: 'week' },
+              { label: 'Month', value: 'month' },
+            ].map((option) => {
+              const isActive = timeScale === option.value
+              return (
+                <CButton
+                  key={option.value}
+                  type="button"
+                  size="sm"
+                  color={isActive ? 'primary' : 'secondary'}
+                  variant={isActive ? undefined : 'outline'}
+                  className={`fuel-card-modal__timescale-btn${
+                    isActive ? ' fuel-card-modal__timescale-btn--active' : ''
+                  }`}
+                  aria-pressed={isActive}
+                  onClick={() => setTimeScale(option.value)}
+                >
+                  {option.label}
+                </CButton>
+              )
+            })}
+          </CButtonGroup>
         </div>
 
         {isLoading && <div className="mb-2">Loading chart...</div>}

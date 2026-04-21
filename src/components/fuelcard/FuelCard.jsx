@@ -248,9 +248,10 @@ const FuelCard = ({ item }) => {
         }`}
       >
         <CCardBody className="fuel-card__body">
-          <CCardTitle className="fuel-card__title">Tank {item.id_tank}</CCardTitle>
+          <CCardTitle className="fuel-card__title">Fuel Tank {item.id_tank}</CCardTitle>
           <CCardText className="fuel-card__details">
-            <b>Site:</b> {item.id_site} <br />
+            <b>Site:</b> <br />
+            <span className="fuel-card__site-value">{item.id_site}</span>
             <b>Tank Capacity:</b> {Number(item.max_capacity).toLocaleString('id-ID')} L
           </CCardText>
 
@@ -264,11 +265,11 @@ const FuelCard = ({ item }) => {
           <div className="fuel-card__summary">
             <table>
               <tbody>
-                <tr>
-                  <td style={{ width: '90px' }}>
+                <tr className="fuel-card__summary-row">
+                  <td className="fuel-card__summary-label">
                     <b>Fuel</b>
                   </td>
-                  <td style={{ width: '90px' }}>
+                  <td className="fuel-card__summary-value">
                     {Number(item.volume_oil).toLocaleString('id-ID', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -277,11 +278,11 @@ const FuelCard = ({ item }) => {
                   </td>
                 </tr>
 
-                <tr>
-                  <td style={{ width: '90px' }}>
+                <tr className="fuel-card__summary-row">
+                  <td className="fuel-card__summary-label">
                     <b>Water</b>
                   </td>
-                  <td style={{ width: '90px' }}>
+                  <td className="fuel-card__summary-value">
                     {Number(item.volume_air).toLocaleString('id-ID', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -290,11 +291,11 @@ const FuelCard = ({ item }) => {
                   </td>
                 </tr>
 
-                <tr>
-                  <td style={{ width: '90px' }}>
+                <tr className="fuel-card__summary-row">
+                  <td className="fuel-card__summary-label">
                     <b>Empty Space</b>
                   </td>
-                  <td style={{ width: '90px' }}>
+                  <td className="fuel-card__summary-value">
                     {Number(item.ruang_kosong).toLocaleString('id-ID', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -303,11 +304,11 @@ const FuelCard = ({ item }) => {
                   </td>
                 </tr>
 
-                <tr>
-                  <td style={{ width: '90px' }}>
+                <tr className="fuel-card__summary-row">
+                  <td className="fuel-card__summary-label">
                     <small>Last Updated</small>
                   </td>
-                  <td style={{ width: '90px' }}>
+                  <td className="fuel-card__summary-value">
                     <small>{formatDatabaseDateTimeDisplay(item.update_date)}</small>
                   </td>
                 </tr>

@@ -36,11 +36,39 @@
     color: var(--fuel-card-text);
   }
 
+  &__site-value {
+    display: block;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--fuel-card-border);
+    word-break: break-word;
+  }
+
   &__summary {
     font-size: 0.75rem;
     margin-top: 18px;
     margin-bottom: 12px;
     color: var(--fuel-card-text);
+    padding: 0 6px;
+  }
+
+  &__summary table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  &__summary-row td {
+    padding: 6px 4px;
+    border-bottom: 1px dashed var(--fuel-card-border);
+  }
+
+  &__summary-label {
+    width: 90px;
+  }
+
+  &__summary-value {
+    width: 90px;
+    text-align: right;
   }
 
   &__toggle {
@@ -273,6 +301,28 @@
   background: linear-gradient(to top, #6b7280, #9ca3af);
 }
 
+.fuel-card-modal__timescale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.fuel-card-modal__timescale-label {
+  margin: 0;
+}
+
+.fuel-card-modal__timescale-group {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.fuel-card-modal__timescale-btn {
+  min-width: 74px;
+  border-radius: 999px !important;
+  font-weight: 600;
+}
+
 [data-coreui-theme='dark'] .fuel-card {
   --fuel-card-surface: #1f2937;
   --fuel-card-border: #374151;
@@ -303,6 +353,12 @@
 [data-coreui-theme='dark'] .fuel-card--standby .tank-visual__fuel-fill,
 [data-coreui-theme='dark'] .fuel-card--offline .tank-visual__fuel-fill {
   background: linear-gradient(to top, #4b5563, #9ca3af);
+}
+
+[data-coreui-theme='dark'] .fuel-card-modal__timescale-btn:not(.fuel-card-modal__timescale-btn--active) {
+  background-color: transparent;
+  color: #cbd5e1;
+  border-color: #64748b;
 }
 
 @keyframes tank-wave-shift {
