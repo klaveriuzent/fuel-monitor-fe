@@ -238,6 +238,24 @@ const FuelCard = ({ item }) => {
 
   const badgeStatus = telemetryStatus
 
+  const renderVolumeValue = (value) => {
+    const formatted = Number(value).toLocaleString('id-ID', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    const [integerPart, decimalPart = '00'] = formatted.split(',')
+
+    return (
+      <>
+        <span className="fuel-card__value-number">
+          <span className="fuel-card__value-integer">{integerPart}</span>
+          <span className="fuel-card__value-decimal">,{decimalPart}</span>
+        </span>{' '}
+        L
+      </>
+    )
+  }
+
   return (
     <Badge.Ribbon text={badgeStatus.text} color={badgeStatus.color}>
       <CCard
@@ -269,26 +287,14 @@ const FuelCard = ({ item }) => {
                   <td className="fuel-card__summary-label">
                     <b>Fuel</b>
                   </td>
-                  <td className="fuel-card__summary-value">
-                    {Number(item.volume_oil).toLocaleString('id-ID', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{' '}
-                    L
-                  </td>
+                  <td className="fuel-card__summary-value">{renderVolumeValue(item.volume_oil)}</td>
                 </tr>
 
                 <tr className="fuel-card__summary-row">
                   <td className="fuel-card__summary-label">
                     <b>Water</b>
                   </td>
-                  <td className="fuel-card__summary-value">
-                    {Number(item.volume_air).toLocaleString('id-ID', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{' '}
-                    L
-                  </td>
+                  <td className="fuel-card__summary-value">{renderVolumeValue(item.volume_air)}</td>
                 </tr>
 
                 <tr className="fuel-card__summary-row">
@@ -296,17 +302,13 @@ const FuelCard = ({ item }) => {
                     <b>Empty Space</b>
                   </td>
                   <td className="fuel-card__summary-value">
-                    {Number(item.ruang_kosong).toLocaleString('id-ID', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{' '}
-                    L
+                    {renderVolumeValue(item.ruang_kosong)}
                   </td>
                 </tr>
 
                 <tr className="fuel-card__summary-row">
                   <td className="fuel-card__summary-label">
-                    <small>Last Updated</small>
+                    <small>Last Response</small>
                   </td>
                   <td className="fuel-card__summary-value">
                     <small>{formatDatabaseDateTimeDisplay(item.update_date)}</small>

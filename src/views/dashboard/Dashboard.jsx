@@ -11,6 +11,23 @@ import AppSubHeaderDashboard from '../../components/subheader/AppSubHeader.dashb
 const baseURL = import.meta.env.VITE_API_BASE_URL
 dayjs.extend(isBetween)
 
+const parseApiDate = (value) => {
+  if (!value) return dayjs(value)
+  if (typeof value === 'string') return dayjs(value.replace(/Z$/i, ''))
+  return dayjs(value)
+}
+
+const resolveRangeEnd = (endValue) => {
+  if (!endValue) return null
+  const end = dayjs(endValue)
+  if (!end.isValid()) return null
+
+  const hasExplicitTime =
+    end.hour() !== 0 || end.minute() !== 0 || end.second() !== 0 || end.millisecond() !== 0
+
+  return hasExplicitTime ? end : end.endOf('day')
+}
+
 const Dashboard = () => {
   /* state */
   const [transaksiData, setTransaksiData] = useState([])
@@ -139,11 +156,12 @@ const Dashboard = () => {
         : true
 
       const [start, end] = dateRange || []
-      const d = dayjs(it.date)
+      const d = parseApiDate(it.date)
+      const rangeEnd = resolveRangeEnd(end)
       const matchDate = start
-        ? end
-          ? d.isBetween(start.startOf('day'), end.endOf('day'), null, '[]')
-          : d.isSame(start, 'day') || d.isAfter(start.startOf('day'))
+        ? rangeEnd
+          ? d.isBetween(dayjs(start).startOf('day'), rangeEnd, null, '[]')
+          : d.isSame(start, 'day') || d.isAfter(dayjs(start).startOf('day'))
         : true
 
       return matchText && matchDate
@@ -164,11 +182,12 @@ const Dashboard = () => {
         siteFilter === 'all' ? true : it.site && it.site.toLowerCase() === siteFilter.toLowerCase()
 
       const [start, end] = dateRange || []
-      const d = dayjs(it.date)
+      const d = parseApiDate(it.date)
+      const rangeEnd = resolveRangeEnd(end)
       const matchDate = start
-        ? end
-          ? d.isBetween(start.startOf('day'), end.endOf('day'), null, '[]')
-          : d.isSame(start, 'day') || d.isAfter(start.startOf('day'))
+        ? rangeEnd
+          ? d.isBetween(dayjs(start).startOf('day'), rangeEnd, null, '[]')
+          : d.isSame(start, 'day') || d.isAfter(dayjs(start).startOf('day'))
         : true
 
       return matchText && matchSite && matchDate

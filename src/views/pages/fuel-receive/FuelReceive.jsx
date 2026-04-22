@@ -32,6 +32,12 @@ dayjs.extend(isBetween)
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
+const parseApiDate = (value) => {
+  if (!value) return dayjs(value)
+  if (typeof value === 'string') return dayjs(value.replace(/Z$/i, ''))
+  return dayjs(value)
+}
+
 const allFuelReceiveColumnKeys = buildFuelReceiveColumns()
   .map((column) => getColumnKey(column))
   .filter(Boolean)
@@ -380,7 +386,7 @@ const FuelReceive = () => {
         : true
 
       const [startDate, endDate] = dateRange || []
-      const itemDate = dayjs(item.waktu_mulai_delivery)
+      const itemDate = parseApiDate(item.waktu_mulai_delivery)
       const matchesDate = startDate
         ? endDate
           ? itemDate.isBetween(startDate.startOf('day'), endDate.endOf('day'), null, '[]')
@@ -471,6 +477,7 @@ const FuelReceive = () => {
         columns={allColumns}
         visibleColumnKeys={visibleColumnKeys}
         setVisibleColumnKeys={setVisibleColumnKeys}
+        todayEndsAtNow={false}
         storageKey="appSubHeaderFilters:fuelReceive"
       />
 

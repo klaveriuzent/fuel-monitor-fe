@@ -71,6 +71,22 @@
     text-align: right;
   }
 
+  &__value-number {
+    display: inline-flex;
+    align-items: baseline;
+    letter-spacing: 0.01em;
+  }
+
+  &__value-integer {
+    font-weight: 700;
+  }
+
+  &__value-decimal {
+    font-weight: 500;
+    opacity: 0.75;
+    font-size: 0.95em;
+  }
+
   &__toggle {
     display: flex;
     align-items: center;
@@ -355,7 +371,8 @@
   background: linear-gradient(to top, #4b5563, #9ca3af);
 }
 
-[data-coreui-theme='dark'] .fuel-card-modal__timescale-btn:not(.fuel-card-modal__timescale-btn--active) {
+[data-coreui-theme='dark']
+  .fuel-card-modal__timescale-btn:not(.fuel-card-modal__timescale-btn--active) {
   background-color: transparent;
   color: #cbd5e1;
   border-color: #64748b;

@@ -15,6 +15,12 @@ const getGranularity = (dateRange) => {
   return 'month'
 }
 
+const parseApiDate = (value) => {
+  if (!value) return dayjs(value)
+  if (typeof value === 'string') return dayjs(value.replace(/Z$/i, ''))
+  return dayjs(value)
+}
+
 const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => {
   const chartRef = useRef(null)
   const [isMobileChart, setIsMobileChart] = useState(() =>
@@ -31,18 +37,28 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
     const [startRaw, endRaw] = dateRange || []
     const now = dayjs()
     const start = (startRaw ? dayjs(startRaw) : now.subtract(11, 'month')).startOf('day')
-    const end = (endRaw ? dayjs(endRaw) : now).endOf('day')
+    const endCandidate = endRaw ? dayjs(endRaw) : now
+    const end = endCandidate.isSame(now, 'day') && endCandidate.isAfter(now) ? now : endCandidate
     const granularity = getGranularity([start, end])
 
     const buckets = []
     const bucketMap = {}
 
     if (granularity === 'hour') {
-      for (let hour = 0; hour < 24; hour += 1) {
-        const point = start.startOf('day').add(hour, 'hour')
+      let cursor = start.startOf('day')
+      const endHour = end.startOf('hour')
+
+      while (cursor.isBefore(endHour) || cursor.isSame(endHour, 'hour')) {
+        const point = cursor
         const key = point.format('YYYY-MM-DD HH')
-        buckets.push({ key, label: point.format('HH:00') })
+        buckets.push({
+          key,
+          label: point.format('HH:00'),
+          dateLabel: point.format('DD MMM'),
+          tooltipTitle: point.format('DD MMM YYYY HH:00'),
+        })
         bucketMap[key] = { count: 0, volume: 0 }
+        cursor = cursor.add(1, 'hour')
       }
     } else if (granularity === 'day') {
       let cursor = start.startOf('day')
@@ -78,7 +94,7 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
     }
 
     data.forEach((item) => {
-      const d = dayjs(item?.date)
+      const d = parseApiDate(item?.date)
       if (!d.isValid()) return
       if (d.isBefore(start) || d.isAfter(end)) return
 
@@ -93,12 +109,15 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
       bucketMap[key].volume += Number(item?.volume || 0)
     })
 
-    const labels = buckets.map((bucket) => bucket.label)
+    const labels = buckets.map((bucket) =>
+      granularity === 'hour' ? [bucket.label, bucket.dateLabel] : bucket.label,
+    )
     const countData = buckets.map((bucket) => bucketMap[bucket.key].count)
     const volumeData = buckets.map((bucket) => Number(bucketMap[bucket.key].volume.toFixed(2)))
     const maxCount = Math.max(...countData, 0)
+    const tooltipTitles = buckets.map((bucket) => bucket.tooltipTitle || bucket.label)
 
-    return { labels, countData, volumeData, maxCount, granularity }
+    return { labels, countData, volumeData, maxCount, granularity, tooltipTitles }
   }, [data, dateRange])
 
   const minChartWidth = useMemo(() => {
@@ -133,7 +152,8 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
             typeof document !== 'undefined'
               ? document.documentElement.getAttribute('data-coreui-theme')
               : 'light'
-          const bodyColor = getStyle('--cui-body-color') || (theme === 'dark' ? '#e9ecef' : '#212529')
+          const bodyColor =
+            getStyle('--cui-body-color') || (theme === 'dark' ? '#e9ecef' : '#212529')
 
           chartRef.current.options.plugins.legend.labels.color = bodyColor
           chartRef.current.options.scales.x.grid.borderColor = getStyle(
@@ -200,102 +220,107 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
       )}
       <div style={{ overflowX: 'auto', overflowY: 'hidden' }}>
         <div style={{ minWidth: `${minChartWidth}px` }}>
-        <CChartBar
-          ref={chartRef}
-          style={{ height: '300px', width: '100%', marginTop: '40px' }}
-          data={{
-            labels: chartData.labels,
-            datasets: [
-              {
-                label: 'Jumlah Transaksi',
-                backgroundColor: `rgba(${getStyle('--cui-primary-rgb')}, .75)`,
-                borderColor: getStyle('--cui-primary'),
-                borderWidth: 1,
-                data: chartData.countData,
-                barPercentage: 0.7,
-                categoryPercentage: 0.7,
-                yAxisID: 'y',
-              },
-              {
-                label: 'Total Volume (L)',
-                type: 'line',
-                data: chartData.volumeData,
-                borderColor: getStyle('--cui-success'),
-                backgroundColor: `rgba(${getStyle('--cui-success-rgb')}, .15)`,
-                borderWidth: 2,
-                tension: 0.3,
-                pointRadius: 3,
-                pointHoverRadius: 4,
-                yAxisID: 'y1',
-              },
-            ],
-          }}
-          options={{
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: !isMobileChart,
-                labels: {
-                  color: chartTextColor,
+          <CChartBar
+            ref={chartRef}
+            style={{ height: '300px', width: '100%', marginTop: '40px' }}
+            data={{
+              labels: chartData.labels,
+              datasets: [
+                {
+                  label: 'Jumlah Transaksi',
+                  backgroundColor: `rgba(${getStyle('--cui-primary-rgb')}, .75)`,
+                  borderColor: getStyle('--cui-primary'),
+                  borderWidth: 1,
+                  data: chartData.countData,
+                  barPercentage: 0.7,
+                  categoryPercentage: 0.7,
+                  yAxisID: 'y',
                 },
-              },
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => {
-                    const isVolume = ctx.dataset?.yAxisID === 'y1'
-                    if (isVolume) {
-                      return `${ctx.dataset.label}: ${Number(ctx.raw || 0).toLocaleString('id-ID')} L`
-                    }
-                    return `${ctx.dataset.label}: ${ctx.raw || 0} transaksi`
+                {
+                  label: 'Total Volume (L)',
+                  type: 'line',
+                  data: chartData.volumeData,
+                  borderColor: getStyle('--cui-success'),
+                  backgroundColor: `rgba(${getStyle('--cui-success-rgb')}, .15)`,
+                  borderWidth: 2,
+                  tension: 0.3,
+                  pointRadius: 3,
+                  pointHoverRadius: 4,
+                  yAxisID: 'y1',
+                },
+              ],
+            }}
+            options={{
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: !isMobileChart,
+                  labels: {
+                    color: chartTextColor,
+                  },
+                },
+                tooltip: {
+                  callbacks: {
+                    title: (items) => {
+                      const dataIndex = items?.[0]?.dataIndex
+                      if (dataIndex === undefined) return ''
+                      return chartData.tooltipTitles?.[dataIndex] || ''
+                    },
+                    label: (ctx) => {
+                      const isVolume = ctx.dataset?.yAxisID === 'y1'
+                      if (isVolume) {
+                        return `${ctx.dataset.label}: ${Number(ctx.raw || 0).toLocaleString('id-ID')} L`
+                      }
+                      return `${ctx.dataset.label}: ${ctx.raw || 0} transaksi`
+                    },
                   },
                 },
               },
-            },
-            scales: {
-              x: {
-                grid: {
-                  color: getStyle('--cui-border-color-translucent'),
-                  drawOnChartArea: false,
+              scales: {
+                x: {
+                  grid: {
+                    color: getStyle('--cui-border-color-translucent'),
+                    drawOnChartArea: false,
+                  },
+                  ticks: {
+                    color: chartTextColor,
+                    autoSkip: chartData.granularity !== 'hour',
+                    maxRotation: 0,
+                  },
                 },
-                ticks: {
-                  color: chartTextColor,
-                  autoSkip: chartData.granularity !== 'hour',
-                  maxRotation: 0,
+                y: {
+                  beginAtZero: true,
+                  border: {
+                    color: getStyle('--cui-border-color-translucent'),
+                  },
+                  grid: {
+                    color: getStyle('--cui-border-color-translucent'),
+                  },
+                  max: Math.max(5, Math.ceil(chartData.maxCount / 5) * 5),
+                  ticks: {
+                    color: chartTextColor,
+                    maxTicksLimit: 5,
+                    stepSize: Math.max(1, Math.ceil(Math.max(5, chartData.maxCount) / 5)),
+                  },
+                },
+                y1: {
+                  beginAtZero: true,
+                  position: 'right',
+                  border: {
+                    color: getStyle('--cui-border-color-translucent'),
+                  },
+                  grid: {
+                    drawOnChartArea: false,
+                    color: getStyle('--cui-border-color-translucent'),
+                  },
+                  ticks: {
+                    color: chartTextColor,
+                    callback: (value) => `${Number(value).toLocaleString('id-ID')} L`,
+                  },
                 },
               },
-              y: {
-                beginAtZero: true,
-                border: {
-                  color: getStyle('--cui-border-color-translucent'),
-                },
-                grid: {
-                  color: getStyle('--cui-border-color-translucent'),
-                },
-                max: Math.max(5, Math.ceil(chartData.maxCount / 5) * 5),
-                ticks: {
-                  color: chartTextColor,
-                  maxTicksLimit: 5,
-                  stepSize: Math.max(1, Math.ceil(Math.max(5, chartData.maxCount) / 5)),
-                },
-              },
-              y1: {
-                beginAtZero: true,
-                position: 'right',
-                border: {
-                  color: getStyle('--cui-border-color-translucent'),
-                },
-                grid: {
-                  drawOnChartArea: false,
-                  color: getStyle('--cui-border-color-translucent'),
-                },
-                ticks: {
-                  color: chartTextColor,
-                  callback: (value) => `${Number(value).toLocaleString('id-ID')} L`,
-                },
-              },
-            },
-          }}
-        />
+            }}
+          />
         </div>
       </div>
     </div>

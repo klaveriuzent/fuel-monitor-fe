@@ -20,6 +20,23 @@ const baseURL = import.meta.env.VITE_API_BASE_URL
 
 dayjs.extend(isBetween)
 
+const parseApiDate = (value) => {
+  if (!value) return dayjs(value)
+  if (typeof value === 'string') return dayjs(value.replace(/Z$/i, ''))
+  return dayjs(value)
+}
+
+const resolveRangeEnd = (endValue) => {
+  if (!endValue) return null
+  const end = dayjs(endValue)
+  if (!end.isValid()) return null
+
+  const hasExplicitTime =
+    end.hour() !== 0 || end.minute() !== 0 || end.second() !== 0 || end.millisecond() !== 0
+
+  return hasExplicitTime ? end : end.endOf('day')
+}
+
 const allTransactionColumnKeys = transactionColumns
   .map((column) => getColumnKey(column))
   .filter(Boolean)
@@ -117,11 +134,12 @@ const Transactions = () => {
         : true
 
       const [startDate, endDate] = dateRange || []
-      const itemDate = dayjs(item.waktu)
+      const itemDate = parseApiDate(item.waktu)
+      const rangeEnd = resolveRangeEnd(endDate)
       const matchesDate = startDate
-        ? endDate
-          ? itemDate.isBetween(startDate.startOf('day'), endDate.endOf('day'), null, '[]')
-          : itemDate.isSame(startDate, 'day') || itemDate.isAfter(startDate.startOf('day'))
+        ? rangeEnd
+          ? itemDate.isBetween(dayjs(startDate).startOf('day'), rangeEnd, null, '[]')
+          : itemDate.isSame(startDate, 'day') || itemDate.isAfter(dayjs(startDate).startOf('day'))
         : true
 
       return matchesText && matchesDate
@@ -207,6 +225,7 @@ const Transactions = () => {
         columns={transactionColumns}
         visibleColumnKeys={visibleColumnKeys}
         setVisibleColumnKeys={setVisibleColumnKeys}
+        todayEndsAtNow
         storageKey="appSubHeaderFilters:transactions"
       />
 

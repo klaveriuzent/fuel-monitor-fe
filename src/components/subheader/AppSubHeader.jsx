@@ -27,6 +27,7 @@ const AppSubHeader = ({
   setVisibleColumnKeys,
   useSiteAutocomplete = false,
   useSitePolishedSelect = false,
+  todayEndsAtNow = false,
   storageKey = DEFAULT_STORAGE_KEY,
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
@@ -69,17 +70,20 @@ const AppSubHeader = ({
     { label: 'Last Year', value: 'last365' },
   ]
 
-  const calculateQuickRange = useCallback((value) => {
-    const today = dayjs()
-    const ranges = {
-      today: [today.startOf('day'), today.endOf('day')],
-      last7: [today.subtract(6, 'day').startOf('day'), today.endOf('day')],
-      last30: [today.subtract(29, 'day').startOf('day'), today.endOf('day')],
-      last180: [today.subtract(179, 'day').startOf('day'), today.endOf('day')],
-      last365: [today.subtract(364, 'day').startOf('day'), today.endOf('day')],
-    }
-    return ranges[value] || ranges.today
-  }, [])
+  const calculateQuickRange = useCallback(
+    (value) => {
+      const today = dayjs()
+      const ranges = {
+        today: [today.startOf('day'), todayEndsAtNow ? today : today.endOf('day')],
+        last7: [today.subtract(6, 'day').startOf('day'), today.endOf('day')],
+        last30: [today.subtract(29, 'day').startOf('day'), today.endOf('day')],
+        last180: [today.subtract(179, 'day').startOf('day'), today.endOf('day')],
+        last365: [today.subtract(364, 'day').startOf('day'), today.endOf('day')],
+      }
+      return ranges[value] || ranges.today
+    },
+    [todayEndsAtNow],
+  )
 
   const fetchSites = useCallback(async () => {
     try {
@@ -305,7 +309,14 @@ const AppSubHeader = ({
         value: site.id_site,
       })),
     ],
-    [siteOptions, siteCounts, siteTotalCount, shouldShowSiteCounts, formatSiteLabel, getSiteOptionStyle],
+    [
+      siteOptions,
+      siteCounts,
+      siteTotalCount,
+      shouldShowSiteCounts,
+      formatSiteLabel,
+      getSiteOptionStyle,
+    ],
   )
 
   const handleSiteSelect = (_, option) => {
@@ -318,7 +329,8 @@ const AppSubHeader = ({
     const currentInput = String(siteInputValue || '').toLowerCase()
     const matchedOption = siteAutoCompleteOptions.find(
       (option) =>
-        option.value.toLowerCase() === currentInput || option.siteValue.toLowerCase() === currentInput,
+        option.value.toLowerCase() === currentInput ||
+        option.siteValue.toLowerCase() === currentInput,
     )
 
     if (matchedOption) {

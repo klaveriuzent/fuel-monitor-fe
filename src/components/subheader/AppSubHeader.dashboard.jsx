@@ -61,7 +61,7 @@ const AppSubHeaderDashboard = ({
   const calculateQuickRange = useCallback((value) => {
     const today = dayjs()
     const ranges = {
-      today: [today.startOf('day'), today.endOf('day')],
+      today: [today.startOf('day'), today],
       last7: [today.subtract(6, 'day').startOf('day'), today.endOf('day')],
       last30: [today.subtract(29, 'day').startOf('day'), today.endOf('day')],
       last180: [today.subtract(179, 'day').startOf('day'), today.endOf('day')],
