@@ -1,5 +1,5 @@
 import { CButton } from '@coreui/react'
-import { Tag } from 'antd'
+import { CopyOutlined } from '@ant-design/icons'
 
 export const parseDateSafe = (value) => {
   if (!value) return null
@@ -123,6 +123,29 @@ export const formatLicensePlate = (value) => {
 const formatValueOrDash = (value, formatter = (val) => val) =>
   value || value === 0 ? formatter(value) : '-'
 
+const copyToClipboard = async (value) => {
+  const text = String(value || '').trim()
+  if (!text) return
+
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+  }
+}
+
+const renderEmphasizedDecimal = (value) => {
+  if (value === null || value === undefined || value === '') return '-'
+
+  const formatted = formatDecimal(value)
+  const [integerPart, decimalPart = '00'] = formatted.split(',')
+
+  return (
+    <span className="fuel-receive-total__number">
+      <span className="fuel-receive-total__integer">{integerPart}</span>
+      <span className="fuel-receive-total__decimal">,{decimalPart}</span>
+    </span>
+  )
+}
+
 export const buildFuelReceiveColumns = (onEdit = () => {}, onOpenAttachment = () => {}) => [
   { title: 'Site', dataIndex: 'id_site', key: 'id_site' },
   { title: 'Tank', dataIndex: 'id_tank', key: 'id_tank', align: 'center' },
@@ -142,25 +165,53 @@ export const buildFuelReceiveColumns = (onEdit = () => {}, onOpenAttachment = ()
     title: 'Document',
     key: 'document',
     render: (_, record) => (
-      <div className="d-flex flex-column gap-2 p-2">
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. PO</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {record?.no_invoice ?? '-'}
-          </span>
-        </span>
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>No. DO</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {record?.no_do ?? '-'}
-          </span>
-        </span>
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Volume Permintaan (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {formatValueOrDash(record?.volume_permintaan, formatDecimal)}
-          </span>
-        </span>
+      <div className="fuel-receive-doc-stack p-2">
+        <div className="fuel-receive-doc__card">
+          <div className="fuel-receive-doc__row">
+            <span className="fuel-receive-doc__label">No. PO</span>
+            <span className="fuel-receive-doc__value">
+              {record?.no_invoice ?? '-'}
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(record?.no_invoice)
+                }}
+                title="Copy No. PO"
+                aria-label="Copy No. PO"
+              >
+                <CopyOutlined />
+              </button>
+            </span>
+          </div>
+          <div className="fuel-receive-doc__row">
+            <span className="fuel-receive-doc__label">No. DO</span>
+            <span className="fuel-receive-doc__value">
+              {record?.no_do ?? '-'}
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(record?.no_do)
+                }}
+                title="Copy No. DO"
+                aria-label="Copy No. DO"
+              >
+                <CopyOutlined />
+              </button>
+            </span>
+          </div>
+        </div>
+        <div className="fuel-receive-request">
+          <div className="fuel-receive-request__card">
+            <div className="fuel-receive-request__row">
+              <div className="fuel-receive-request__title">Volume Permintaan (L)</div>
+              <div className="fuel-receive-request__value">
+                {renderEmphasizedDecimal(record?.volume_permintaan)}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     ),
   },
@@ -168,51 +219,143 @@ export const buildFuelReceiveColumns = (onEdit = () => {}, onOpenAttachment = ()
     title: 'Pengiriman',
     key: 'pengiriman',
     render: (_, record) => (
-      <div className="d-flex flex-column gap-2 p-2">
-        <span>
-          <strong>{record?.pengirim ?? '-'}</strong>
-        </span>
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>License Plate</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {formatLicensePlate(record?.no_kendaraan)}
-          </span>
-        </span>
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Driver</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {record?.nama_pengemudi ?? '-'}
-          </span>
-        </span>
+      <div className="fuel-receive-shipping-stack p-2">
+        <div className="fuel-receive-shipping__card">
+          <div className="fuel-receive-shipping__row fuel-receive-shipping__row--sender">
+            <span className="fuel-receive-shipping__sender-text">{record?.pengirim ?? '-'}</span>
+            <button
+              type="button"
+              className="fuel-receive-doc__copy-btn"
+              onClick={() => {
+                void copyToClipboard(record?.pengirim)
+              }}
+              title="Copy Sender"
+              aria-label="Copy Sender"
+            >
+              <CopyOutlined />
+            </button>
+          </div>
+          <div className="fuel-receive-shipping__row">
+            <span className="fuel-receive-shipping__label">License Plate</span>
+            <span className="fuel-receive-shipping__value">
+              {formatLicensePlate(record?.no_kendaraan)}
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(formatLicensePlate(record?.no_kendaraan))
+                }}
+                title="Copy License Plate"
+                aria-label="Copy License Plate"
+              >
+                <CopyOutlined />
+              </button>
+            </span>
+          </div>
+          <div className="fuel-receive-shipping__row">
+            <span className="fuel-receive-shipping__label">Driver</span>
+            <span className="fuel-receive-shipping__value">
+              {record?.nama_pengemudi ?? '-'}
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(record?.nama_pengemudi)
+                }}
+                title="Copy Driver"
+                aria-label="Copy Driver"
+              >
+                <CopyOutlined />
+              </button>
+            </span>
+          </div>
+        </div>
       </div>
     ),
   },
   {
     title: 'Total',
     key: 'total_information',
+    align: 'right',
     render: (_, record) => (
-      <div className="d-flex flex-column gap-2 p-2">
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Delivery (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {formatValueOrDash(record?.total_deliv, formatDecimal)}
-          </span>
-        </span>
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Permintaan (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {formatValueOrDash(record?.total_permintaan, formatDecimal)}
-          </span>
-        </span>
-        <span>
-          <Tag style={{ fontSize: '13px', fontWeight: 500 }}>Total Selisih (L)</Tag>{' '}
-          <span style={{ fontSize: '12px', color: 'var(--cui-body-color)' }}>
-            {formatValueOrDash(record?.total_selisih, formatDecimal)}{' '}
-            <small style={{ color: 'var(--cui-body-color)' }}>
+      <div className="fuel-receive-total-stack p-2">
+        <div className="fuel-receive-total__card">
+          <div className="fuel-receive-total__row">
+            <span className="fuel-receive-total__label">Total Delivery (L)</span>
+            <span className="fuel-receive-total__value">
+              {renderEmphasizedDecimal(record?.total_deliv)}
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(formatDecimal(record?.total_deliv ?? 0))
+                }}
+                title="Copy Total Delivery"
+                aria-label="Copy Total Delivery"
+              >
+                <CopyOutlined />
+              </button>
+            </span>
+            <span className="fuel-receive-total__percent" />
+          </div>
+          <div className="fuel-receive-total__row">
+            <span className="fuel-receive-total__label">Total Permintaan (L)</span>
+            <span className="fuel-receive-total__value">
+              {renderEmphasizedDecimal(record?.total_permintaan)}
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(formatDecimal(record?.total_permintaan ?? 0))
+                }}
+                title="Copy Total Permintaan"
+                aria-label="Copy Total Permintaan"
+              >
+                <CopyOutlined />
+              </button>
+            </span>
+            <span className="fuel-receive-total__percent" />
+          </div>
+          <div className="fuel-receive-total__row">
+            <span className="fuel-receive-total__label">Total Selisih (L)</span>
+            <span className="fuel-receive-total__value">
+              {renderEmphasizedDecimal(record?.total_selisih)}
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(formatDecimal(record?.total_selisih ?? 0))
+                }}
+                title="Copy Total Selisih"
+                aria-label="Copy Total Selisih"
+              >
+                <CopyOutlined />
+              </button>
+            </span>
+            <small
+              className="fuel-receive-total__percent"
+              style={{
+                color:
+                  Number(record?.persentase_selisih || 0) < 0
+                    ? 'var(--cui-danger, #dc3545)'
+                    : 'var(--cui-success, #198754)',
+              }}
+            >
               ({formatValueOrDash(record?.persentase_selisih, formatPercentage)})
+              <button
+                type="button"
+                className="fuel-receive-doc__copy-btn"
+                onClick={() => {
+                  void copyToClipboard(formatPercentage(record?.persentase_selisih ?? 0))
+                }}
+                title="Copy Persentase Selisih"
+                aria-label="Copy Persentase Selisih"
+              >
+                <CopyOutlined />
+              </button>
             </small>
-          </span>
-        </span>
+          </div>
+        </div>
       </div>
     ),
   },

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
-import { CContainer, CHeader, CHeaderNav, CHeaderToggler, CFormSelect } from '@coreui/react'
+import { CContainer, CHeader, CHeaderNav, CHeaderToggler } from '@coreui/react'
+import { Select } from 'antd'
 import CIcon from '@coreui/icons-react'
 import { cilMenu } from '@coreui/icons'
 import { AppHeaderDropdown } from './header/index'
@@ -12,6 +13,7 @@ const AppHeader = () => {
   const headerRef = useRef()
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const filterGroup = useSelector((state) => state.filterGroup)
   const routeTitles = useSelector((state) => state.routeTitles) || {}
 
   const location = useLocation()
@@ -102,19 +104,21 @@ const AppHeader = () => {
 
       <div className="app-header-glass-row w-100 d-flex justify-content-between align-items-center px-4 py-2 border-top">
         {/* START - Select lokasi dari API */}
-        <CFormSelect
-          size="sm"
-          style={{ maxWidth: '160px' }}
+        <Select
+          size="small"
+          className="app-header__group-select"
+          popupClassName="app-header__group-select-dropdown"
+          value={filterGroup || 'all'}
+          onChange={(value) => dispatch({ type: 'set', filterGroup: value })}
+          options={[
+            { value: 'all', label: 'All' },
+            ...locations.map((loc) => ({
+              value: loc.id_location,
+              label: loc.location_area,
+            })),
+          ]}
           aria-label="Select Group"
-          onChange={(e) => dispatch({ type: 'set', filterGroup: e.target.value })}
-        >
-          <option value="all">All</option>
-          {locations.map((loc) => (
-            <option key={loc.id} value={loc.id_location}>
-              {loc.location_area}
-            </option>
-          ))}
-        </CFormSelect>
+        />
 
         {/* END - Date & Time di kanan */}
         <span className="text-nowrap small">

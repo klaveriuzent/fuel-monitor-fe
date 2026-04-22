@@ -39,6 +39,25 @@
   color: var(--cui-body-color);
 }
 
+.profile-hero__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-hero__copy-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  line-height: 1;
+  color: var(--cui-secondary-color);
+  cursor: pointer;
+}
+
+.profile-hero__copy-btn:hover {
+  color: var(--cui-primary, #0d6efd);
+}
+
 .profile-hero__subtitle {
   color: var(--cui-secondary-color);
   font-size: 0.9rem;
@@ -93,6 +112,18 @@
   gap: 6px;
 }
 
+.profile-grid__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-grid__list-item {
+  font-size: 0.9rem;
+  color: var(--cui-body-color);
+  line-height: 1.35;
+}
+
 .profile-grid__chip {
   display: inline-flex;
   align-items: center;
@@ -102,6 +133,33 @@
   color: var(--cui-body-color);
   background: rgba(13, 110, 253, 0.12);
   border: 1px solid rgba(13, 110, 253, 0.2);
+}
+
+.profile-grid__chip--accent {
+  font-weight: 700;
+  background: rgba(13, 110, 253, 0.2);
+  border-color: rgba(13, 110, 253, 0.35);
+}
+
+.profile-logout-wrap {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+.profile-logout-text {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cui-danger, #dc3545);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.profile-logout-text:hover {
+  color: #bb2d3b;
 }
 
 @media (max-width: 992px) {
@@ -145,6 +203,14 @@
     color: #f8fafc;
   }
 
+  .profile-hero__copy-btn {
+    color: #cbd5e1;
+  }
+
+  .profile-hero__copy-btn:hover {
+    color: #93c5fd;
+  }
+
   .profile-hero__subtitle {
     color: #cbd5e1;
   }
@@ -162,9 +228,27 @@
     color: #e2e8f0;
   }
 
+  .profile-grid__list-item {
+    color: #e2e8f0;
+  }
+
   .profile-grid__chip {
     background: rgba(59, 130, 246, 0.22);
     border-color: rgba(96, 165, 250, 0.35);
     color: #dbeafe;
+  }
+
+  .profile-grid__chip--accent {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: rgba(147, 197, 253, 0.5);
+    color: #eff6ff;
+  }
+
+  .profile-logout-text {
+    color: #fda4af;
+  }
+
+  .profile-logout-text:hover {
+    color: #fecdd3;
   }
 }
