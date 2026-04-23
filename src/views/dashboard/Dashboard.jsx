@@ -52,6 +52,7 @@ const Dashboard = () => {
         const res = await fetch(`${baseURL}auth/sso_validate?t=${encodeURIComponent(token)}`, {
           method: 'GET',
           headers: { Accept: 'application/json' },
+          credentials: 'include',
         })
         const json = await res.json()
 

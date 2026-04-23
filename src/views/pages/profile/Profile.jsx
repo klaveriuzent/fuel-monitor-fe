@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { CCard, CCardBody, CCol, CRow } from '@coreui/react'
 import { CopyOutlined } from '@ant-design/icons'
 import './profile.scss'
+import { notifyUnauthorized } from '../../../utils/unauthorized'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
 
@@ -79,13 +80,18 @@ const Profile = () => {
   }
   const handleLogout = async () => {
     try {
-      await fetch(`${baseURL}/auth/logout`, {
+      const response = await fetch(`${baseURL}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
       })
+
+      if (response.status === 401) {
+        notifyUnauthorized()
+        return
+      }
 
       if (typeof window !== 'undefined') {
         window.localStorage.removeItem('user-data')

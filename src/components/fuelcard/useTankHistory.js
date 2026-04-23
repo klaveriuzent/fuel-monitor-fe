@@ -6,6 +6,7 @@ import {
   toNullableNumber,
   toNumber,
 } from './fuelCardUtils'
+import { notifyUnauthorized } from '../../utils/unauthorized'
 
 export const useTankHistory = ({ baseURL, isModalVisible, item, timeScale, isStandby }) => {
   const [fuelData, setFuelData] = useState([])
@@ -36,7 +37,13 @@ export const useTankHistory = ({ baseURL, isModalVisible, item, timeScale, isSta
 
         const response = await fetch(`${baseURL}tank/history?${params.toString()}`, {
           signal: controller.signal,
+          credentials: 'include',
         })
+
+        if (response.status === 401) {
+          notifyUnauthorized()
+          return
+        }
 
         if (!response.ok) {
           throw new Error('Failed to fetch tank history data')

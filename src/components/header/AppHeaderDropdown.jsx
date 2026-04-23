@@ -9,6 +9,7 @@ import {
   CFormSwitch,
   useColorModes,
 } from '@coreui/react'
+import { notifyUnauthorized } from '../../utils/unauthorized'
 
 const themeStorageKey = 'coreui-free-react-admin-template-theme'
 const baseURL = import.meta.env.VITE_API_BASE_URL
@@ -33,13 +34,18 @@ const resolveCurrentTheme = () => {
 
 const handleLogout = async () => {
   try {
-    await fetch(`${baseURL}/auth/logout`, {
+    const response = await fetch(`${baseURL}/auth/logout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
     })
+
+    if (response.status === 401) {
+      notifyUnauthorized()
+      return
+    }
 
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem('user-data')
