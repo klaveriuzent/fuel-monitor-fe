@@ -1,8 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { CButton, CCard, CCardBody, CContainer, CForm, CSpinner } from '@coreui/react'
-import { v4 as GUID } from 'uuid'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
+
+const parseJsonResponse = async (response) => {
+  const rawText = await response.text()
+  if (!rawText) return {}
+
+  try {
+    return JSON.parse(rawText)
+  } catch {
+    return {
+      message: rawText.trim() || 'Invalid server response',
+    }
+  }
+}
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -32,61 +44,42 @@ const Login = () => {
 
     try {
       const res = await fetch(`${baseURL}auth/get_login?id=${IdApp}&id_trx=${guid}`)
-      const json = await res.json()
+      const json = await parseJsonResponse(res)
       if (json.objek) {
         window.location.href = json.objek
       }
     } catch (err) {
+      setIsLoading(false)
       setIsApplicationLogin(true)
     }
   }, [IdApp])
 
-  const handleAfterUserManagementLogin = useCallback(
-    async (token) => {
-      try {
-        const headers = {
+  const handleAfterUserManagementLogin = useCallback(async (token) => {
+    try {
+      setIsLoading(true)
+      const res = await fetch(`${baseURL}auth/sso_validate?t=${encodeURIComponent(token)}`, {
+        method: 'GET',
+        headers: {
           Accept: 'application/json',
-          authenticationToken: token,
-          'Content-Type': 'application/json',
-        }
+        },
+        credentials: 'include',
+      })
+      const json = await parseJsonResponse(res)
 
-        const validDetail = await sha256(token)
-
-        await fetch(`${baseURL}auth/get_token`, {
-          method: 'POST',
-          headers,
-          credentials: 'include',
-          body: JSON.stringify({
-            id: token,
-            token: token,
-            valid_detail: validDetail,
-          }),
-        })
-
-        const res = await fetch(
-          `${baseURL}auth/detail_by_name_application?name_application=FuelMonitoring`,
-          {
-            headers,
-            credentials: 'include',
-          },
-        )
-
-        const json = await res.json()
-
-        if (json.result === true) {
-          localStorage.setItem('user-data', JSON.stringify(json.objek))
-
-          window.location.href = '/dashboard'
-        } else {
-          alert('Server sedang sibuk, silakan coba lagi.')
-        }
-      } catch (error) {
-        console.error('Login error:', error)
-        location.reload()
+      if (!res.ok) {
+        throw new Error(json?.message || 'Authorization has been denied for this request.')
       }
-    },
-    [sha256],
-  )
+
+      localStorage.setItem('user-data', JSON.stringify(json?.data || {}))
+      window.location.href = '/fuelmonitoring/dashboard'
+    } catch (error) {
+      console.error('Login error:', error)
+      alert(error?.message || 'Server sedang sibuk, silakan coba lagi.')
+      window.location.href = '/fuelmonitoring/login'
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     const run = async () => {
@@ -102,7 +95,7 @@ const Login = () => {
         const valid = await sha256(guid + IdApp + KeyApp)
 
         if (valid === v) {
-          handleAfterUserManagementLogin(t)
+          await handleAfterUserManagementLogin(t)
         }
       }
     }
@@ -112,6 +105,7 @@ const Login = () => {
 
   const handleUserManagementLogin = (e) => {
     e.preventDefault()
+    setIsLoading(true)
     setIsApplicationLogin(false)
     getLogin()
   }
