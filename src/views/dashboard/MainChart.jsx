@@ -21,6 +21,17 @@ const parseApiDate = (value) => {
   return dayjs(value)
 }
 
+const resolveRangeEnd = (endValue) => {
+  if (!endValue) return null
+  const end = dayjs(endValue)
+  if (!end.isValid()) return null
+
+  const hasExplicitTime =
+    end.hour() !== 0 || end.minute() !== 0 || end.second() !== 0 || end.millisecond() !== 0
+
+  return hasExplicitTime ? end : end.endOf('day')
+}
+
 const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => {
   const chartRef = useRef(null)
   const [isMobileChart, setIsMobileChart] = useState(() =>
@@ -37,7 +48,7 @@ const MainChart = ({ data = [], loading = false, dateRange = [null, null] }) => 
     const [startRaw, endRaw] = dateRange || []
     const now = dayjs()
     const start = (startRaw ? dayjs(startRaw) : now.subtract(11, 'month')).startOf('day')
-    const endCandidate = endRaw ? dayjs(endRaw) : now
+    const endCandidate = endRaw ? resolveRangeEnd(endRaw) || dayjs(endRaw) : now
     const end = endCandidate.isSame(now, 'day') && endCandidate.isAfter(now) ? now : endCandidate
     const granularity = getGranularity([start, end])
 
