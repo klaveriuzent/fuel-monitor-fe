@@ -202,6 +202,8 @@ const Dashboard = () => {
         transaksiData={filteredTransaksi}
         fuelReceiveData={filteredFuelReceive}
         stockData={filteredTankData}
+        siteFilter={siteFilter}
+        dateRange={dateRange}
         loadingTrans={loadingTrans}
         loadingReceive={loadingReceive}
         loadingStock={loadingTank}

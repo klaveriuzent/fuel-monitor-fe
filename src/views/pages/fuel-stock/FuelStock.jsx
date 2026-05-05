@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Row, Col, Pagination } from 'antd'
 import ExcelJS from 'exceljs'
 import axios from 'axios'
+import { useLocation } from 'react-router-dom'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
@@ -10,8 +11,10 @@ import { mapFuelStockData } from './interface.fuelstock'
 import '../tableDarkMode.scss'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
+const STOCK_FILTER_STORAGE_KEY = 'app-subheader-stock-filters'
 
 const FuelStock = () => {
+  const location = useLocation()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -28,6 +31,31 @@ const FuelStock = () => {
 
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    const navigationState = location.state
+    if (!navigationState) return
+
+    const nextSiteFilter = navigationState.siteFilter ?? 'all'
+    const nextStatusFilter = navigationState.statusFilter ?? 'all'
+
+    if (navigationState.siteFilter !== undefined) {
+      setFilterSite(nextSiteFilter)
+    }
+    if (navigationState.statusFilter !== undefined) {
+      setStatusFilter(nextStatusFilter)
+    }
+    setSearch('')
+    setCurrentPage(1)
+    localStorage.setItem(
+      STOCK_FILTER_STORAGE_KEY,
+      JSON.stringify({
+        search: '',
+        siteFilter: nextSiteFilter,
+        statusFilter: nextStatusFilter,
+      }),
+    )
+  }, [location.state])
 
   useEffect(() => {
     const controller = new AbortController()

@@ -5,6 +5,7 @@ import isBetween from 'dayjs/plugin/isBetween'
 import { CCard, CCardBody, CButton } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
+import { useLocation } from 'react-router-dom'
 import {
   transactionColumns,
   formatDateTime,
@@ -17,6 +18,7 @@ import { getColumnKey } from '../../../utils/table'
 import ResponsiveTableCards from '../../../components/ResponsiveTableCards'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
+const TRANSACTIONS_FILTER_STORAGE_KEY = 'appSubHeaderFilters:transactions'
 
 dayjs.extend(isBetween)
 
@@ -42,12 +44,38 @@ const allTransactionColumnKeys = transactionColumns
   .filter(Boolean)
 
 const Transactions = () => {
+  const location = useLocation()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState(null)
   const [visibleColumnKeys, setVisibleColumnKeys] = useState(allTransactionColumnKeys)
+
+  useEffect(() => {
+    const navigationState = location.state
+    if (!navigationState) return
+
+    const nextDateRange = Array.isArray(navigationState.dateRange)
+      ? navigationState.dateRange.map((value) => (value ? dayjs(value) : value))
+      : null
+
+    setSearch(navigationState.search ?? '')
+    if (navigationState.siteFilter !== undefined) {
+      setSiteFilter(navigationState.siteFilter)
+    }
+    setDateRange(nextDateRange)
+
+    localStorage.setItem(
+      TRANSACTIONS_FILTER_STORAGE_KEY,
+      JSON.stringify({
+        search: navigationState.search ?? '',
+        siteFilter: navigationState.siteFilter ?? 'all',
+        quickRange: navigationState.quickRange ?? null,
+        dateRange: Array.isArray(navigationState.dateRange) ? navigationState.dateRange : null,
+      }),
+    )
+  }, [location.state])
 
   const tableColumns = useMemo(
     () => transactionColumns.filter((column) => visibleColumnKeys.includes(getColumnKey(column))),

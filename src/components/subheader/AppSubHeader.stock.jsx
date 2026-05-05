@@ -86,6 +86,10 @@ const AppSubHeaderStock = ({
     fetchSites()
   }, [fetchSites])
 
+  useEffect(() => {
+    setSiteInputValue(siteFilter === 'all' ? 'All Sites' : siteFilter)
+  }, [siteFilter])
+
   const siteAutoCompleteOptions = useMemo(
     () => [
       { value: 'All Sites', siteValue: 'all' },

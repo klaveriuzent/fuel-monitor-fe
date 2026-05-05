@@ -14,6 +14,7 @@ import {
 } from '@coreui/react'
 import { saveAs } from 'file-saver'
 import ExcelJS from 'exceljs'
+import { useLocation } from 'react-router-dom'
 import AppSubHeader from '../../../components/subheader/AppSubHeader'
 import AddFuelReceiveModal from '../../../components/modals/AddFuelReceiveModal'
 import { getColumnKey } from '../../../utils/table'
@@ -31,6 +32,7 @@ import '../tableDarkMode.scss'
 dayjs.extend(isBetween)
 
 const baseURL = import.meta.env.VITE_API_BASE_URL
+const FUEL_RECEIVE_FILTER_STORAGE_KEY = 'appSubHeaderFilters:fuelReceive'
 
 const parseApiDate = (value) => {
   if (!value) return dayjs(value)
@@ -65,6 +67,7 @@ const initialFormData = {
 }
 
 const FuelReceive = () => {
+  const location = useLocation()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
@@ -81,6 +84,31 @@ const FuelReceive = () => {
   const [isLoadingTanks, setIsLoadingTanks] = useState(false)
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false)
   const [selectedAttachmentRecord, setSelectedAttachmentRecord] = useState(null)
+
+  useEffect(() => {
+    const navigationState = location.state
+    if (!navigationState) return
+
+    const nextDateRange = Array.isArray(navigationState.dateRange)
+      ? navigationState.dateRange.map((value) => (value ? dayjs(value) : value))
+      : null
+
+    setSearch(navigationState.search ?? '')
+    if (navigationState.siteFilter !== undefined) {
+      setSiteFilter(navigationState.siteFilter)
+    }
+    setDateRange(nextDateRange)
+
+    localStorage.setItem(
+      FUEL_RECEIVE_FILTER_STORAGE_KEY,
+      JSON.stringify({
+        search: navigationState.search ?? '',
+        siteFilter: navigationState.siteFilter ?? 'all',
+        quickRange: navigationState.quickRange ?? null,
+        dateRange: Array.isArray(navigationState.dateRange) ? navigationState.dateRange : null,
+      }),
+    )
+  }, [location.state])
 
   const handleEdit = useCallback(
     (record) => {
