@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
@@ -42,75 +42,82 @@ const Dashboard = () => {
   const [siteFilter, setSiteFilter] = useState('all')
   const [dateRange, setDateRange] = useState([null, null])
 
+  const fetchTransaksi = useCallback(async () => {
+    try {
+      setLoadingTrans(true)
+      const { data } = await axios.get(`${baseURL}transaksi`)
+      if (Array.isArray(data?.data)) {
+        setTransaksiData(
+          data.data.map((it, i) => ({
+            key: i,
+            site: it.id_site,
+            date: it.waktu,
+            username: it.username,
+            license_plate: it.plat,
+            volume: parseFloat(it.volume),
+          })),
+        )
+      }
+    } catch (err) {
+      console.error('Error fetch transaksi', err)
+    } finally {
+      setLoadingTrans(false)
+    }
+  }, [])
+
+  const fetchReceive = useCallback(async () => {
+    try {
+      setLoadingReceive(true)
+      const { data } = await axios.get(`${baseURL}tankdeliv`)
+      if (Array.isArray(data?.data)) {
+        setFuelReceiveData(
+          data.data.map((it, i) => ({
+            key: i,
+            site: it.id_site,
+            date: it.waktu_mulai_delivery,
+            volume: parseFloat(it.volume_permintaan || 0),
+          })),
+        )
+      }
+    } catch (err) {
+      console.error('Error fetch fuel receive', err)
+    } finally {
+      setLoadingReceive(false)
+    }
+  }, [])
+
+  const fetchTank = useCallback(async () => {
+    try {
+      setLoadingTank(true)
+      const { data } = await axios.get(`${baseURL}ms-tank`)
+      if (Array.isArray(data?.data)) {
+        setTankData(data.data)
+      }
+    } catch (err) {
+      console.error('Error fetch ms-tank', err)
+    } finally {
+      setLoadingTank(false)
+    }
+  }, [])
+
   /* fetch transaksi */
   useEffect(() => {
-    const fetchTransaksi = async () => {
-      try {
-        setLoadingTrans(true)
-        const { data } = await axios.get(`${baseURL}transaksi`)
-        if (Array.isArray(data?.data)) {
-          setTransaksiData(
-            data.data.map((it, i) => ({
-              key: i,
-              site: it.id_site,
-              date: it.waktu,
-              username: it.username,
-              license_plate: it.plat,
-              volume: parseFloat(it.volume),
-            })),
-          )
-        }
-      } catch (err) {
-        console.error('Error fetch transaksi', err)
-      } finally {
-        setLoadingTrans(false)
-      }
-    }
     fetchTransaksi()
-  }, [])
+  }, [fetchTransaksi])
 
   /* fetch fuel receive */
   useEffect(() => {
-    const fetchReceive = async () => {
-      try {
-        setLoadingReceive(true)
-        const { data } = await axios.get(`${baseURL}tankdeliv`)
-        if (Array.isArray(data?.data)) {
-          setFuelReceiveData(
-            data.data.map((it, i) => ({
-              key: i,
-              site: it.id_site,
-              date: it.waktu_mulai_delivery,
-              volume: parseFloat(it.volume_permintaan || 0),
-            })),
-          )
-        }
-      } catch (err) {
-        console.error('Error fetch fuel receive', err)
-      } finally {
-        setLoadingReceive(false)
-      }
-    }
     fetchReceive()
-  }, [])
+  }, [fetchReceive])
 
   /* potongan fetch ms-tank saja yang diubah */
   useEffect(() => {
-    const fetchTank = async () => {
-      try {
-        setLoadingTank(true)
-        const { data } = await axios.get(`${baseURL}ms-tank`)
-        if (Array.isArray(data?.data)) {
-          setTankData(data.data)
-        }
-      } catch (err) {
-        console.error('Error fetch ms-tank', err)
-      } finally {
-        setLoadingTank(false)
-      }
-    }
     fetchTank()
-  }, [])
+  }, [fetchTank])
+
+  const handleRefreshDashboard = useCallback(async () => {
+    await Promise.all([fetchTransaksi(), fetchReceive(), fetchTank()])
+  }, [fetchReceive, fetchTank, fetchTransaksi])
 
   /* helpers */
   const searchValue = useMemo(() => search.trim().toLowerCase(), [search])
@@ -192,6 +199,8 @@ const Dashboard = () => {
         setSiteFilter={setSiteFilter}
         dateRange={dateRange}
         setDateRange={setDateRange}
+        onRefresh={handleRefreshDashboard}
+        isRefreshing={loadingTrans || loadingReceive || loadingTank}
         storageKey="appSubHeaderFilters:dashboard"
         siteCounts={siteCounts}
         siteTotalCount={siteTotalCount}

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 import { DatePicker, Collapse, Tag, AutoComplete } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
 import { CCard, CRow, CCol, CButton } from '@coreui/react'
 import axios from 'axios'
 
@@ -18,6 +19,8 @@ const AppSubHeaderDashboard = ({
   setSiteFilter,
   dateRange,
   setDateRange,
+  onRefresh,
+  isRefreshing = false,
   storageKey = DEFAULT_STORAGE_KEY,
 }) => {
   const filterGroup = useSelector((state) => state.filterGroup)
@@ -192,6 +195,25 @@ const AppSubHeaderDashboard = ({
             <CButton color="secondary" size="sm" onClick={handleClearSiteFilter}>
               Clear
             </CButton>
+            {onRefresh && (
+              <CButton
+                color="light"
+                variant="outline"
+                size="sm"
+                className="app-subheader__action-button"
+                onClick={onRefresh}
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? (
+                  'Refreshing...'
+                ) : (
+                  <span className="d-inline-flex align-items-center gap-2">
+                    <ReloadOutlined />
+                    Refresh
+                  </span>
+                )}
+              </CButton>
+            )}
           </div>
         </CCol>
 

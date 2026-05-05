@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { Tag, Collapse, AutoComplete } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
 import {
   CCard,
   CCardBody,
@@ -384,7 +385,13 @@ const DataProperties = () => {
       .filter((item) => {
         const idSite = String(item.idSite || '').toLowerCase()
         const bacode = String(item.bacode || '').toLowerCase()
-        const matchesText = idSite.includes(query) || bacode.includes(query)
+        const combinedLabel = [item.bacode, item.idSite]
+          .map((value) => String(value || '').trim())
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+        const matchesText =
+          idSite.includes(query) || bacode.includes(query) || combinedLabel.includes(query)
         const matchesTankCount =
           tankCountFilter === 'all' ? true : getTankCount(item) === Number(tankCountFilter)
         const matchesStatus =
@@ -393,16 +400,24 @@ const DataProperties = () => {
         return matchesText && matchesTankCount && matchesStatus
       })
       .sort((a, b) => {
-        const idSiteCompare = String(a.idSite || '').localeCompare(String(b.idSite || ''), undefined, {
-          numeric: true,
-          sensitivity: 'base',
-        })
+        const idSiteCompare = String(a.idSite || '').localeCompare(
+          String(b.idSite || ''),
+          undefined,
+          {
+            numeric: true,
+            sensitivity: 'base',
+          },
+        )
         if (idSiteCompare !== 0) return idSiteCompare
 
-        const bacodeCompare = String(a.bacode || '').localeCompare(String(b.bacode || ''), undefined, {
-          numeric: true,
-          sensitivity: 'base',
-        })
+        const bacodeCompare = String(a.bacode || '').localeCompare(
+          String(b.bacode || ''),
+          undefined,
+          {
+            numeric: true,
+            sensitivity: 'base',
+          },
+        )
         if (bacodeCompare !== 0) return bacodeCompare
 
         return String(a.id || '').localeCompare(String(b.id || ''), undefined, {
@@ -416,11 +431,25 @@ const DataProperties = () => {
     const seen = new Set()
 
     const suggestions = enhancedDataSource
-      .flatMap((item) => [item.idSite, item.bacode])
-      .map((value) => String(value || '').trim())
-      .filter((value) => value !== '')
-      .filter((value) => {
-        const key = value.toLowerCase()
+      .map((item) => {
+        const bacode = String(item.bacode || '').trim()
+        const idSite = String(item.idSite || '').trim()
+        const value = [bacode, idSite].filter(Boolean).join(' ')
+
+        return {
+          value,
+          label: (
+            <span>
+              {bacode ? <strong>{bacode}</strong> : null}
+              {bacode && idSite ? ' ' : null}
+              {idSite || null}
+            </span>
+          ),
+        }
+      })
+      .filter((option) => option.value !== '')
+      .filter((option) => {
+        const key = option.value.toLowerCase()
         if (query && !key.includes(query)) return false
         if (seen.has(key)) return false
         seen.add(key)
@@ -430,10 +459,7 @@ const DataProperties = () => {
 
     return suggestions
   }, [enhancedDataSource, search])
-  const searchAutoCompleteOptions = useMemo(
-    () => searchSuggestions.map((value) => ({ value })),
-    [searchSuggestions],
-  )
+  const searchAutoCompleteOptions = useMemo(() => searchSuggestions, [searchSuggestions])
 
   const handleRefresh = () => {
     fetchSites()
@@ -833,8 +859,22 @@ const DataProperties = () => {
                 Clear
               </CButton>
 
-              <CButton color="info" size="sm" onClick={handleRefresh} disabled={loading}>
-                {loading ? <CSpinner size="sm" /> : 'Refresh'}
+              <CButton
+                color="light"
+                variant="outline"
+                size="sm"
+                className="master-data-filter-action master-data-filter-action--refresh"
+                onClick={handleRefresh}
+                disabled={loading}
+              >
+                {loading ? (
+                  <CSpinner size="sm" />
+                ) : (
+                  <span className="d-inline-flex align-items-center gap-2">
+                    <ReloadOutlined />
+                    Refresh
+                  </span>
+                )}
               </CButton>
             </div>
           </CCol>
@@ -1152,9 +1192,7 @@ const DataProperties = () => {
           <CModalTitle>Konfirmasi Simpan Perubahan</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <p className="mb-2">
-            Pastikan data yang diubah sudah benar sebelum disimpan.
-          </p>
+          <p className="mb-2">Pastikan data yang diubah sudah benar sebelum disimpan.</p>
           <div className="small text-secondary">
             Nilai Tank 1-5 yang diisi <b>0</b> akan menghapus data tank terkait dari tabel{' '}
             <b>ms_tank</b>.
