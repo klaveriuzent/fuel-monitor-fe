@@ -86,6 +86,26 @@
   &__site-autocomplete {
     width: 100%;
   }
+
+  &__status-filter {
+    width: 100%;
+  }
+}
+
+@media (min-width: 992px) {
+  .app-subheader__status-col {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  .app-subheader__status-filter {
+    min-width: 190px;
+    max-width: 190px;
+  }
+
+  .app-subheader__search-col {
+    flex: 1 1 0;
+  }
 }
 
 .app-subheader__site-autocomplete.ant-select-single.ant-select-sm .ant-select-selector {

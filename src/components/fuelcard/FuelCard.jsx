@@ -5,7 +5,7 @@ import { FireOutlined, ExperimentOutlined } from '@ant-design/icons'
 import { CCard, CCardBody, CCardTitle, CCardText, CButton } from '@coreui/react'
 
 import FuelCardModalChart from './FuelCardModalChart'
-import { clamp, formatDatabaseDateTimeDisplay, getDateTimestamp, toNumber } from './fuelCardUtils'
+import { clamp, formatDatabaseDateTimeDisplay, getTelemetryStatus, toNumber } from './fuelCardUtils'
 import { useTankHistory } from './useTankHistory'
 
 import './FuelCard.scss'
@@ -196,20 +196,7 @@ const FuelCard = ({ item }) => {
     return () => clearInterval(timer)
   }, [])
 
-  const telemetryStatus = useMemo(() => {
-    if (item.aktif_flag !== '1') return { key: 'offline', text: 'Offline', color: 'red' }
-    if (!item.update_date) return { key: 'standby', text: 'Standby', color: 'orange' }
-
-    const lastUpdate = getDateTimestamp(item.update_date, 'day')
-    if (lastUpdate === null) return { key: 'standby', text: 'Standby', color: 'orange' }
-
-    const diffMinutes = (nowMs - lastUpdate) / 1000 / 60
-
-    if (diffMinutes > 24 * 60) return { key: 'offline', text: 'Offline', color: 'red' }
-    if (diffMinutes > 5) return { key: 'standby', text: 'Standby', color: 'orange' }
-
-    return { key: 'online', text: 'Online', color: 'green' }
-  }, [item.aktif_flag, item.update_date, nowMs])
+  const telemetryStatus = useMemo(() => getTelemetryStatus(item, nowMs), [item, nowMs])
 
   const isStandby = useCallback(() => {
     if (telemetryStatus.key === 'standby') return true

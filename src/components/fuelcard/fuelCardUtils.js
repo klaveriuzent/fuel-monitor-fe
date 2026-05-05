@@ -71,6 +71,21 @@ export const getDateTimestamp = (value, scale = 'day') => {
   return parsed ? parsed.getTime() : null
 }
 
+export const getTelemetryStatus = (item, nowMs = Date.now()) => {
+  if (item?.aktif_flag !== '1') return { key: 'offline', text: 'Offline', color: 'red' }
+  if (!item?.update_date) return { key: 'standby', text: 'Standby', color: 'orange' }
+
+  const lastUpdate = getDateTimestamp(item.update_date, 'day')
+  if (lastUpdate === null) return { key: 'standby', text: 'Standby', color: 'orange' }
+
+  const diffMinutes = (nowMs - lastUpdate) / 1000 / 60
+
+  if (diffMinutes > 24 * 60) return { key: 'offline', text: 'Offline', color: 'red' }
+  if (diffMinutes > 5) return { key: 'standby', text: 'Standby', color: 'orange' }
+
+  return { key: 'online', text: 'Online', color: 'green' }
+}
+
 export const getTanggalSortValue = (tanggal, scale) => {
   if (!tanggal) return null
 

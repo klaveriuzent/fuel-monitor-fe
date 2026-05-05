@@ -5,7 +5,7 @@ import axios from 'axios'
 
 import AppSubHeaderStock from '../../../components/subheader/AppSubHeader.stock'
 import FuelCard from '../../../components/fuelcard/FuelCard'
-import { getDateTimestamp } from '../../../components/fuelcard/fuelCardUtils'
+import { getDateTimestamp, getTelemetryStatus } from '../../../components/fuelcard/fuelCardUtils'
 import { mapFuelStockData } from './interface.fuelstock'
 import '../tableDarkMode.scss'
 
@@ -18,6 +18,16 @@ const FuelStock = () => {
   const [pageSize, setPageSize] = useState(8)
   const [search, setSearch] = useState('')
   const [filterSite, setFilterSite] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [nowMs, setNowMs] = useState(() => Date.now())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowMs(Date.now())
+    }, 30000)
+
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -63,6 +73,11 @@ const FuelStock = () => {
     setCurrentPage(1)
   }, [])
 
+  const handleStatusFilterChange = useCallback((value) => {
+    setStatusFilter(value)
+    setCurrentPage(1)
+  }, [])
+
   const normalizedSearch = search.trim().toLowerCase()
 
   const filteredData = useMemo(() => {
@@ -76,7 +91,10 @@ const FuelStock = () => {
         const matchSite =
           filterSite === 'all' || item.id_site.toLowerCase() === filterSite.toLowerCase()
 
-        return matchSearch && matchSite
+        const matchStatus =
+          statusFilter === 'all' || getTelemetryStatus(item, nowMs).key === statusFilter
+
+        return matchSearch && matchSite && matchStatus
       })
       .sort((a, b) => {
         if (a.id_site !== b.id_site) {
@@ -91,7 +109,7 @@ const FuelStock = () => {
 
         return String(a.row_id || '').localeCompare(String(b.row_id || ''))
       })
-  }, [data, filterSite, normalizedSearch])
+  }, [data, filterSite, normalizedSearch, nowMs, statusFilter])
 
   const handleExport = useCallback(async () => {
     if (!filteredData.length) return
@@ -99,6 +117,7 @@ const FuelStock = () => {
     const exportData = filteredData.map((item) => ({
       'ID Tank': item.id_tank,
       'ID Site': item.id_site,
+      Status: getTelemetryStatus(item).text,
       'Aktif Flag': item.aktif_flag,
       'Volume Oil': item.volume_oil,
       'Volume Air': item.volume_air,
@@ -145,6 +164,8 @@ const FuelStock = () => {
         setSearch={handleSearchChange}
         siteFilter={filterSite}
         setSiteFilter={handleSiteFilterChange}
+        statusFilter={statusFilter}
+        setStatusFilter={handleStatusFilterChange}
         onExport={handleExport}
         isExportDisabled={!filteredData.length}
       />

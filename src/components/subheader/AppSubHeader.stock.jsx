@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { AutoComplete } from 'antd'
+import { AutoComplete, Select } from 'antd'
 import { useSelector } from 'react-redux'
 import { CCard, CRow, CCol, CFormInput, CButton } from '@coreui/react'
 import axios from 'axios'
@@ -12,6 +12,8 @@ const AppSubHeaderStock = ({
   setSearch,
   siteFilter,
   setSiteFilter,
+  statusFilter,
+  setStatusFilter,
   onExport,
   isExportDisabled = false,
   storageKey = DEFAULT_STORAGE_KEY,
@@ -53,16 +55,21 @@ const AppSubHeaderStock = ({
     if (!saved) return
 
     try {
-      const { search: savedSearch, siteFilter: savedSite } = JSON.parse(saved)
+      const {
+        search: savedSearch,
+        siteFilter: savedSite,
+        statusFilter: savedStatus,
+      } = JSON.parse(saved)
       if (savedSearch !== undefined) setSearch(savedSearch)
       if (savedSite !== undefined) {
         setSiteFilter(savedSite)
         setSiteInputValue(savedSite === 'all' ? 'All Sites' : savedSite)
       }
+      if (savedStatus !== undefined) setStatusFilter(savedStatus)
     } catch {
       console.warn('Failed to parse saved filters')
     }
-  }, [setSearch, setSiteFilter, storageKey])
+  }, [setSearch, setSiteFilter, setStatusFilter, storageKey])
 
   useEffect(() => {
     localStorage.setItem(
@@ -70,9 +77,10 @@ const AppSubHeaderStock = ({
       JSON.stringify({
         search,
         siteFilter,
+        statusFilter,
       }),
     )
-  }, [search, siteFilter, storageKey])
+  }, [search, siteFilter, statusFilter, storageKey])
 
   useEffect(() => {
     fetchSites()
@@ -111,9 +119,20 @@ const AppSubHeaderStock = ({
   const handleClearFilters = () => {
     setSearch('')
     setSiteFilter('all')
+    setStatusFilter('all')
     setSiteInputValue('All Sites')
     localStorage.removeItem(storageKey)
   }
+
+  const statusSelectOptions = useMemo(
+    () => [
+      { label: 'All Status', value: 'all' },
+      { label: 'Online', value: 'online' },
+      { label: 'Standby', value: 'standby' },
+      { label: 'Offline', value: 'offline' },
+    ],
+    [],
+  )
 
   return (
     <CCard className="app-subheader mb-3 p-3">
@@ -140,7 +159,20 @@ const AppSubHeaderStock = ({
           />
         </CCol>
 
-        <CCol xs={12} sm={12} md={8}>
+        <CCol xs={12} sm={6} md={3} lg={2} className="app-subheader__status-col">
+          <div className="app-subheader__status-filter">
+            <Select
+              size="small"
+              className="app-subheader__site-select-polished"
+              popupClassName="app-subheader__site-select-dropdown"
+              value={statusFilter}
+              onChange={(value) => setStatusFilter(value)}
+              options={statusSelectOptions}
+            />
+          </div>
+        </CCol>
+
+        <CCol xs={12} sm={12} md={5} lg={6} className="app-subheader__search-col">
           <div className="app-subheader__search d-flex align-items-center gap-2">
             <CFormInput
               type="text"
