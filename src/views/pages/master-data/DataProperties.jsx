@@ -72,7 +72,10 @@ const mapSiteData = (item) => ({
 const DataProperties = () => {
   const [visible, setVisible] = useState(false)
   const [addVisible, setAddVisible] = useState(false)
+  const [deleteVisible, setDeleteVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
+  const [deleteRecord, setDeleteRecord] = useState(null)
+  const [deleteConfirmValue, setDeleteConfirmValue] = useState('')
   const [formData, setFormData] = useState({})
   const [addFormData, setAddFormData] = useState({})
   const [search, setSearch] = useState('')
@@ -88,12 +91,43 @@ const DataProperties = () => {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [confirmSaveVisible, setConfirmSaveVisible] = useState(false)
   const [pendingSavePayload, setPendingSavePayload] = useState(null)
   const [toast, addToast] = useState(0)
 
   const baseURL = import.meta.env.VITE_API_BASE_URL
   const filterGroup = useSelector((state) => state.filterGroup)
+
+  const pushDeleteToast = useCallback((color, message) => {
+    const isSuccess = color === 'success'
+    const title = isSuccess ? 'Data Berhasil Dihapus' : 'Hapus Data Gagal'
+    const timeLabel = new Date().toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+
+    addToast(
+      <CToast autohide delay={4200} color={color} className="text-white border-0 shadow-sm">
+        <CToastHeader closeButton className="bg-transparent text-white border-0 pb-1">
+          <div className="d-flex align-items-center gap-2 me-auto">
+            <span
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: 'currentColor',
+                opacity: 0.85,
+              }}
+            />
+            <strong>{title}</strong>
+          </div>
+          <small className="text-white-50">{timeLabel}</small>
+        </CToastHeader>
+        <CToastBody className="pt-0">{message}</CToastBody>
+      </CToast>,
+    )
+  }, [])
 
   const fetchSites = useCallback(async () => {
     setLoading(true)
@@ -353,12 +387,22 @@ const DataProperties = () => {
     {
       title: 'Action',
       key: 'action',
-      width: 60,
+      width: 130,
       fixed: 'right',
       render: (_, record) => (
-        <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
-          Edit
-        </CButton>
+        <div className="d-flex justify-content-center gap-2">
+          <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
+            Edit
+          </CButton>
+          <CButton
+            size="sm"
+            color="danger"
+            className="text-white"
+            onClick={() => handleDelete(record)}
+          >
+            Delete
+          </CButton>
+        </div>
       ),
     },
   ]
@@ -497,6 +541,45 @@ const DataProperties = () => {
       tank5: toTankInputValue(record?.tank5),
     })
     setVisible(true)
+  }
+
+  const handleDelete = (record) => {
+    setDeleteRecord(record)
+    setDeleteConfirmValue('')
+    setDeleteVisible(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    const targetIdSite = String(deleteRecord?.idSite || '').trim()
+    const typedIdSite = String(deleteConfirmValue || '').trim()
+
+    if (!deleteRecord?.id || !targetIdSite) {
+      pushDeleteToast('danger', 'Site tidak valid untuk dihapus.')
+      return
+    }
+
+    if (typedIdSite !== targetIdSite) {
+      pushDeleteToast('danger', 'ID Site yang ditulis ulang tidak sesuai.')
+      return
+    }
+
+    try {
+      setDeleting(true)
+      await axios.delete(`${baseURL}site/${deleteRecord.id}`, {
+        data: { id_site: typedIdSite },
+      })
+      setDeleteVisible(false)
+      setDeleteRecord(null)
+      setDeleteConfirmValue('')
+      await Promise.all([fetchSites(), fetchTankMeta()])
+      pushDeleteToast('success', `Site ${targetIdSite} dan data terkait berhasil dihapus.`)
+    } catch (error) {
+      console.error('Error deleting site:', error)
+      const apiMessage = error?.response?.data?.message || error?.response?.data?.error
+      pushDeleteToast('danger', apiMessage || 'Gagal menghapus data site.')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const handleChange = (e) => {
@@ -781,6 +864,14 @@ const DataProperties = () => {
           <div className="master-data-card__actions">
             <CButton size="sm" color="primary" onClick={() => handleEdit(record)}>
               Edit
+            </CButton>
+            <CButton
+              size="sm"
+              color="danger"
+              className="text-white"
+              onClick={() => handleDelete(record)}
+            >
+              Delete
             </CButton>
           </div>
         )}
@@ -1214,6 +1305,67 @@ const DataProperties = () => {
           </CButton>
           <CButton color="primary" onClick={handleConfirmSave} disabled={saving}>
             {saving ? <CSpinner size="sm" /> : 'Ya, Simpan'}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+      <CModal
+        visible={deleteVisible}
+        onClose={() => {
+          if (deleting) return
+          setDeleteVisible(false)
+          setDeleteRecord(null)
+          setDeleteConfirmValue('')
+        }}
+        alignment="center"
+      >
+        <CModalHeader>
+          <CModalTitle>Konfirmasi Hapus Site</CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <p className="mb-2">
+            Data site <b>{deleteRecord?.idSite || '-'}</b> akan dihapus permanen.
+          </p>
+          <div className="small text-secondary mb-3">
+            Proses ini juga menghapus data terkait dari history tank, last tank, transaksi fueling,
+            tank delivery, dan master tank.
+          </div>
+          <CFormLabel htmlFor="deleteIdSiteConfirm">
+            Tulis ulang ID Site untuk melanjutkan
+          </CFormLabel>
+          <CFormInput
+            id="deleteIdSiteConfirm"
+            value={deleteConfirmValue}
+            onChange={(event) => setDeleteConfirmValue(event.target.value)}
+            placeholder={deleteRecord?.idSite || ''}
+            disabled={deleting}
+            autoComplete="off"
+          />
+          <small className="text-secondary d-block mt-1">
+            Input harus sama persis dengan ID Site: <b>{deleteRecord?.idSite || '-'}</b>.
+          </small>
+        </CModalBody>
+        <CModalFooter>
+          <CButton
+            color="secondary"
+            onClick={() => {
+              setDeleteVisible(false)
+              setDeleteRecord(null)
+              setDeleteConfirmValue('')
+            }}
+            disabled={deleting}
+          >
+            Batal
+          </CButton>
+          <CButton
+            color="danger"
+            className="text-white"
+            onClick={handleConfirmDelete}
+            disabled={
+              deleting ||
+              String(deleteConfirmValue || '').trim() !== String(deleteRecord?.idSite || '').trim()
+            }
+          >
+            {deleting ? <CSpinner size="sm" /> : 'Ya, Hapus'}
           </CButton>
         </CModalFooter>
       </CModal>
